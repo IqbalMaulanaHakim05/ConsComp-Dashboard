@@ -486,6 +486,50 @@ $aksiTopbar = $aksiTopbar ?? "";
             color: #64748b;
         }
 
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .pagination-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination-nav a,
+        .pagination-nav span {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 13px;
+            text-decoration: none;
+            color: #334155;
+            background-color: #ffffff;
+            transition: 0.2s;
+        }
+
+        .pagination-nav a:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .pagination-nav .disabled {
+            color: #cbd5e1;
+            background-color: #f8fafc;
+            cursor: not-allowed;
+        }
+
         /* Form (tambah/edit/import) mengikuti gaya kartu dashboard. */
         .form-card {
             max-width: 960px;
