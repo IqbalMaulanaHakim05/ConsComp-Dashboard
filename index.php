@@ -652,6 +652,10 @@ tbody tr:hover td:last-child {
             Tambah Data
         </a>
 
+        <a href="import_excel.php">
+            Import Excel
+        </a>
+
         <a href="../index.php">
             Halaman Publik
         </a>
@@ -678,12 +682,12 @@ tbody tr:hover td:last-child {
         </div>
 
         <div class="topbar-actions">
-            <!-- <a
+            <a
                 href="../index.php"
                 class="btn btn-secondary"
             >
                 Lihat Website
-            </a> -->
+            </a>
 
             <form method="POST" style="margin:0;">
                 <input type="hidden" name="aksi" value="sinkronisasi">
@@ -696,12 +700,28 @@ tbody tr:hover td:last-child {
                 </button>
             </form>
 
-            <!-- <a
+            <a
+                href="export_excel.php"
+                class="btn btn-success"
+                title="Unduh seluruh data karyawan dari SQL"
+            >
+                Export Excel
+            </a>
+
+            <a
+                href="import_excel.php"
+                class="btn btn-warning"
+                title="Ganti data SQL menggunakan file Excel"
+            >
+                Import Excel
+            </a>
+
+            <a
                 href="tambah.php"
                 class="btn btn-success"
             >
                 + Tambah Karyawan
-            </a> -->
+            </a>
         </div>
     </div>
 
@@ -726,6 +746,12 @@ tbody tr:hover td:last-child {
     <?php elseif ($pesan === "sinkronisasi-berhasil"): ?>
         <div class="alert">
             Data SQL berhasil disinkronkan ke file lokal.
+        </div>
+    <?php elseif ($pesan === "import-excel-berhasil"): ?>
+        <div class="alert">
+            Import Excel berhasil.
+            <strong><?= (int) ($_GET["jumlah"] ?? 0); ?></strong>
+            data karyawan telah menggantikan data SQL sebelumnya.
         </div>
     <?php endif; ?>
 
