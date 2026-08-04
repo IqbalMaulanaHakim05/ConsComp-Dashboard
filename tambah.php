@@ -1,7 +1,6 @@
-
-
-
 <?php
+require_once 'auth.php';
+wajibLoginAdmin();
 require "koneksi.php";
 require_once "sinkronisasi.php";
 
@@ -30,7 +29,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $salary = (float) $form["salary"];
     $gender = $form["gender"];
     $employmentStatus = $form["employment_status"];
-    $performanceScore = $form["performance_score"];
+    $performanceScore = filter_var(
+        $form["performance_score"],
+        FILTER_VALIDATE_INT
+    );
 
     if (
         $employeeName === ""
@@ -45,6 +47,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $pesan = "Semua kolom wajib diisi.";
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
+    } elseif (
+        $performanceScore === false
+        || $performanceScore < 1
+        || $performanceScore > 100
+    ) {
+        $pesan = "Skor performa harus berupa angka antara 1 sampai 100.";
     } else {
         $sql = "INSERT INTO karyawan (
                     employee_name,
@@ -122,6 +130,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             position: fixed;
             top: 0;
             left: 0;
+            display: flex;
+            flex-direction: column;
             width: 240px;
             height: 100vh;
             padding: 25px 18px;
@@ -146,6 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         .sidebar-menu {
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -167,15 +178,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             background-color: #2563eb;
         }
 
+        .sidebar-logout {
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid #334155;
+        }
+
+        .sidebar-logout a {
+            display: block;
+            padding: 12px 14px;
+            color: #fecaca;
+            background-color: rgba(220, 38, 38, 0.12);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .sidebar-logout a:hover {
+            color: #ffffff;
+            background-color: #dc2626;
+        }
+
         .main-content {
             min-height: 100vh;
             margin-left: 240px;
             padding: 30px;
-        }
-
-        .mobile-menu {
-            display: none;
-            margin-bottom: 20px;
         }
 
         .topbar {
@@ -354,16 +381,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             .sidebar.show {
-                display: block;
+                display: flex;
+            }
+
+            .sidebar-logout {
+                margin-top: 24px;
             }
 
             .main-content {
                 margin-left: 0;
                 padding: 18px;
-            }
-
-            .mobile-menu {
-                display: inline-flex;
             }
 
             .topbar-title h1 {
@@ -406,19 +433,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <nav class="sidebar-menu">
         <a href="index.php">Dashboard</a>
         <a href="tambah.php" class="active">Tambah Data</a>
+        <a href="import_excel.php">Import Excel</a>
         <a href="../index.php">Halaman Publik</a>
     </nav>
+
+    <div class="sidebar-logout">
+        <a
+            href="logout.php"
+            onclick="return confirm('Yakin ingin keluar dari akun admin?');"
+        >
+            Logout Admin
+        </a>
+    </div>
 </aside>
 
 <main class="main-content">
-    <button
-        type="button"
-        class="btn btn-primary mobile-menu"
-        onclick="toggleSidebar()"
-    >
-        Menu Admin
-    </button>
-
     <div class="topbar">
         <div class="topbar-title">
             <h1>Tambah Karyawan</h1>
@@ -557,13 +586,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             id="employment_status"
                             name="employment_status"
                             value="<?= htmlspecialchars($form["employment_status"]); ?>"
-                            placeholder="Contoh: Aktif"
+                            placeholder="Contoh: Active"
                             maxlength="100"
                             required
                         >
                     </div>
 
-                   <div class="form-group">
+                    <div class="form-group">
                         <label for="performance_score">
                             Skor Performa <span class="required">*</span>
                         </label>
@@ -592,13 +621,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
     </section>
 </main>
-
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-        sidebar.classList.toggle("show");
-    }
-</script>
 
 </body>
 </html>

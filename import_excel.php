@@ -68,7 +68,6 @@ function bacaXlsx(string $lokasi): array
         if ($xml !== false) {
             $xml->registerXPathNamespace('s', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
             foreach ($xml->xpath('//s:si') ?: [] as $item) {
-                $item->registerXPathNamespace('s', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
                 $bagian = [];
                 foreach ($item->xpath('.//s:t') ?: [] as $teks) {
                     $bagian[] = (string) $teks;
@@ -92,10 +91,8 @@ function bacaXlsx(string $lokasi): array
     $xml->registerXPathNamespace('s', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
     $hasil = [];
     foreach ($xml->xpath('//s:sheetData/s:row') ?: [] as $row) {
-        $row->registerXPathNamespace('s', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
         $baris = [];
         foreach ($row->xpath('./s:c') ?: [] as $cell) {
-            $cell->registerXPathNamespace('s', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
             $atribut = $cell->attributes();
             $index = kolomExcelKeIndex((string) ($atribut['r'] ?? 'A1'));
             $tipe = (string) ($atribut['t'] ?? '');
@@ -137,11 +134,9 @@ function bacaXlsXml(string $lokasi): array
     $xml->registerXPathNamespace('ss', 'urn:schemas-microsoft-com:office:spreadsheet');
     $hasil = [];
     foreach ($xml->xpath('//ss:Worksheet[1]/ss:Table/ss:Row') ?: [] as $row) {
-        $row->registerXPathNamespace('ss', 'urn:schemas-microsoft-com:office:spreadsheet');
         $baris = [];
         $posisi = 0;
         foreach ($row->xpath('./ss:Cell') ?: [] as $cell) {
-            $cell->registerXPathNamespace('ss', 'urn:schemas-microsoft-com:office:spreadsheet');
             $atribut = $cell->attributes('urn:schemas-microsoft-com:office:spreadsheet');
             if (isset($atribut['Index'])) {
                 $posisi = ((int) $atribut['Index']) - 1;
@@ -363,18 +358,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Import Excel Karyawan</title>
     <style>
-        *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f1f5f9;color:#1e293b}.sidebar{position:fixed;inset:0 auto 0 0;width:240px;padding:25px 18px;background:#0f172a;color:#fff}.sidebar h2{margin:0;font-size:22px}.sidebar p{margin:7px 0 35px;color:#94a3b8;font-size:13px}.sidebar a{display:block;padding:12px 14px;margin-bottom:8px;color:#cbd5e1;text-decoration:none;border-radius:8px;font-size:14px}.sidebar a.active,.sidebar a:hover{color:#fff;background:#2563eb}.main{margin-left:240px;min-height:100vh;padding:30px}.header{margin-bottom:24px}.header h1{margin:0;color:#0f172a;font-size:29px}.header p{margin:7px 0 0;color:#64748b}.card{max-width:760px;padding:26px;background:#fff;border-radius:12px;box-shadow:0 4px 15px rgba(15,23,42,.07)}.warning{padding:14px 16px;margin-bottom:20px;border:1px solid #fde68a;border-radius:8px;background:#fef3c7;color:#92400e;line-height:1.5}.alert{padding:13px 16px;margin-bottom:20px;border:1px solid #fecaca;border-radius:8px;background:#fee2e2;color:#991b1b}.field{margin-bottom:20px}.field label{display:block;margin-bottom:8px;font-weight:700}.field input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.help{margin-top:8px;color:#64748b;font-size:13px;line-height:1.5}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border:0;border-radius:7px;text-decoration:none;font-size:14px;cursor:pointer}.primary{background:#2563eb;color:#fff}.secondary{background:#e2e8f0;color:#334155}@media(max-width:800px){.sidebar{position:static;width:100%}.main{margin-left:0;padding:18px}}
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f1f5f9; color: #1e293b; }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+            height: 100vh;
+            padding: 25px 18px;
+            overflow-y: auto;
+            color: #ffffff;
+            background-color: #0f172a;
+        }
+        .sidebar-brand { margin-bottom: 35px; }
+        .sidebar-brand h2 { margin: 0; font-size: 22px; }
+        .sidebar-brand p { margin: 7px 0 0; color: #94a3b8; font-size: 13px; }
+        .sidebar-menu { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 14px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active { color: #ffffff; background-color: #2563eb; }
+        .sidebar-logout { margin-top: auto; padding-top: 18px; border-top: 1px solid #334155; }
+        .sidebar-logout a {
+            display: block;
+            padding: 12px 14px;
+            color: #fecaca;
+            background-color: rgba(220, 38, 38, 0.12);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .sidebar-logout a:hover { color: #ffffff; background-color: #dc2626; }
+
+        .main { margin-left: 240px; min-height: 100vh; padding: 30px; }
+        .mobile-menu { display: none; margin-bottom: 20px; }
+        .header { margin-bottom: 24px; }
+        .header h1 { margin: 0; color: #0f172a; font-size: 29px; }
+        .header p { margin: 7px 0 0; color: #64748b; }
+        .card { max-width: 760px; padding: 26px; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(15,23,42,.07); }
+        .warning { padding: 14px 16px; margin-bottom: 20px; border: 1px solid #fde68a; border-radius: 8px; background: #fef3c7; color: #92400e; line-height: 1.5; }
+        .alert { padding: 13px 16px; margin-bottom: 20px; border: 1px solid #fecaca; border-radius: 8px; background: #fee2e2; color: #991b1b; }
+        .field { margin-bottom: 20px; }
+        .field label { display: block; margin-bottom: 8px; font-weight: 700; }
+        .field input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
+        .help { margin-top: 8px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 11px 16px; border: 0; border-radius: 7px; text-decoration: none; font-size: 14px; cursor: pointer; }
+        .primary { background: #2563eb; color: #fff; }
+        .secondary { background: #e2e8f0; color: #334155; }
+
+        @media (max-width: 800px) {
+            .sidebar { position: static; display: none; width: 100%; height: auto; }
+            .sidebar.show { display: flex; }
+            .sidebar-logout { margin-top: 24px; }
+            .main { margin-left: 0; padding: 18px; }
+            .mobile-menu { display: inline-flex; }
+        }
     </style>
 </head>
 <body>
-<aside class="sidebar">
-    <h2>Admin Karyawan</h2><p>Sistem pengelolaan dataset</p>
-    <a href="index.php">Dashboard</a>
-    <a href="tambah.php">Tambah Data</a>
-    <a href="import_excel.php" class="active">Import Excel</a>
-    <a href="../index.php">Halaman Publik</a>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <h2>Admin Karyawan</h2>
+        <p>Sistem pengelolaan dataset</p>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a href="index.php">Dashboard</a>
+        <a href="tambah.php">Tambah Data</a>
+        <a href="import_excel.php" class="active">Import Excel</a>
+        <a href="../index.php">Halaman Publik</a>
+    </nav>
+
+    <div class="sidebar-logout">
+        <a href="logout.php" onclick="return confirm('Yakin ingin keluar dari akun admin?');">
+            Logout Admin
+        </a>
+    </div>
 </aside>
 <main class="main">
+    
     <div class="header"><h1>Import Excel</h1><p>Ganti seluruh data karyawan menggunakan file Excel.</p></div>
     <section class="card">
         <div class="warning"><strong>Perhatian:</strong> proses ini mengganti seluruh isi tabel karyawan. Gunakan file hasil <strong>Export Excel</strong> sebagai template. File akan divalidasi sebelum database diubah.</div>
@@ -392,5 +466,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </section>
 </main>
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("show");
+    }
+</script>
 </body>
 </html>

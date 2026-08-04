@@ -1,7 +1,6 @@
-
-
-
 <?php
+require_once 'auth.php';
+wajibLoginAdmin();
 require "koneksi.php";
 require_once "sinkronisasi.php";
 
@@ -154,6 +153,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             position: fixed;
             top: 0;
             left: 0;
+            display: flex;
+            flex-direction: column;
             width: 240px;
             height: 100vh;
             padding: 25px 18px;
@@ -178,6 +179,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         .sidebar-menu {
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -199,18 +201,33 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             background-color: #2563eb;
         }
 
+          .sidebar-logout {
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid #334155;
+        }
+
+        .sidebar-logout a {
+            display: block;
+            padding: 12px 14px;
+            color: #fecaca;
+            background-color: rgba(220, 38, 38, 0.12);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .sidebar-logout a:hover {
+            color: #ffffff;
+            background-color: #dc2626;
+        }
+
         .main-content {
             min-height: 100vh;
             margin-left: 240px;
             padding: 30px;
         }
-
-        .mobile-menu {
-            display: none;
-            margin-bottom: 20px;
-        }
-
-        .topbar {
+.topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -393,12 +410,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 margin-left: 0;
                 padding: 18px;
             }
-
-            .mobile-menu {
-                display: inline-flex;
-            }
-
-            .topbar-title h1 {
+.topbar-title h1 {
                 font-size: 25px;
             }
 
@@ -438,19 +450,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <nav class="sidebar-menu">
         <a href="index.php">Dashboard</a>
         <a href="tambah.php">Tambah Data</a>
+        <a href="import_excel.php">Import Excel</a>
         <a href="../index.php">Halaman Publik</a>
     </nav>
+
+    <div class="sidebar-logout">
+        <a
+            href="logout.php"
+            onclick="return confirm('Yakin ingin keluar dari akun admin?');"
+        >
+            Logout Admin
+        </a>
+    </div>
 </aside>
 
 <main class="main-content">
-    <button
-        type="button"
-        class="btn btn-primary mobile-menu"
-        onclick="toggleSidebar()"
-    >
-        Menu Admin
-    </button>
-
     <div class="topbar">
         <div class="topbar-title">
             <h1>Edit Karyawan</h1>
@@ -624,13 +638,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
     </section>
 </main>
-
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-        sidebar.classList.toggle("show");
-    }
-</script>
-
 </body>
 </html>

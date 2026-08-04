@@ -1,4 +1,6 @@
 <?php
+require_once 'auth.php';
+wajibLoginAdmin();
 
 require "koneksi.php";
 require_once "sinkronisasi.php";
@@ -254,6 +256,8 @@ $jumlahData = mysqli_num_rows($hasil);
             background-color: #0f172a;
             color: #ffffff;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar-brand {
@@ -272,6 +276,7 @@ $jumlahData = mysqli_num_rows($hasil);
         }
 
         .sidebar-menu {
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -291,6 +296,27 @@ $jumlahData = mysqli_num_rows($hasil);
         .sidebar-menu a.active {
             color: #ffffff;
             background-color: #2563eb;
+        }
+
+        .sidebar-logout {
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid #334155;
+        }
+
+        .sidebar-logout a {
+            display: block;
+            padding: 12px 14px;
+            color: #fecaca;
+            background-color: rgba(220, 38, 38, 0.12);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .sidebar-logout a:hover {
+            color: #ffffff;
+            background-color: #dc2626;
         }
 
         .main-content {
@@ -644,22 +670,20 @@ tbody tr:hover td:last-child {
     </div>
 
     <nav class="sidebar-menu">
-        <a href="index.php" class="active">
-            Dashboard
-        </a>
-
-        <a href="tambah.php">
-            Tambah Data
-        </a>
-
-        <a href="import_excel.php">
-            Import Excel
-        </a>
-
-        <a href="../index.php">
-            Halaman Publik
-        </a>
+        <a href="index.php" class="active">Dashboard</a>
+        <a href="tambah.php">Tambah Data</a>
+        <a href="import_excel.php">Import Excel</a>
+        <a href="../index.php">Halaman Publik</a>
     </nav>
+
+    <div class="sidebar-logout">
+        <a
+            href="logout.php"
+            onclick="return confirm('Yakin ingin keluar dari akun admin?');"
+        >
+            Logout Admin
+        </a>
+    </div>
 </aside>
 
 <main class="main-content">
