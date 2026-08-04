@@ -150,13 +150,10 @@ function ambilDataKaryawan(
         }
     }
 
-    // $batas berasal dari whitelist sehingga aman ditempel ke query.
-    $klausaLimit = $tanpaBatas ? "" : (" LIMIT " . $batas);
+    $pencarian = "%" . $kataKunci . "%";
 
+    // 1. Menghitung total data yang cocok lebih dulu (dasar pagination).
     if ($kataKunci !== "") {
-        $pencarian = "%" . $kataKunci . "%";
-
-        // Menghitung total kecocokan sebelum pembatasan baris.
         $sqlHitung = "SELECT COUNT(*) AS total
                       FROM karyawan
                       WHERE employee_name LIKE ?
@@ -189,7 +186,39 @@ function ambilDataKaryawan(
                 mysqli_stmt_get_result($stmtHitung)
             )["total"] ?? 0
         );
+    } else {
+        $queryTotal = mysqli_query(
+            $conn,
+            "SELECT COUNT(*) AS total FROM karyawan"
+        );
+        $totalCocok = (int) (
+            mysqli_fetch_assoc($queryTotal)["total"] ?? 0
+        );
+    }
 
+    // 2. Menentukan halaman aktif dan klausa LIMIT/OFFSET.
+    $halaman = max(1, (int) ($_GET["hal"] ?? 1));
+
+    if ($tanpaBatas) {
+        $totalHalaman = 1;
+        $halaman = 1;
+        $offset = 0;
+        $klausaLimit = "";
+    } else {
+        $totalHalaman = max(1, (int) ceil($totalCocok / $batas));
+
+        if ($halaman > $totalHalaman) {
+            $halaman = $totalHalaman;
+        }
+
+        $offset = ($halaman - 1) * $batas;
+
+        // $batas dari whitelist dan $offset berupa integer, aman ditempel.
+        $klausaLimit = " LIMIT " . $batas . " OFFSET " . $offset;
+    }
+
+    // 3. Mengambil data sesuai halaman.
+    if ($kataKunci !== "") {
         $sql = "SELECT *
                 FROM karyawan
                 WHERE employee_name LIKE ?
@@ -220,14 +249,6 @@ function ambilDataKaryawan(
         mysqli_stmt_execute($stmt);
         $hasil = mysqli_stmt_get_result($stmt);
     } else {
-        $queryTotal = mysqli_query(
-            $conn,
-            "SELECT COUNT(*) AS total FROM karyawan"
-        );
-        $totalCocok = (int) (
-            mysqli_fetch_assoc($queryTotal)["total"] ?? 0
-        );
-
         $hasil = mysqli_query(
             $conn,
             "SELECT *
@@ -249,5 +270,8 @@ function ambilDataKaryawan(
         "batasDiizinkan" => $batasDiizinkan,
         "tanpaBatas" => $tanpaBatas,
         "izinkanSemua" => $izinkanSemua,
+        "halaman" => $halaman,
+        "totalHalaman" => $totalHalaman,
+        "offset" => $offset,
     ];
 }

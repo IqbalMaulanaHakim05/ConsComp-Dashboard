@@ -15,6 +15,22 @@ $halamanIni = basename($_SERVER["PHP_SELF"]);
 // Kolom aksi (edit/hapus) hanya untuk peran yang boleh mengubah data.
 $bolehAksi = function_exists("punyaRole") && punyaRole("admin", "superadmin");
 
+// Nilai pagination (dengan cadangan bila tidak dikirim halaman pemanggil).
+$halaman = $halaman ?? 1;
+$totalHalaman = $totalHalaman ?? 1;
+$offset = $offset ?? 0;
+
+// Rentang baris yang sedang ditampilkan.
+$mulai = $jumlahData > 0 ? ($offset + 1) : 0;
+$sampai = $offset + $jumlahData;
+
+// Parameter dasar untuk mempertahankan pencarian & batas pada tautan halaman.
+$paramDasar = [];
+if ($kataKunci !== "") {
+    $paramDasar["cari"] = $kataKunci;
+}
+$paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
+
 ?>
     <section class="data-card">
 
@@ -77,12 +93,11 @@ $bolehAksi = function_exists("punyaRole") && punyaRole("admin", "superadmin");
                 <strong><?= $totalCocok; ?></strong>
                 data untuk pencarian
                 <strong><?= htmlspecialchars($kataKunci); ?></strong>,
-                menampilkan
-                <strong><?= $jumlahData; ?></strong>
-                baris.
+                menampilkan baris
+                <strong><?= $mulai; ?>&ndash;<?= $sampai; ?></strong>.
             <?php else: ?>
-                Menampilkan
-                <strong><?= $jumlahData; ?></strong>
+                Menampilkan baris
+                <strong><?= $mulai; ?>&ndash;<?= $sampai; ?></strong>
                 dari
                 <strong><?= $totalCocok; ?></strong>
                 data karyawan.
@@ -114,7 +129,7 @@ $bolehAksi = function_exists("punyaRole") && punyaRole("admin", "superadmin");
 
                 <?php if ($jumlahData > 0): ?>
 
-                    <?php $nomor = 1; ?>
+                    <?php $nomor = $offset + 1; ?>
 
                     <?php while (
                         $row = mysqli_fetch_assoc($hasil)
@@ -272,5 +287,36 @@ $bolehAksi = function_exists("punyaRole") && punyaRole("admin", "superadmin");
                 </tbody>
             </table>
         </div>
+
+        <?php if (!$tanpaBatas && $totalHalaman > 1): ?>
+            <div class="pagination">
+                <div class="pagination-info">
+                    Halaman <strong><?= $halaman; ?></strong>
+                    dari <strong><?= $totalHalaman; ?></strong>
+                </div>
+
+                <div class="pagination-nav">
+                    <?php if ($halaman > 1): ?>
+                        <a href="?<?= htmlspecialchars(
+                            http_build_query($paramDasar + ["hal" => $halaman - 1])
+                        ); ?>">
+                            &larr; Sebelumnya
+                        </a>
+                    <?php else: ?>
+                        <span class="disabled">&larr; Sebelumnya</span>
+                    <?php endif; ?>
+
+                    <?php if ($halaman < $totalHalaman): ?>
+                        <a href="?<?= htmlspecialchars(
+                            http_build_query($paramDasar + ["hal" => $halaman + 1])
+                        ); ?>">
+                            Berikutnya &rarr;
+                        </a>
+                    <?php else: ?>
+                        <span class="disabled">Berikutnya &rarr;</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
 
     </section>

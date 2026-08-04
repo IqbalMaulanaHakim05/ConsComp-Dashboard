@@ -22,6 +22,9 @@ $batas = $data["batas"];
 $batasDiizinkan = $data["batasDiizinkan"];
 $tanpaBatas = $data["tanpaBatas"];
 $izinkanSemua = $data["izinkanSemua"];
+$halaman = $data["halaman"];
+$totalHalaman = $data["totalHalaman"];
+$offset = $data["offset"];
 
 $judulHalaman = "Data Karyawan";
 $subjudulHalaman = "Seluruh data karyawan perusahaan.";
