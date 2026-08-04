@@ -1,23 +1,6 @@
 <?php
 
 require "koneksi.php";
-require_once "sinkronisasi.php";
-
-$pesanSinkronisasi = "";
-
-// Sinkronisasi manual melalui tombol Refresh Data.
-if ($_SERVER["REQUEST_METHOD"] === "POST"
-    && ($_POST["aksi"] ?? "") === "sinkronisasi"
-) {
-    try {
-        sinkronkanSemuaDataset($conn);
-        header("Location: index.php?pesan=sinkronisasi-berhasil");
-        exit;
-    } catch (Throwable $error) {
-        $pesanSinkronisasi = "Sinkronisasi file lokal gagal: "
-            . $error->getMessage();
-    }
-}
 
 /*
 |--------------------------------------------------------------------------
@@ -55,26 +38,16 @@ $dataTotalDepartemen = mysqli_fetch_assoc($queryTotalDepartemen);
 $totalDepartemen = (int) ($dataTotalDepartemen["total"] ?? 0);
 
 
-$queryKaryawanAktif = mysqli_query(
+$queryRataPerforma = mysqli_query(
     $conn,
-    "SELECT COUNT(*) AS total
+    "SELECT AVG(performance_score) AS rata_rata
      FROM karyawan
-     WHERE employment_status LIKE '%Active%'"
+     WHERE performance_score IS NOT NULL
+       AND performance_score != ''"
 );
 
-$dataKaryawanAktif = mysqli_fetch_assoc($queryKaryawanAktif);
-$totalKaryawanAktif = (int) ($dataKaryawanAktif["total"] ?? 0);
-
-
-$queryRataGaji = mysqli_query(
-    $conn,
-    "SELECT AVG(salary) AS rata_rata
-     FROM karyawan
-     WHERE salary IS NOT NULL"
-);
-
-$dataRataGaji = mysqli_fetch_assoc($queryRataGaji);
-$rataRataGaji = (float) ($dataRataGaji["rata_rata"] ?? 0);
+$dataRataPerforma = mysqli_fetch_assoc($queryRataPerforma);
+$rataRataPerforma = (float) ($dataRataPerforma["rata_rata"] ?? 0);
 
 /*
 |--------------------------------------------------------------------------
@@ -162,7 +135,54 @@ while (
 |--------------------------------------------------------------------------
 */
 
+// Pilihan pembatasan jumlah baris yang diizinkan.
+$batasDiizinkan = [15, 30, 50];
+$batas = (int) ($_GET["batas"] ?? 15);
+
+if (!in_array($batas, $batasDiizinkan, true)) {
+    $batas = 15;
+}
+
 if ($kataKunci !== "") {
+    $pencarian = "%" . $kataKunci . "%";
+
+    // Menghitung total kecocokan sebelum pembatasan baris.
+    $sqlHitung = "SELECT COUNT(*) AS total
+                  FROM karyawan
+                  WHERE employee_name LIKE ?
+                     OR emp_id LIKE ?
+                     OR position LIKE ?
+                     OR department LIKE ?
+                     OR employment_status LIKE ?
+                     OR performance_score LIKE ?";
+
+    $stmtHitung = mysqli_prepare($conn, $sqlHitung);
+
+    if (!$stmtHitung) {
+        die(
+            "Query hitung pencarian gagal disiapkan: "
+            . mysqli_error($conn)
+        );
+    }
+
+    mysqli_stmt_bind_param(
+        $stmtHitung,
+        "ssssss",
+        $pencarian,
+        $pencarian,
+        $pencarian,
+        $pencarian,
+        $pencarian,
+        $pencarian
+    );
+
+    mysqli_stmt_execute($stmtHitung);
+    $dataCocok = mysqli_fetch_assoc(
+        mysqli_stmt_get_result($stmtHitung)
+    );
+    $totalCocok = (int) ($dataCocok["total"] ?? 0);
+
+    // Mengambil data yang dibatasi. $batas berasal dari whitelist.
     $sql = "SELECT *
             FROM karyawan
             WHERE employee_name LIKE ?
@@ -171,7 +191,8 @@ if ($kataKunci !== "") {
                OR department LIKE ?
                OR employment_status LIKE ?
                OR performance_score LIKE ?
-            ORDER BY id DESC";
+            ORDER BY id DESC
+            LIMIT " . $batas;
 
     $stmt = mysqli_prepare($conn, $sql);
 
@@ -181,8 +202,6 @@ if ($kataKunci !== "") {
             . mysqli_error($conn)
         );
     }
-
-    $pencarian = "%" . $kataKunci . "%";
 
     mysqli_stmt_bind_param(
         $stmt,
@@ -199,11 +218,14 @@ if ($kataKunci !== "") {
 
     $hasil = mysqli_stmt_get_result($stmt);
 } else {
+    $totalCocok = $totalKaryawan;
+
     $hasil = mysqli_query(
         $conn,
         "SELECT *
          FROM karyawan
-         ORDER BY id DESC"
+         ORDER BY id DESC
+         LIMIT " . $batas
     );
 
     if (!$hasil) {
@@ -379,7 +401,7 @@ $jumlahData = mysqli_num_rows($hasil);
 
         .statistics {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 18px;
             margin-bottom: 25px;
         }
@@ -481,6 +503,21 @@ $jumlahData = mysqli_num_rows($hasil);
         }
 
         .search-form input:focus {
+            border-color: #2563eb;
+        }
+
+        .search-form select {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 14px;
+            background-color: #ffffff;
+            color: #1e293b;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .search-form select:focus {
             border-color: #2563eb;
         }
 
@@ -681,55 +718,7 @@ tbody tr:hover td:last-child {
             </p>
         </div>
 
-        <div class="topbar-actions">
-            <a
-                href="../index.php"
-                class="btn btn-secondary"
-            >
-                Lihat Website
-            </a>
-
-            <form method="POST" style="margin:0;">
-                <input type="hidden" name="aksi" value="sinkronisasi">
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                    onclick="return confirm('Sinkronkan data SQL ke file lokal sekarang?');"
-                >
-                    Refresh Data
-                </button>
-            </form>
-
-            <a
-                href="export_excel.php"
-                class="btn btn-success"
-                title="Unduh seluruh data karyawan dari SQL"
-            >
-                Export Excel
-            </a>
-
-            <a
-                href="import_excel.php"
-                class="btn btn-warning"
-                title="Ganti data SQL menggunakan file Excel"
-            >
-                Import Excel
-            </a>
-
-            <a
-                href="tambah.php"
-                class="btn btn-success"
-            >
-                + Tambah Karyawan
-            </a>
-        </div>
     </div>
-
-    <?php if ($pesanSinkronisasi !== ""): ?>
-        <div class="alert" style="border-color:#fecaca;color:#991b1b;background:#fee2e2;">
-            <?= htmlspecialchars($pesanSinkronisasi); ?>
-        </div>
-    <?php endif; ?>
 
     <?php if ($pesan === "tambah-berhasil"): ?>
         <div class="alert">
@@ -742,10 +731,6 @@ tbody tr:hover td:last-child {
     <?php elseif ($pesan === "hapus-berhasil"): ?>
         <div class="alert">
             Data karyawan berhasil dihapus.
-        </div>
-    <?php elseif ($pesan === "sinkronisasi-berhasil"): ?>
-        <div class="alert">
-            Data SQL berhasil disinkronkan ke file lokal.
         </div>
     <?php elseif ($pesan === "import-excel-berhasil"): ?>
         <div class="alert">
@@ -782,19 +767,19 @@ tbody tr:hover td:last-child {
         </div>
 
         <div class="stat-card">
-            <span>Rata-rata Gaji</span>
+            <span>Total Performa</span>
 
             <h3>
                 <?= number_format(
-                    $rataRataGaji,
-                    0,
+                    $rataRataPerforma,
+                    1,
                     ",",
                     "."
                 ); ?>
             </h3>
 
             <p>
-                Mengikuti satuan dataset
+                Rata-rata skor performa karyawan
             </p>
         </div>
 
@@ -848,6 +833,21 @@ tbody tr:hover td:last-child {
                     Cari
                 </button>
 
+                <select
+                    name="batas"
+                    onchange="this.form.submit()"
+                    title="Jumlah baris yang ditampilkan"
+                >
+                    <?php foreach ($batasDiizinkan as $opsiBatas): ?>
+                        <option
+                            value="<?= $opsiBatas; ?>"
+                            <?= $batas === $opsiBatas ? "selected" : ""; ?>
+                        >
+                            <?= $opsiBatas; ?> baris
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
                 <?php if ($kataKunci !== ""): ?>
                     <a
                         href="index.php"
@@ -862,14 +862,17 @@ tbody tr:hover td:last-child {
         <div class="result-info">
             <?php if ($kataKunci !== ""): ?>
                 Ditemukan
-                <strong><?= $jumlahData; ?></strong>
+                <strong><?= $totalCocok; ?></strong>
                 data untuk pencarian
-                <strong>
-                    <?= htmlspecialchars($kataKunci); ?>
-                </strong>.
+                <strong><?= htmlspecialchars($kataKunci); ?></strong>,
+                menampilkan
+                <strong><?= $jumlahData; ?></strong>
+                baris.
             <?php else: ?>
                 Menampilkan
                 <strong><?= $jumlahData; ?></strong>
+                dari
+                <strong><?= $totalCocok; ?></strong>
                 data karyawan.
             <?php endif; ?>
         </div>
