@@ -135,7 +135,9 @@ function sinkronkanFileDataset(mysqli $conn, string $lokasiTujuan): array
 
 function sinkronkanSemuaDataset(mysqli $conn, ?string $folderData = null): array
 {
-    $folderData = $folderData ?? (__DIR__ . DIRECTORY_SEPARATOR . "data");
+    // File ini berada di dalam folder "fungsi", sedangkan folder "data"
+    // berada satu tingkat di atasnya (root aplikasi).
+    $folderData = $folderData ?? (dirname(__DIR__) . DIRECTORY_SEPARATOR . "data");
 
     if (!is_dir($folderData) && !mkdir($folderData, 0755, true) && !is_dir($folderData)) {
         throw new RuntimeException("Folder data tidak dapat dibuat.");

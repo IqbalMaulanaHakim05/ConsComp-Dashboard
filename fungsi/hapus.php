@@ -1,5 +1,5 @@
 <?php
-require  "koneksi.php";
+require __DIR__ . "/../koneksi.php";
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -15,7 +15,7 @@ $stmt = mysqli_prepare(
 mysqli_stmt_bind_param($stmt, "i", $id);
 
 if (mysqli_stmt_execute($stmt)) {
-    header("Location: index.php");
+    header("Location: ../index.php");
     exit;
 }
 
