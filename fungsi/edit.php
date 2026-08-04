@@ -1,9 +1,10 @@
-
-
-
 <?php
+
 require __DIR__ . "/../koneksi.php";
+require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/sinkronisasi.php";
+
+wajibRole("admin", "superadmin");
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -115,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
 
                 mysqli_stmt_close($stmtUpdate);
-                header("Location: ../index.php?pesan=edit-berhasil");
+                header("Location: ../karyawan.php?pesan=edit-berhasil");
                 exit;
             }
 
@@ -129,339 +130,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 }
+
+$judulHalaman = "Edit Karyawan";
+$subjudulHalaman = "Perbarui informasi karyawan yang tersimpan dalam database.";
+$halamanAktif = "karyawan";
+
+require __DIR__ . "/../partials/atas.php";
+
 ?>
-
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Karyawan | Admin Karyawan</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f1f5f9;
-            color: #1e293b;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 240px;
-            height: 100vh;
-            padding: 25px 18px;
-            overflow-y: auto;
-            color: #ffffff;
-            background-color: #0f172a;
-        }
-
-        .sidebar-brand {
-            margin-bottom: 35px;
-        }
-
-        .sidebar-brand h2 {
-            margin: 0;
-            font-size: 22px;
-        }
-
-        .sidebar-brand p {
-            margin: 7px 0 0;
-            color: #94a3b8;
-            font-size: 13px;
-        }
-
-        .sidebar-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .sidebar-menu a {
-            display: block;
-            padding: 12px 14px;
-            color: #cbd5e1;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: 0.2s;
-        }
-
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            color: #ffffff;
-            background-color: #2563eb;
-        }
-
-        .main-content {
-            min-height: 100vh;
-            margin-left: 240px;
-            padding: 30px;
-        }
-
-        .mobile-menu {
-            display: none;
-            margin-bottom: 20px;
-        }
-
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .topbar-title h1 {
-            margin: 0;
-            color: #0f172a;
-            font-size: 29px;
-        }
-
-        .topbar-title p {
-            margin: 7px 0 0;
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            min-height: 42px;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.2s;
-        }
-
-        .btn:hover {
-            opacity: 0.88;
-            transform: translateY(-1px);
-        }
-
-        .btn-primary {
-            color: #ffffff;
-            background-color: #2563eb;
-        }
-
-        .btn-success {
-            color: #ffffff;
-            background-color: #16a34a;
-        }
-
-        .btn-secondary {
-            color: #334155;
-            background-color: #e2e8f0;
-        }
-
-        .form-card {
-            max-width: 960px;
-            margin: 0 auto;
-            overflow: hidden;
-            background-color: #ffffff;
-            border-radius: 14px;
-            box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
-        }
-
-        .form-card-header {
-            padding: 24px 26px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .form-card-header h2 {
-            margin: 0;
-            color: #0f172a;
-            font-size: 20px;
-        }
-
-        .form-card-header p {
-            margin: 7px 0 0;
-            color: #64748b;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .form-body {
-            padding: 26px;
-        }
-
-        .alert-error {
-            margin-bottom: 22px;
-            padding: 13px 16px;
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            color: #991b1b;
-            background-color: #fee2e2;
-            font-size: 14px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 20px;
-        }
-
-        .form-group {
-            min-width: 0;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #334155;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .required {
-            color: #dc2626;
-        }
-
-        input,
-        select {
-            width: 100%;
-            min-height: 44px;
-            padding: 10px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            outline: none;
-            color: #0f172a;
-            background-color: #ffffff;
-            font-family: inherit;
-            font-size: 14px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        input:focus,
-        select:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-        }
-
-        input::placeholder {
-            color: #94a3b8;
-        }
-
-        .field-note {
-            margin: 7px 0 0;
-            color: #94a3b8;
-            font-size: 12px;
-            line-height: 1.4;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 28px;
-            padding-top: 22px;
-            border-top: 1px solid #e2e8f0;
-            flex-wrap: wrap;
-        }
-
-        @media screen and (max-width: 800px) {
-            .sidebar {
-                position: static;
-                display: none;
-                width: 100%;
-                height: auto;
-            }
-
-            .sidebar.show {
-                display: block;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 18px;
-            }
-
-            .mobile-menu {
-                display: inline-flex;
-            }
-
-            .topbar-title h1 {
-                font-size: 25px;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-group.full-width {
-                grid-column: auto;
-            }
-        }
-
-        @media screen and (max-width: 520px) {
-            .form-card-header,
-            .form-body {
-                padding: 20px;
-            }
-
-            .form-actions {
-                flex-direction: column-reverse;
-            }
-
-            .form-actions .btn {
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-<body>
-
-<aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-        <h2>Admin Karyawan</h2>
-        <p>Sistem pengelolaan dataset</p>
-    </div>
-
-    <nav class="sidebar-menu">
-        <a href="../index.php">Dashboard</a>
-        <a href="tambah.php">Tambah Data</a>
-        <a href="../../index.php">Halaman Publik</a>
-    </nav>
-</aside>
-
-<main class="main-content">
-    <button
-        type="button"
-        class="btn btn-primary mobile-menu"
-        onclick="toggleSidebar()"
-    >
-        Menu Admin
-    </button>
-
-    <div class="topbar">
-        <div class="topbar-title">
-            <h1>Edit Karyawan</h1>
-            <p>Perbarui informasi karyawan yang tersimpan dalam database.</p>
-        </div>
-
-        <a href="../index.php" class="btn btn-secondary">
-            ← Kembali ke Dashboard
-        </a>
-    </div>
-
     <section class="form-card">
         <div class="form-card-header">
             <h2>Form Edit Data Karyawan</h2>
@@ -589,7 +265,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             id="employment_status"
                             name="employment_status"
                             value="<?= htmlspecialchars($form["employment_status"]); ?>"
-                            placeholder="Contoh: Active"
+                            placeholder="Contoh: Aktif"
                             maxlength="100"
                             required
                         >
@@ -615,7 +291,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </div>
 
                 <div class="form-actions">
-                    <a href="../index.php" class="btn btn-secondary">Batal</a>
+                    <a href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php" class="btn btn-secondary">
+                        Batal
+                    </a>
                     <button type="submit" class="btn btn-success">
                         Simpan Perubahan
                     </button>
@@ -623,14 +301,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </form>
         </div>
     </section>
-</main>
-
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-        sidebar.classList.toggle("show");
-    }
-</script>
-
-</body>
-</html>
+<?php
+require __DIR__ . "/../partials/bawah.php";

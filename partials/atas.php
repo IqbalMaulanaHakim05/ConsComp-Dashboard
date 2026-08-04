@@ -8,7 +8,14 @@
 |--------------------------------------------------------------------------
 */
 
-$pesan = trim($_GET["pesan"] ?? "");
+// URL_DASAR disediakan oleh auth.php. Fallback agar layout tetap aman
+// bila suatu saat dipakai tanpa auth.
+if (!defined("URL_DASAR")) {
+    define("URL_DASAR", "");
+}
+
+// Nama variabel dibedakan dari $pesan halaman (mis. pesan error form).
+$pesanNotifikasi = trim($_GET["pesan"] ?? "");
 $halamanAktif = $halamanAktif ?? "dashboard";
 $judulHalaman = $judulHalaman ?? "Dashboard Admin";
 $subjudulHalaman = $subjudulHalaman ?? "";
@@ -53,6 +60,8 @@ $aksiTopbar = $aksiTopbar ?? "";
             background-color: #0f172a;
             color: #ffffff;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar-brand {
@@ -115,6 +124,68 @@ $aksiTopbar = $aksiTopbar ?? "";
             width: 14px;
             height: 1px;
             background-color: #334155;
+        }
+
+        .sidebar-user {
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid #1e293b;
+        }
+
+        .sidebar-user-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-bottom: 13px;
+        }
+
+        .sidebar-user-name {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .role-badge {
+            align-self: flex-start;
+            padding: 3px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #e2e8f0;
+            background-color: #334155;
+        }
+
+        .role-badge.role-superadmin {
+            color: #fde68a;
+            background-color: #78350f;
+        }
+
+        .role-badge.role-admin {
+            color: #bfdbfe;
+            background-color: #1e3a8a;
+        }
+
+        .role-badge.role-viewer {
+            color: #cbd5e1;
+            background-color: #334155;
+        }
+
+        .btn-logout {
+            display: block;
+            padding: 10px 14px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fecaca;
+            background-color: #7f1d1d;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-logout:hover {
+            color: #ffffff;
+            background-color: #991b1b;
         }
 
         .main-content {
@@ -415,6 +486,125 @@ $aksiTopbar = $aksiTopbar ?? "";
             color: #64748b;
         }
 
+        /* Form (tambah/edit/import) mengikuti gaya kartu dashboard. */
+        .form-card {
+            max-width: 960px;
+            overflow: hidden;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.07);
+        }
+
+        .form-card-header {
+            padding: 22px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .form-card-header h2 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 19px;
+        }
+
+        .form-card-header p {
+            margin: 7px 0 0;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .form-body {
+            padding: 24px;
+        }
+
+        .alert-error {
+            margin-bottom: 20px;
+            padding: 13px 16px;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            color: #991b1b;
+            background-color: #fee2e2;
+            font-size: 14px;
+        }
+
+        .form-warning {
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            color: #92400e;
+            background-color: #fef3c7;
+            line-height: 1.5;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            min-width: 0;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-card label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .form-card .required {
+            color: #dc2626;
+        }
+
+        .form-card input,
+        .form-card select {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            color: #0f172a;
+            background-color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-card input:focus,
+        .form-card select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .form-card input::placeholder {
+            color: #94a3b8;
+        }
+
+        .field-note {
+            margin: 7px 0 0;
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 26px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
         .mobile-menu {
             display: none;
             margin-bottom: 20px;
@@ -467,6 +657,14 @@ $aksiTopbar = $aksiTopbar ?? "";
                 align-items: stretch;
                 flex-direction: column;
             }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -484,7 +682,7 @@ $aksiTopbar = $aksiTopbar ?? "";
 
     <nav class="sidebar-menu">
         <a
-            href="index.php"
+            href="<?= htmlspecialchars(URL_DASAR); ?>index.php"
             class="<?= $halamanAktif === "dashboard" ? "active" : ""; ?>"
         >
             Dashboard
@@ -492,24 +690,42 @@ $aksiTopbar = $aksiTopbar ?? "";
 
         <div class="sidebar-tree-children">
             <a
-                href="karyawan.php"
+                href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php"
                 class="<?= $halamanAktif === "karyawan" ? "active" : ""; ?>"
             >
                 Karyawan
             </a>
 
             <a
-                href="analisis.php"
+                href="<?= htmlspecialchars(URL_DASAR); ?>analisis.php"
                 class="<?= $halamanAktif === "analisis" ? "active" : ""; ?>"
             >
                 Analisis
             </a>
         </div>
 
-        <a href="../index.php">
+        <a href="<?= htmlspecialchars(URL_DASAR); ?>../index.php">
             Halaman Publik
         </a>
     </nav>
+
+    <?php if (function_exists("sudahLogin") && sudahLogin()): ?>
+        <div class="sidebar-user">
+            <div class="sidebar-user-meta">
+                <span class="sidebar-user-name">
+                    <?= htmlspecialchars(namaPengguna()); ?>
+                </span>
+
+                <span class="role-badge role-<?= htmlspecialchars(rolePengguna()); ?>">
+                    <?= htmlspecialchars(ucfirst(rolePengguna())); ?>
+                </span>
+            </div>
+
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>logout.php" class="btn-logout">
+                Logout
+            </a>
+        </div>
+    <?php endif; ?>
 </aside>
 
 <main class="main-content">
@@ -538,19 +754,19 @@ $aksiTopbar = $aksiTopbar ?? "";
         <?php endif; ?>
     </div>
 
-    <?php if ($pesan === "tambah-berhasil"): ?>
+    <?php if ($pesanNotifikasi === "tambah-berhasil"): ?>
         <div class="alert">
             Data karyawan berhasil ditambahkan.
         </div>
-    <?php elseif ($pesan === "edit-berhasil"): ?>
+    <?php elseif ($pesanNotifikasi === "edit-berhasil"): ?>
         <div class="alert">
             Data karyawan berhasil diperbarui.
         </div>
-    <?php elseif ($pesan === "hapus-berhasil"): ?>
+    <?php elseif ($pesanNotifikasi === "hapus-berhasil"): ?>
         <div class="alert">
             Data karyawan berhasil dihapus.
         </div>
-    <?php elseif ($pesan === "import-excel-berhasil"): ?>
+    <?php elseif ($pesanNotifikasi === "import-excel-berhasil"): ?>
         <div class="alert">
             Import Excel berhasil.
             <strong><?= (int) ($_GET["jumlah"] ?? 0); ?></strong>

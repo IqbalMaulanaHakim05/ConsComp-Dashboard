@@ -12,6 +12,9 @@
 // Form dan tombol reset dikembalikan ke halaman yang sedang aktif.
 $halamanIni = basename($_SERVER["PHP_SELF"]);
 
+// Kolom aksi (edit/hapus) hanya untuk peran yang boleh mengubah data.
+$bolehAksi = function_exists("punyaRole") && punyaRole("admin", "superadmin");
+
 ?>
     <section class="data-card">
 
@@ -101,7 +104,9 @@ $halamanIni = basename($_SERVER["PHP_SELF"]);
                     <th>Tanggal Masuk</th>
                     <th>Status Kerja</th>
                     <th>Performa</th>
-                    <th>Aksi</th>
+                    <?php if ($bolehAksi): ?>
+                        <th>Aksi</th>
+                    <?php endif; ?>
                 </tr>
                 </thead>
 
@@ -224,6 +229,7 @@ $halamanIni = basename($_SERVER["PHP_SELF"]);
                                 ); ?>
                             </td>
 
+                            <?php if ($bolehAksi): ?>
                             <td>
                                 <div class="action-buttons">
                                     <a
@@ -244,13 +250,14 @@ $halamanIni = basename($_SERVER["PHP_SELF"]);
                                     </a>
                                 </div>
                             </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endwhile; ?>
 
                 <?php else: ?>
                     <tr>
                         <td
-                            colspan="12"
+                            colspan="<?= $bolehAksi ? 12 : 11; ?>"
                             class="empty-data"
                         >
                             <?php if ($kataKunci !== ""): ?>
