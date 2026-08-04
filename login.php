@@ -262,5 +262,13 @@ function togglePassword() {
     button.textContent = terlihat ? 'Lihat' : 'Sembunyikan';
 }
 </script>
+<?php if ($info !== ''): ?>
+<script>
+    // Hapus parameter URL agar notifikasi tidak muncul lagi saat halaman dimuat ulang.
+    if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+</script>
+<?php endif; ?>
 </body>
 </html>
