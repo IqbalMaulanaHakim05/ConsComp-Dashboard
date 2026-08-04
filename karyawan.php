@@ -8,7 +8,10 @@
 */
 
 require __DIR__ . "/koneksi.php";
+require __DIR__ . "/fungsi/auth.php";
 require __DIR__ . "/fungsi/data-karyawan.php";
+
+wajibLogin();
 
 $data = ambilDataKaryawan($conn, [50, 100, 150], 50, true);
 $hasil = $data["hasil"];
@@ -24,8 +27,11 @@ $judulHalaman = "Data Karyawan";
 $subjudulHalaman = "Seluruh data karyawan perusahaan.";
 $halamanAktif = "karyawan";
 
-// Action bar tambah/import/export hanya tampil pada tab Karyawan.
-$aksiTopbar = __DIR__ . "/partials/aksi-karyawan.php";
+// Action bar tambah/import/export hanya tampil pada tab Karyawan,
+// dan hanya untuk peran yang boleh mengubah data.
+if (punyaRole("admin", "superadmin")) {
+    $aksiTopbar = __DIR__ . "/partials/aksi-karyawan.php";
+}
 
 require __DIR__ . "/partials/atas.php";
 require __DIR__ . "/partials/tabel.php";

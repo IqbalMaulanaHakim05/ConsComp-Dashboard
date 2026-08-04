@@ -7,7 +7,10 @@
 */
 
 require __DIR__ . "/koneksi.php";
+require __DIR__ . "/fungsi/auth.php";
 require __DIR__ . "/fungsi/data-karyawan.php";
+
+wajibLogin();
 
 $grafik = ambilDataGrafik($conn);
 $labelDepartemen = $grafik["labelDepartemen"];

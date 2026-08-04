@@ -1,5 +1,8 @@
 <?php
 require __DIR__ . "/../koneksi.php";
+require_once __DIR__ . "/auth.php";
+
+wajibRole("admin", "superadmin");
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 

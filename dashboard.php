@@ -7,7 +7,11 @@
 */
 
 require __DIR__ . "/koneksi.php";
+require __DIR__ . "/fungsi/auth.php";
 require __DIR__ . "/fungsi/data-karyawan.php";
+
+// Semua peran boleh melihat dashboard, tetapi wajib login.
+wajibLogin();
 
 // Statistik untuk kartu atas.
 $statistik = ambilStatistik($conn);

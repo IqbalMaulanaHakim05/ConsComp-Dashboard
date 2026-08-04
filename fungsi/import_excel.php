@@ -1,6 +1,9 @@
 <?php
 require __DIR__ . "/../koneksi.php";
+require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/sinkronisasi.php";
+
+wajibRole("admin", "superadmin");
 
 $pesan = "";
 $tipePesan = "error";
@@ -349,48 +352,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         gantiDataSql($conn, $dataValid);
         sinkronkanSemuaDataset($conn);
 
-        header('Location: ../index.php?pesan=import-excel-berhasil&jumlah=' . count($dataValid));
+        header('Location: ../karyawan.php?pesan=import-excel-berhasil&jumlah=' . count($dataValid));
         exit;
     } catch (Throwable $error) {
         $pesan = $error->getMessage();
     }
 }
+
+$judulHalaman = "Import Excel";
+$subjudulHalaman = "Ganti seluruh data karyawan menggunakan file Excel.";
+$halamanAktif = "karyawan";
+
+require __DIR__ . "/../partials/atas.php";
+
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Import Excel Karyawan</title>
-    <style>
-        *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f1f5f9;color:#1e293b}.sidebar{position:fixed;inset:0 auto 0 0;width:240px;padding:25px 18px;background:#0f172a;color:#fff}.sidebar h2{margin:0;font-size:22px}.sidebar p{margin:7px 0 35px;color:#94a3b8;font-size:13px}.sidebar a{display:block;padding:12px 14px;margin-bottom:8px;color:#cbd5e1;text-decoration:none;border-radius:8px;font-size:14px}.sidebar a.active,.sidebar a:hover{color:#fff;background:#2563eb}.main{margin-left:240px;min-height:100vh;padding:30px}.header{margin-bottom:24px}.header h1{margin:0;color:#0f172a;font-size:29px}.header p{margin:7px 0 0;color:#64748b}.card{max-width:760px;padding:26px;background:#fff;border-radius:12px;box-shadow:0 4px 15px rgba(15,23,42,.07)}.warning{padding:14px 16px;margin-bottom:20px;border:1px solid #fde68a;border-radius:8px;background:#fef3c7;color:#92400e;line-height:1.5}.alert{padding:13px 16px;margin-bottom:20px;border:1px solid #fecaca;border-radius:8px;background:#fee2e2;color:#991b1b}.field{margin-bottom:20px}.field label{display:block;margin-bottom:8px;font-weight:700}.field input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.help{margin-top:8px;color:#64748b;font-size:13px;line-height:1.5}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border:0;border-radius:7px;text-decoration:none;font-size:14px;cursor:pointer}.primary{background:#2563eb;color:#fff}.secondary{background:#e2e8f0;color:#334155}@media(max-width:800px){.sidebar{position:static;width:100%}.main{margin-left:0;padding:18px}}
-    </style>
-</head>
-<body>
-<aside class="sidebar">
-    <h2>Admin Karyawan</h2><p>Sistem pengelolaan dataset</p>
-    <a href="../index.php">Dashboard</a>
-    <a href="tambah.php">Tambah Data</a>
-    <a href="import_excel.php" class="active">Import Excel</a>
-    <a href="../../index.php">Halaman Publik</a>
-</aside>
-<main class="main">
-    <div class="header"><h1>Import Excel</h1><p>Ganti seluruh data karyawan menggunakan file Excel.</p></div>
-    <section class="card">
-        <div class="warning"><strong>Perhatian:</strong> proses ini mengganti seluruh isi tabel karyawan. Gunakan file hasil <strong>Export Excel</strong> sebagai template. File akan divalidasi sebelum database diubah.</div>
-        <?php if ($pesan !== ''): ?><div class="alert"><?= htmlspecialchars($pesan); ?></div><?php endif; ?>
-        <form method="POST" enctype="multipart/form-data" onsubmit="return confirm('Yakin ingin mengganti seluruh data karyawan dari file Excel ini?');">
-            <div class="field">
-                <label for="file_excel">File Excel</label>
-                <input id="file_excel" type="file" name="file_excel" accept=".xls,.xlsx" required>
-                <div class="help">Format: .xls atau .xlsx, maksimal 5 MB. Skor performa wajib 1–100.</div>
+    <section class="form-card">
+        <div class="form-card-header">
+            <h2>Unggah File Excel</h2>
+            <p>
+                Gunakan file hasil Export Excel sebagai template. File akan
+                divalidasi terlebih dahulu sebelum database diubah.
+            </p>
+        </div>
+
+        <div class="form-body">
+            <div class="form-warning">
+                <strong>Perhatian:</strong> proses ini mengganti seluruh isi
+                tabel karyawan dengan data dari file Excel.
             </div>
-            <div class="actions">
-                <a href="../index.php" class="btn secondary">Batal</a>
-                <button type="submit" class="btn primary">Import dan Ganti Data</button>
-            </div>
-        </form>
+
+            <?php if ($pesan !== ""): ?>
+                <div class="alert-error" role="alert">
+                    <?= htmlspecialchars($pesan); ?>
+                </div>
+            <?php endif; ?>
+
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+                onsubmit="return confirm('Yakin ingin mengganti seluruh data karyawan dari file Excel ini?');"
+            >
+                <div class="form-group full-width">
+                    <label for="file_excel">
+                        File Excel <span class="required">*</span>
+                    </label>
+                    <input
+                        id="file_excel"
+                        type="file"
+                        name="file_excel"
+                        accept=".xls,.xlsx"
+                        required
+                    >
+                    <p class="field-note">Format .xls atau .xlsx, maksimal 5 MB. Skor performa wajib 1&ndash;100.</p>
+                </div>
+
+                <div class="form-actions">
+                    <a href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php" class="btn btn-secondary">
+                        Batal
+                    </a>
+                    <button type="submit" class="btn btn-warning">
+                        Import dan Ganti Data
+                    </button>
+                </div>
+            </form>
+        </div>
     </section>
-</main>
-</body>
-</html>
+<?php
+require __DIR__ . "/../partials/bawah.php";
