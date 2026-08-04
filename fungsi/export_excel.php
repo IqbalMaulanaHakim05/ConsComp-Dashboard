@@ -1,5 +1,5 @@
 <?php
-require "koneksi.php";
+require __DIR__ . "/../koneksi.php";
 
 $query = mysqli_query(
     $conn,

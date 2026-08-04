@@ -2,42 +2,20 @@
 
 
 <?php
-require "koneksi.php";
-require_once "sinkronisasi.php";
-
-$id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
-
-if ($id <= 0) {
-    die("ID karyawan tidak valid.");
-}
+require __DIR__ . "/../koneksi.php";
+require_once __DIR__ . "/sinkronisasi.php";
 
 $pesan = "";
 
-$stmtData = mysqli_prepare($conn, "SELECT * FROM karyawan WHERE id = ?");
-
-if (!$stmtData) {
-    die("Query data gagal disiapkan: " . mysqli_error($conn));
-}
-
-mysqli_stmt_bind_param($stmtData, "i", $id);
-mysqli_stmt_execute($stmtData);
-$hasilData = mysqli_stmt_get_result($stmtData);
-$data = mysqli_fetch_assoc($hasilData);
-mysqli_stmt_close($stmtData);
-
-if (!$data) {
-    die("Data karyawan tidak ditemukan.");
-}
-
 $form = [
-    "employee_name" => (string) ($data["employee_name"] ?? ""),
-    "emp_id" => (string) ($data["emp_id"] ?? ""),
-    "position" => (string) ($data["position"] ?? ""),
-    "department" => (string) ($data["department"] ?? ""),
-    "salary" => (string) ($data["salary"] ?? ""),
-    "gender" => trim((string) ($data["gender"] ?? "")),
-    "employment_status" => (string) ($data["employment_status"] ?? ""),
-    "performance_score" => (string) ($data["performance_score"] ?? ""),
+    "employee_name" => "",
+    "emp_id" => "",
+    "position" => "",
+    "department" => "",
+    "salary" => "",
+    "gender" => "",
+    "employment_status" => "",
+    "performance_score" => "",
 ];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -52,10 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $salary = (float) $form["salary"];
     $gender = $form["gender"];
     $employmentStatus = $form["employment_status"];
-    $performanceScore = filter_var(
-        $form["performance_score"],
-        FILTER_VALIDATE_INT
-    );
+    $performanceScore = $form["performance_score"];
 
     if (
         $employeeName === ""
@@ -65,37 +40,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $form["salary"] === ""
         || $gender === ""
         || $employmentStatus === ""
-        || $form["performance_score"] === ""
+        || $performanceScore === ""
     ) {
         $pesan = "Semua kolom wajib diisi.";
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
-    } elseif (
-        $performanceScore === false
-        || $performanceScore < 1
-        || $performanceScore > 100
-    ) {
-        $pesan = "Skor performa harus berupa angka antara 1 sampai 100.";
     } else {
-        $sql = "UPDATE karyawan SET
-                    employee_name = ?,
-                    emp_id = ?,
-                    position = ?,
-                    department = ?,
-                    salary = ?,
-                    gender = ?,
-                    employment_status = ?,
-                    performance_score = ?
-                WHERE id = ?";
+        $sql = "INSERT INTO karyawan (
+                    employee_name,
+                    emp_id,
+                    position,
+                    department,
+                    salary,
+                    gender,
+                    employment_status,
+                    performance_score
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        $stmtUpdate = mysqli_prepare($conn, $sql);
+        $stmt = mysqli_prepare($conn, $sql);
 
-        if (!$stmtUpdate) {
+        if (!$stmt) {
             $pesan = "Query gagal disiapkan: " . mysqli_error($conn);
         } else {
             mysqli_stmt_bind_param(
-                $stmtUpdate,
-                "ssssdsssi",
+                $stmt,
+                "ssssdsss",
                 $employeeName,
                 $empId,
                 $position,
@@ -103,29 +72,28 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $salary,
                 $gender,
                 $employmentStatus,
-                $performanceScore,
-                $id
+                $performanceScore
             );
 
-            if (mysqli_stmt_execute($stmtUpdate)) {
+            if (mysqli_stmt_execute($stmt)) {
                 try {
                     sinkronkanSemuaDataset($conn);
                 } catch (Throwable $error) {
                     error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
                 }
 
-                mysqli_stmt_close($stmtUpdate);
-                header("Location: index.php?pesan=edit-berhasil");
+                mysqli_stmt_close($stmt);
+                header("Location: ../index.php?pesan=tambah-berhasil");
                 exit;
             }
 
-            if (mysqli_stmt_errno($stmtUpdate) === 1062) {
+            if (mysqli_stmt_errno($stmt) === 1062) {
                 $pesan = "ID karyawan sudah digunakan. Gunakan ID yang berbeda.";
             } else {
-                $pesan = "Data gagal diperbarui: " . mysqli_stmt_error($stmtUpdate);
+                $pesan = "Data gagal ditambahkan: " . mysqli_stmt_error($stmt);
             }
 
-            mysqli_stmt_close($stmtUpdate);
+            mysqli_stmt_close($stmt);
         }
     }
 }
@@ -136,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Karyawan | Admin Karyawan</title>
+    <title>Tambah Karyawan | Admin Karyawan</title>
 
     <style>
         * {
@@ -436,9 +404,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </div>
 
     <nav class="sidebar-menu">
-        <a href="index.php">Dashboard</a>
-        <a href="tambah.php">Tambah Data</a>
-        <a href="../index.php">Halaman Publik</a>
+        <a href="../index.php">Dashboard</a>
+        <a href="tambah.php" class="active">Tambah Data</a>
+        <a href="../../index.php">Halaman Publik</a>
     </nav>
 </aside>
 
@@ -453,21 +421,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <div class="topbar">
         <div class="topbar-title">
-            <h1>Edit Karyawan</h1>
-            <p>Perbarui informasi karyawan yang tersimpan dalam database.</p>
+            <h1>Tambah Karyawan</h1>
+            <p>Masukkan informasi karyawan baru ke dalam database.</p>
         </div>
 
-        <a href="index.php" class="btn btn-secondary">
+        <a href="../index.php" class="btn btn-secondary">
             ← Kembali ke Dashboard
         </a>
     </div>
 
     <section class="form-card">
         <div class="form-card-header">
-            <h2>Form Edit Data Karyawan</h2>
+            <h2>Form Data Karyawan</h2>
             <p>
-                Periksa kembali data yang akan diperbarui. Setelah disimpan,
-                perubahan SQL akan disinkronkan ke dataset lokal.
+                Kolom bertanda bintang wajib diisi. Setelah disimpan,
+                data SQL akan disinkronkan ke dataset lokal.
             </p>
         </div>
 
@@ -494,7 +462,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             required
                             autofocus
                         >
-                        <p class="field-note">ID harus tetap unik dan tidak boleh sama dengan karyawan lain.</p>
+                        <p class="field-note">Gunakan ID unik untuk setiap karyawan.</p>
                     </div>
 
                     <div class="form-group">
@@ -589,13 +557,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             id="employment_status"
                             name="employment_status"
                             value="<?= htmlspecialchars($form["employment_status"]); ?>"
-                            placeholder="Contoh: Active"
+                            placeholder="Contoh: Aktif"
                             maxlength="100"
                             required
                         >
                     </div>
 
-                    <div class="form-group">
+                   <div class="form-group">
                         <label for="performance_score">
                             Skor Performa <span class="required">*</span>
                         </label>
@@ -615,9 +583,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </div>
 
                 <div class="form-actions">
-                    <a href="index.php" class="btn btn-secondary">Batal</a>
+                    <a href="../index.php" class="btn btn-secondary">Batal</a>
                     <button type="submit" class="btn btn-success">
-                        Simpan Perubahan
+                        Simpan Data
                     </button>
                 </div>
             </form>

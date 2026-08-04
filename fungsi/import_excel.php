@@ -1,6 +1,6 @@
 <?php
-require "koneksi.php";
-require_once "sinkronisasi.php";
+require __DIR__ . "/../koneksi.php";
+require_once __DIR__ . "/sinkronisasi.php";
 
 $pesan = "";
 $tipePesan = "error";
@@ -349,7 +349,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         gantiDataSql($conn, $dataValid);
         sinkronkanSemuaDataset($conn);
 
-        header('Location: index.php?pesan=import-excel-berhasil&jumlah=' . count($dataValid));
+        header('Location: ../index.php?pesan=import-excel-berhasil&jumlah=' . count($dataValid));
         exit;
     } catch (Throwable $error) {
         $pesan = $error->getMessage();
@@ -369,10 +369,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <aside class="sidebar">
     <h2>Admin Karyawan</h2><p>Sistem pengelolaan dataset</p>
-    <a href="index.php">Dashboard</a>
+    <a href="../index.php">Dashboard</a>
     <a href="tambah.php">Tambah Data</a>
     <a href="import_excel.php" class="active">Import Excel</a>
-    <a href="../index.php">Halaman Publik</a>
+    <a href="../../index.php">Halaman Publik</a>
 </aside>
 <main class="main">
     <div class="header"><h1>Import Excel</h1><p>Ganti seluruh data karyawan menggunakan file Excel.</p></div>
@@ -386,7 +386,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="help">Format: .xls atau .xlsx, maksimal 5 MB. Skor performa wajib 1–100.</div>
             </div>
             <div class="actions">
-                <a href="index.php" class="btn secondary">Batal</a>
+                <a href="../index.php" class="btn secondary">Batal</a>
                 <button type="submit" class="btn primary">Import dan Ganti Data</button>
             </div>
         </form>
