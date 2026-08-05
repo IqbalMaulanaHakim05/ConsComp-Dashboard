@@ -105,6 +105,7 @@ $jumlahData = mysqli_num_rows($hasil);
     >
 
     <title>Profil Karyawan Perusahaan</title>
+    <script>const savedTheme = localStorage.getItem('employee-theme'); document.documentElement.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
 
     <style>
         * {
@@ -414,25 +415,213 @@ $jumlahData = mysqli_num_rows($hasil);
             font-size: 14px;
         }
 
-        @media screen and (max-width: 900px) {
-            .statistics {
-                grid-template-columns: 1fr;
+
+
+        /* Animasi tampilan */
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes floatShape {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(18px, -16px, 0) scale(1.08); }
+        }
+
+        @keyframes pulseButton {
+            0%, 100% { box-shadow: 0 10px 25px rgba(255, 255, 255, 0.16); }
+            50% { box-shadow: 0 12px 34px rgba(255, 255, 255, 0.36); }
+        }
+
+        .navbar {
+            animation: fadeDown 0.65s ease-out both;
+        }
+
+        .hero {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+        }
+
+        .hero::before,
+        .hero::after {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.09);
+            filter: blur(2px);
+            pointer-events: none;
+            animation: floatShape 7s ease-in-out infinite;
+        }
+
+        .hero::before {
+            top: -110px;
+            left: -70px;
+        }
+
+        .hero::after {
+            right: -90px;
+            bottom: -130px;
+            width: 320px;
+            height: 320px;
+            animation-delay: -3.5s;
+        }
+
+        .hero h1 {
+            animation: fadeUp 0.8s 0.12s ease-out both;
+        }
+
+        .hero p {
+            animation: fadeUp 0.8s 0.28s ease-out both;
+        }
+
+        .hero-button {
+            animation: fadeUp 0.8s 0.42s ease-out both,
+                       pulseButton 2.8s 1.4s ease-in-out infinite;
+            transition: transform 0.25s ease, background-color 0.25s ease;
+        }
+
+        .hero-button:hover {
+            transform: translateY(-4px) scale(1.03);
+            background-color: #eff6ff;
+        }
+
+        .logo,
+        .nav-menu a,
+        .button,
+        .stat-card,
+        .filter-box,
+        .about-content,
+        tbody tr {
+            transition: transform 0.25s ease,
+                        box-shadow 0.25s ease,
+                        color 0.25s ease,
+                        background-color 0.25s ease;
+        }
+
+        .logo:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-menu a:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-admin:hover,
+        .button-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+        }
+
+        .button-reset:hover {
+            transform: translateY(-2px);
+            background-color: #cbd5e1;
+        }
+
+        .stat-card:hover,
+        .about-content:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.14);
+        }
+
+        tbody tr:hover {
+            transform: scale(1.003);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+            will-change: opacity, transform;
+        }
+
+        .reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .statistics .reveal:nth-child(2),
+        .about .reveal:nth-child(2) {
+            transition-delay: 0.12s;
+        }
+
+        .statistics .reveal:nth-child(3) {
+            transition-delay: 0.24s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+
+            .reveal {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+                /* Responsivitas tablet */
+        @media screen and (max-width: 1024px) {
+            .section,
+            .navbar-container {
+                width: min(94%, 1300px);
             }
 
             .filter-form {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(180px, 230px) auto auto;
+            }
+
+            .hero h1 {
+                font-size: clamp(32px, 5vw, 44px);
+            }
+        }
+
+        @media screen and (max-width: 900px) {
+            .statistics {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .stat-card:last-child {
+                grid-column: 1 / -1;
+            }
+
+            .filter-form {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .filter-form input {
+                grid-column: 1 / -1;
             }
 
             .about {
                 grid-template-columns: 1fr;
             }
 
-            .hero h1 {
-                font-size: 34px;
+            .hero {
+                padding: 75px 20px;
             }
         }
 
         @media screen and (max-width: 650px) {
+            body {
+                overflow-x: hidden;
+            }
+
             .navbar-container {
                 padding: 12px 0;
                 flex-direction: column;
@@ -454,8 +643,164 @@ $jumlahData = mysqli_num_rows($hasil);
 
             .hero p {
                 font-size: 16px;
+                line-height: 1.6;
+            }
+
+            .navbar {
+                position: relative;
+            }
+
+            .navbar-container {
+                width: 100%;
+                min-height: auto;
+                padding: 14px 16px;
+                gap: 14px;
+            }
+
+            .logo {
+                font-size: 19px;
+                text-align: center;
+            }
+
+            .nav-menu {
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .nav-menu a {
+                padding: 10px 8px;
+                border-radius: 7px;
+                text-align: center;
+                background-color: rgba(255, 255, 255, 0.06);
+            }
+
+            .nav-menu .btn-admin {
+                grid-column: 1 / -1;
+                color: #ffffff;
+                background-color: #2563eb;
+            }
+
+            .hero {
+                padding: 56px 16px;
+            }
+
+            .hero h1 {
+                font-size: clamp(27px, 9vw, 34px);
+            }
+
+            .hero-button {
+                width: 100%;
+                max-width: 280px;
+                padding: 13px 16px;
+            }
+
+            .section {
+                width: 100%;
+                padding: 45px 16px;
+            }
+
+            .section-title {
+                margin-bottom: 22px;
+            }
+
+            .section-title h2 {
+                font-size: 27px;
+            }
+
+            .statistics {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .stat-card:last-child {
+                grid-column: auto;
+            }
+
+            .stat-card,
+            .filter-box,
+            .about-content {
+                padding: 20px;
+                border-radius: 10px;
+            }
+
+            .filter-form {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-form input {
+                grid-column: auto;
+            }
+
+            .button {
+                width: 100%;
+                min-height: 44px;
+            }
+
+            .result-info {
+                line-height: 1.7;
+            }
+
+            .table-container {
+                margin-inline: -16px;
+                border-radius: 0;
+                box-shadow: none;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 850px;
+            }
+
+            th,
+            td {
+                padding: 12px 10px;
+                font-size: 13px;
+            }
+
+            th:first-child,
+            td:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 1;
+                background-color: inherit;
+            }
+
+            thead th:first-child {
+                z-index: 2;
+                background-color: #0f172a;
+            }
+
+            .about {
+                gap: 18px;
+            }
+
+            footer {
+                padding: 24px 16px;
             }
         }
+
+        @media screen and (max-width: 380px) {
+            .nav-menu {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-menu .btn-admin {
+                grid-column: auto;
+            }
+
+            .hero h1 {
+                font-size: 26px;
+            }
+        }
+        :root[data-theme="dark"] body { color: #e2e8f0; background: #0f172a; }
+        :root[data-theme="dark"] .navbar, :root[data-theme="dark"] .stat-card, :root[data-theme="dark"] .filter-box, :root[data-theme="dark"] .table-container, :root[data-theme="dark"] .about-content, :root[data-theme="dark"] footer { background-color: #1e293b; }
+        :root[data-theme="dark"] .section-title h2, :root[data-theme="dark"] .about-content h2 { color: #f8fafc; }
+        :root[data-theme="dark"] .section-title p, :root[data-theme="dark"] .result-info, :root[data-theme="dark"] .about-content p, :root[data-theme="dark"] .about-list { color: #cbd5e1; }
+        :root[data-theme="dark"] .filter-form input, :root[data-theme="dark"] .filter-form select { color: #e2e8f0; background: #0f172a; border-color: #475569; }
+        :root[data-theme="dark"] td { border-color: #334155; } :root[data-theme="dark"] tbody tr:nth-child(even) { background: #263449; } :root[data-theme="dark"] tbody tr:hover { background: #1e3a8a; }
+        .theme-toggle { border: 0; cursor: pointer; }
     </style>
 </head>
 
@@ -475,6 +820,7 @@ $jumlahData = mysqli_num_rows($hasil);
             <a href="Dashboard/index.php" class="btn-admin">
                 Admin
             </a>
+            <button type="button" class="button theme-toggle" onclick="toggleTheme()" aria-label="Ganti tema">🌙 Dark</button>
         </div>
     </div>
 </nav>
@@ -746,6 +1092,39 @@ $jumlahData = mysqli_num_rows($hasil);
         Dataset Human Resources
     </p>
 </footer>
+
+
+<script>
+    function toggleTheme() { const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = next; localStorage.setItem('employee-theme', next); document.querySelectorAll('.theme-toggle').forEach(b => b.textContent = next === 'dark' ? '☀️ Light' : '🌙 Dark'); }
+    document.querySelectorAll('.theme-toggle').forEach(b => b.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️ Light' : '🌙 Dark');
+    document.addEventListener("DOMContentLoaded", () => {
+        const animatedElements = document.querySelectorAll(
+            ".section-title, .stat-card, .filter-box, .result-info, " +
+            ".table-container, .about-content"
+        );
+
+        animatedElements.forEach((element) => element.classList.add("reveal"));
+
+        if (!("IntersectionObserver" in window)) {
+            animatedElements.forEach((element) => element.classList.add("is-visible"));
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries, currentObserver) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    currentObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.12,
+            rootMargin: "0px 0px -45px 0px"
+        });
+
+        animatedElements.forEach((element) => observer.observe(element));
+    });
+</script>
 
 </body>
 </html>

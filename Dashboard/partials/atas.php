@@ -36,6 +36,13 @@ $aksiTopbar = $aksiTopbar ?? "";
 
     <title>Dashboard Admin Karyawan</title>
 
+    <script>
+        (() => {
+            const saved = localStorage.getItem('employee-theme');
+            document.documentElement.dataset.theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        })();
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -710,6 +717,18 @@ $aksiTopbar = $aksiTopbar ?? "";
                 width: 100%;
             }
         }
+        :root[data-theme="dark"] body { background-color: #0f172a; color: #e2e8f0; }
+        :root[data-theme="dark"] .main-content { background-color: #0f172a; }
+        :root[data-theme="dark"] .topbar-title h1, :root[data-theme="dark"] .stat-card h3, :root[data-theme="dark"] .chart-card h2, :root[data-theme="dark"] .data-card-header h2, :root[data-theme="dark"] .form-card-header h2 { color: #f8fafc; }
+        :root[data-theme="dark"] .stat-card, :root[data-theme="dark"] .chart-card, :root[data-theme="dark"] .data-card, :root[data-theme="dark"] .form-card { background-color: #1e293b; box-shadow: 0 4px 15px rgba(0,0,0,.2); }
+        :root[data-theme="dark"] .topbar-title p, :root[data-theme="dark"] .stat-card span, :root[data-theme="dark"] .chart-card p, :root[data-theme="dark"] .result-info, :root[data-theme="dark"] .pagination-info, :root[data-theme="dark"] .form-card-header p, :root[data-theme="dark"] .field-note { color: #94a3b8; }
+        :root[data-theme="dark"] th, :root[data-theme="dark"] td { border-color: #334155; }
+        :root[data-theme="dark"] tbody tr:nth-child(even), :root[data-theme="dark"] tbody tr:nth-child(even) td:last-child { background-color: #263449; }
+        :root[data-theme="dark"] tbody tr:hover, :root[data-theme="dark"] tbody tr:hover td:last-child { background-color: #1e3a8a; }
+        :root[data-theme="dark"] td:last-child { background-color: #1e293b; }
+        :root[data-theme="dark"] .search-form input, :root[data-theme="dark"] .search-form select, :root[data-theme="dark"] .form-card input, :root[data-theme="dark"] .form-card select { color: #e2e8f0; background-color: #0f172a; border-color: #475569; }
+        :root[data-theme="dark"] .form-card label { color: #cbd5e1; }
+        .theme-toggle { white-space: nowrap; }
     </style>
 </head>
 
@@ -796,6 +815,7 @@ $aksiTopbar = $aksiTopbar ?? "";
                 <?php require $aksiTopbar; ?>
             </div>
         <?php endif; ?>
+        <button type="button" class="btn btn-secondary theme-toggle" onclick="toggleTheme()" aria-label="Ganti tema">🌙 Dark</button>
     </div>
 
     <?php if ($pesanNotifikasi === "tambah-berhasil"): ?>

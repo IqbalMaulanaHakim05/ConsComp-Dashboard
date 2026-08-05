@@ -38,6 +38,9 @@
     </section>
 
 <script>
+    // Pastikan teks label Chart.js tetap terbaca pada kedua tema.
+    Chart.defaults.color = document.documentElement.dataset.theme === "dark" ? "#cbd5e1" : "#64748b";
+    Chart.defaults.borderColor = document.documentElement.dataset.theme === "dark" ? "#334155" : "#e2e8f0";
     const labelDepartemen =
         <?= json_encode(
             $labelDepartemen,

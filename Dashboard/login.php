@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin Karyawan</title>
+    <script>const savedTheme = localStorage.getItem('employee-theme'); document.documentElement.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -199,6 +200,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 12px;
             line-height: 1.6;
         }
+        :root[data-theme="dark"] body { color: #e2e8f0; background: #0f172a; }
+        :root[data-theme="dark"] .login-layout, :root[data-theme="dark"] .login-panel { background: #1e293b; }
+        :root[data-theme="dark"] .subtitle, :root[data-theme="dark"] .hint { color: #94a3b8; }
+        :root[data-theme="dark"] input { color: #e2e8f0; background: #0f172a; border-color: #475569; }
+        .theme-toggle { position: fixed; top: 18px; right: 18px; z-index: 2; padding: 9px 12px; border: 0; border-radius: 9px; color: #334155; background: #e2e8f0; cursor: pointer; }
+        :root[data-theme="dark"] .theme-toggle { color: #e2e8f0; background: #334155; }
         @media (max-width: 760px) {
             .login-layout { grid-template-columns: 1fr; }
             .intro { min-height: auto; padding: 34px 28px; }
@@ -208,6 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
+<button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Ganti tema">🌙 Dark</button>
 <div class="login-layout">
     <section class="intro">
         <div class="brand">
@@ -254,6 +262,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 </div>
 <script>
+function toggleTheme() { const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = next; localStorage.setItem('employee-theme', next); document.querySelector('.theme-toggle').textContent = next === 'dark' ? '☀️ Light' : '🌙 Dark'; }
+document.querySelector('.theme-toggle').textContent = document.documentElement.dataset.theme === 'dark' ? '☀️ Light' : '🌙 Dark';
 function togglePassword() {
     const input = document.getElementById('password');
     const button = document.querySelector('.toggle-password');
