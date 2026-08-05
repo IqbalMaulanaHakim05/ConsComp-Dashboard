@@ -1,6 +1,9 @@
 <?php
 
 require __DIR__ . "/Dashboard/koneksi.php";
+require_once __DIR__ . "/Dashboard/fungsi/pengaturan-publik.php";
+siapkanPengaturanPublik($conn);
+$pengaturanPublik = ambilPengaturanPublik($conn);
 
 $kataKunci = trim($_GET["cari"] ?? "");
 $departemen = trim($_GET["departemen"] ?? "");
@@ -104,7 +107,7 @@ $jumlahData = mysqli_num_rows($hasil);
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Profil Karyawan Perusahaan</title>
+    <title><?= htmlspecialchars($pengaturanPublik['nama_situs'] ?? 'Profil Karyawan Perusahaan'); ?></title>
     <script>const savedTheme = localStorage.getItem('employee-theme'); document.documentElement.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
 
     <style>
@@ -825,18 +828,16 @@ $jumlahData = mysqli_num_rows($hasil);
     </div>
 </nav>
 
-<section class="hero" id="beranda">
+<section class="hero" id="beranda" style="background: linear-gradient(135deg, <?= htmlspecialchars($pengaturanPublik['warna_hero'] ?? '#0f172a'); ?>, <?= htmlspecialchars($pengaturanPublik['warna_utama'] ?? '#2563eb'); ?>);">
     <div class="hero-content">
-        <h1>Profil Pekerja Perusahaan</h1>
+        <h1><?= htmlspecialchars($pengaturanPublik['judul_hero'] ?? 'Profil Pekerja Perusahaan'); ?></h1>
 
         <p>
-            Website ini menyajikan informasi profil karyawan berdasarkan
-            dataset Human Resources, meliputi posisi, departemen, status kerja,
-            dan performa karyawan.
+            <?= htmlspecialchars($pengaturanPublik['deskripsi_hero'] ?? 'Website ini menyajikan informasi profil karyawan berdasarkan dataset Human Resources.'); ?>
         </p>
 
         <a href="#data" class="hero-button">
-            Lihat Data Karyawan
+            <?= htmlspecialchars($pengaturanPublik['teks_tombol'] ?? 'Lihat Data Karyawan'); ?>
         </a>
     </div>
 </section>

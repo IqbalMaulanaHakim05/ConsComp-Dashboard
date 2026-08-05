@@ -3,8 +3,11 @@
 require __DIR__ . "/../koneksi.php";
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/sinkronisasi.php";
+require_once __DIR__ . "/media-karyawan.php";
+require_once __DIR__ . "/audit.php";
 
 wajibRole("admin", "superadmin");
+siapkanKolomMedia($conn);
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -78,6 +81,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     ) {
         $pesan = "Skor performa harus berupa angka antara 1 sampai 100.";
     } else {
+        $fileCv = $data['file_cv'] ?? null;
+        $fotoProfil = $data['foto_profil'] ?? null;
+        $unggahCv = unggahMediaKaryawan($_FILES['file_cv'] ?? [], 'cv', $pesan);
+        $unggahFoto = unggahMediaKaryawan($_FILES['foto_profil'] ?? [], 'foto', $pesan);
+        if ($unggahCv !== null) $fileCv = $unggahCv;
+        if ($unggahFoto !== null) $fotoProfil = $unggahFoto;
+        if ($pesan === '') {
         $sql = "UPDATE karyawan SET
                     employee_name = ?,
                     emp_id = ?,
@@ -86,7 +96,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     salary = ?,
                     gender = ?,
                     employment_status = ?,
-                    performance_score = ?
+                    performance_score = ?,
+                    file_cv = ?,
+                    foto_profil = ?
                 WHERE id = ?";
 
         $stmtUpdate = mysqli_prepare($conn, $sql);
@@ -96,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } else {
             mysqli_stmt_bind_param(
                 $stmtUpdate,
-                "ssssdsssi",
+                "ssssdssissi",
                 $employeeName,
                 $empId,
                 $position,
@@ -105,10 +117,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $gender,
                 $employmentStatus,
                 $performanceScore,
+                $fileCv,
+                $fotoProfil,
                 $id
             );
 
             if (mysqli_stmt_execute($stmtUpdate)) {
+                catatAktivitas($conn, "Mengedit data karyawan " . $employeeName . " (" . $empId . ").");
                 try {
                     sinkronkanSemuaDataset($conn);
                 } catch (Throwable $error) {
@@ -127,6 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             mysqli_stmt_close($stmtUpdate);
+        }
         }
     }
 }
@@ -154,7 +170,7 @@ require __DIR__ . "/../partials/atas.php";
                 </div>
             <?php endif; ?>
 
-            <form method="POST" autocomplete="off">
+            <form method="POST" autocomplete="off" enctype="multipart/form-data">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="emp_id">
@@ -171,6 +187,16 @@ require __DIR__ . "/../partials/atas.php";
                             autofocus
                         >
                         <p class="field-note">ID harus tetap unik dan tidak boleh sama dengan karyawan lain.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="foto_profil">Ganti Foto Profil</label>
+                        <input type="file" id="foto_profil" name="foto_profil" accept=".jpg,.jpeg,image/jpeg">
+                        <p class="field-note">Kosongkan jika tidak ingin mengganti foto. JPG/JPEG, maksimal 2 MB.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="file_cv">Ganti CV</label>
+                        <input type="file" id="file_cv" name="file_cv" accept=".pdf,application/pdf">
+                        <p class="field-note">Kosongkan jika tidak ingin mengganti CV. PDF, maksimal 5 MB.</p>
                     </div>
 
                     <div class="form-group">

@@ -729,6 +729,9 @@ $aksiTopbar = $aksiTopbar ?? "";
         :root[data-theme="dark"] .search-form input, :root[data-theme="dark"] .search-form select, :root[data-theme="dark"] .form-card input, :root[data-theme="dark"] .form-card select { color: #e2e8f0; background-color: #0f172a; border-color: #475569; }
         :root[data-theme="dark"] .form-card label { color: #cbd5e1; }
         .theme-toggle { white-space: nowrap; }
+        .employee-profile-link { color: #2563eb; font-weight: 700; text-decoration: none; }
+        .employee-profile-link:hover { text-decoration: underline; }
+        :root[data-theme="dark"] .employee-profile-link { color: #93c5fd; }
     </style>
 </head>
 
@@ -770,6 +773,12 @@ $aksiTopbar = $aksiTopbar ?? "";
         <a href="<?= htmlspecialchars(URL_DASAR); ?>../index.php">
             Halaman Publik
         </a>
+        <?php if (function_exists('punyaRole') && punyaRole('superadmin')): ?>
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>pengaturan-profil.php" class="<?= $halamanAktif === 'pengaturan-profil' ? 'active' : ''; ?>">Pengaturan Profil</a>
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>pengguna.php" class="<?= $halamanAktif === 'pengguna' ? 'active' : ''; ?>">Manajemen Pengguna</a>
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>audit-aktivitas.php" class="<?= $halamanAktif === 'audit' ? 'active' : ''; ?>">Audit Aktivitas</a>
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>pengaturan-publik.php" class="<?= $halamanAktif === 'pengaturan-publik' ? 'active' : ''; ?>">Pengaturan Halaman Publik</a>
+        <?php endif; ?>
     </nav>
 
     <?php if (function_exists("sudahLogin") && sudahLogin()): ?>
