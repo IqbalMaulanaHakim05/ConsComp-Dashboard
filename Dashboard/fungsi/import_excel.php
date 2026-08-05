@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . "/../koneksi.php";
 require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/audit.php";
 require_once __DIR__ . "/sinkronisasi.php";
 
 wajibRole("admin", "superadmin");
@@ -351,6 +352,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dataValid = validasiDataExcel($barisExcel);
         gantiDataSql($conn, $dataValid);
         sinkronkanSemuaDataset($conn);
+        catatAktivitas($conn, "Mengimpor " . count($dataValid) . " data karyawan dari Excel.");
 
         header('Location: ../karyawan.php?pesan=import-excel-berhasil&jumlah=' . count($dataValid));
         exit;

@@ -2,9 +2,12 @@
 
 require __DIR__ . "/../koneksi.php";
 require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/audit.php";
+require_once __DIR__ . "/media-karyawan.php";
 require_once __DIR__ . "/sinkronisasi.php";
 
 wajibRole("admin", "superadmin");
+siapkanKolomMedia($conn);
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -78,55 +81,74 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     ) {
         $pesan = "Skor performa harus berupa angka antara 1 sampai 100.";
     } else {
-        $sql = "UPDATE karyawan SET
-                    employee_name = ?,
-                    emp_id = ?,
-                    position = ?,
-                    department = ?,
-                    salary = ?,
-                    gender = ?,
-                    employment_status = ?,
-                    performance_score = ?
-                WHERE id = ?";
+        $fileCv = $data["file_cv"] ?? null;
+        $fotoProfil = $data["foto_profil"] ?? null;
+        $unggahCv = unggahMediaKaryawan($_FILES["file_cv"] ?? [], "cv", $pesan);
+        $unggahFoto = unggahMediaKaryawan($_FILES["foto_profil"] ?? [], "foto", $pesan);
 
-        $stmtUpdate = mysqli_prepare($conn, $sql);
+        if ($unggahCv !== null) {
+            $fileCv = $unggahCv;
+        }
+        if ($unggahFoto !== null) {
+            $fotoProfil = $unggahFoto;
+        }
 
-        if (!$stmtUpdate) {
-            $pesan = "Query gagal disiapkan: " . mysqli_error($conn);
-        } else {
-            mysqli_stmt_bind_param(
-                $stmtUpdate,
-                "ssssdsssi",
-                $employeeName,
-                $empId,
-                $position,
-                $department,
-                $salary,
-                $gender,
-                $employmentStatus,
-                $performanceScore,
-                $id
-            );
+        if ($pesan === "") {
+            $sql = "UPDATE karyawan SET
+                        employee_name = ?,
+                        emp_id = ?,
+                        position = ?,
+                        department = ?,
+                        salary = ?,
+                        gender = ?,
+                        employment_status = ?,
+                        performance_score = ?,
+                        file_cv = ?,
+                        foto_profil = ?
+                    WHERE id = ?";
 
-            if (mysqli_stmt_execute($stmtUpdate)) {
-                try {
-                    sinkronkanSemuaDataset($conn);
-                } catch (Throwable $error) {
-                    error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
+            $stmtUpdate = mysqli_prepare($conn, $sql);
+
+            if (!$stmtUpdate) {
+                $pesan = "Query gagal disiapkan: " . mysqli_error($conn);
+            } else {
+                mysqli_stmt_bind_param(
+                    $stmtUpdate,
+                    "ssssdsssssi",
+                    $employeeName,
+                    $empId,
+                    $position,
+                    $department,
+                    $salary,
+                    $gender,
+                    $employmentStatus,
+                    $performanceScore,
+                    $fileCv,
+                    $fotoProfil,
+                    $id
+                );
+
+                if (mysqli_stmt_execute($stmtUpdate)) {
+                    try {
+                        sinkronkanSemuaDataset($conn);
+                    } catch (Throwable $error) {
+                        error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
+                    }
+
+                    catatAktivitas($conn, "Mengedit data karyawan " . $employeeName . " (" . $empId . ").");
+                    mysqli_stmt_close($stmtUpdate);
+                    header("Location: ../karyawan.php?pesan=edit-berhasil");
+                    exit;
+                }
+
+                if (mysqli_stmt_errno($stmtUpdate) === 1062) {
+                    $pesan = "ID karyawan sudah digunakan. Gunakan ID yang berbeda.";
+                } else {
+                    $pesan = "Data gagal diperbarui: " . mysqli_stmt_error($stmtUpdate);
                 }
 
                 mysqli_stmt_close($stmtUpdate);
-                header("Location: ../karyawan.php?pesan=edit-berhasil");
-                exit;
             }
-
-            if (mysqli_stmt_errno($stmtUpdate) === 1062) {
-                $pesan = "ID karyawan sudah digunakan. Gunakan ID yang berbeda.";
-            } else {
-                $pesan = "Data gagal diperbarui: " . mysqli_stmt_error($stmtUpdate);
-            }
-
-            mysqli_stmt_close($stmtUpdate);
         }
     }
 }
@@ -154,7 +176,7 @@ require __DIR__ . "/../partials/atas.php";
                 </div>
             <?php endif; ?>
 
-            <form method="POST" autocomplete="off">
+            <form method="POST" autocomplete="off" enctype="multipart/form-data">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="emp_id">
@@ -171,6 +193,18 @@ require __DIR__ . "/../partials/atas.php";
                             autofocus
                         >
                         <p class="field-note">ID harus tetap unik dan tidak boleh sama dengan karyawan lain.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="foto_profil">Ganti Foto Profil</label>
+                        <input type="file" id="foto_profil" name="foto_profil" accept=".jpg,.jpeg,image/jpeg">
+                        <p class="field-note">Kosongkan jika tidak ingin mengganti foto. JPG/JPEG, maksimal 2 MB.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="file_cv">Ganti CV</label>
+                        <input type="file" id="file_cv" name="file_cv" accept=".pdf,application/pdf">
+                        <p class="field-note">Kosongkan jika tidak ingin mengganti CV. PDF, maksimal 5 MB.</p>
                     </div>
 
                     <div class="form-group">

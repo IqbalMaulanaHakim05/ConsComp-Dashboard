@@ -2,18 +2,12 @@
 
 /*
 |--------------------------------------------------------------------------
-| Action bar khusus tab Karyawan: tambah, import, dan export data.
+| Action bar khusus halaman Karyawan: import dan export data.
+| (Tambah Karyawan dipindah menjadi sub-nav pada sidebar.)
 |--------------------------------------------------------------------------
 */
 
 ?>
-<a
-    href="fungsi/tambah.php"
-    class="btn btn-success"
->
-    + Tambah Karyawan
-</a>
-
 <a
     href="fungsi/import_excel.php"
     class="btn btn-warning"

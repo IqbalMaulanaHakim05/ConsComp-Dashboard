@@ -2,9 +2,12 @@
 
 require __DIR__ . "/../koneksi.php";
 require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/audit.php";
+require_once __DIR__ . "/media-karyawan.php";
 require_once __DIR__ . "/sinkronisasi.php";
 
 wajibRole("admin", "superadmin");
+siapkanKolomMedia($conn);
 
 $pesan = "";
 
@@ -47,61 +50,71 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
     } else {
-        $sql = "INSERT INTO karyawan (
-                    employee_name,
-                    emp_id,
-                    position,
-                    department,
-                    salary,
-                    gender,
-                    employment_status,
-                    performance_score
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $fileCv = unggahMediaKaryawan($_FILES["file_cv"] ?? [], "cv", $pesan);
+        $fotoProfil = unggahMediaKaryawan($_FILES["foto_profil"] ?? [], "foto", $pesan);
 
-        $stmt = mysqli_prepare($conn, $sql);
+        if ($pesan === "") {
+            $sql = "INSERT INTO karyawan (
+                        employee_name,
+                        emp_id,
+                        position,
+                        department,
+                        salary,
+                        gender,
+                        employment_status,
+                        performance_score,
+                        file_cv,
+                        foto_profil
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        if (!$stmt) {
-            $pesan = "Query gagal disiapkan: " . mysqli_error($conn);
-        } else {
-            mysqli_stmt_bind_param(
-                $stmt,
-                "ssssdsss",
-                $employeeName,
-                $empId,
-                $position,
-                $department,
-                $salary,
-                $gender,
-                $employmentStatus,
-                $performanceScore
-            );
+            $stmt = mysqli_prepare($conn, $sql);
 
-            if (mysqli_stmt_execute($stmt)) {
-                try {
-                    sinkronkanSemuaDataset($conn);
-                } catch (Throwable $error) {
-                    error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
+            if (!$stmt) {
+                $pesan = "Query gagal disiapkan: " . mysqli_error($conn);
+            } else {
+                mysqli_stmt_bind_param(
+                    $stmt,
+                    "ssssdsssss",
+                    $employeeName,
+                    $empId,
+                    $position,
+                    $department,
+                    $salary,
+                    $gender,
+                    $employmentStatus,
+                    $performanceScore,
+                    $fileCv,
+                    $fotoProfil
+                );
+
+                if (mysqli_stmt_execute($stmt)) {
+                    try {
+                        sinkronkanSemuaDataset($conn);
+                    } catch (Throwable $error) {
+                        error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
+                    }
+
+                    catatAktivitas($conn, "Menambahkan karyawan " . $employeeName . " (" . $empId . ").");
+                    mysqli_stmt_close($stmt);
+                    header("Location: ../karyawan.php?pesan=tambah-berhasil");
+                    exit;
+                }
+
+                if (mysqli_stmt_errno($stmt) === 1062) {
+                    $pesan = "ID karyawan sudah digunakan. Gunakan ID yang berbeda.";
+                } else {
+                    $pesan = "Data gagal ditambahkan: " . mysqli_stmt_error($stmt);
                 }
 
                 mysqli_stmt_close($stmt);
-                header("Location: ../karyawan.php?pesan=tambah-berhasil");
-                exit;
             }
-
-            if (mysqli_stmt_errno($stmt) === 1062) {
-                $pesan = "ID karyawan sudah digunakan. Gunakan ID yang berbeda.";
-            } else {
-                $pesan = "Data gagal ditambahkan: " . mysqli_stmt_error($stmt);
-            }
-
-            mysqli_stmt_close($stmt);
         }
     }
 }
 
 $judulHalaman = "Tambah Karyawan";
 $subjudulHalaman = "Masukkan informasi karyawan baru ke dalam database.";
-$halamanAktif = "karyawan";
+$halamanAktif = "tambah";
 
 require __DIR__ . "/../partials/atas.php";
 
@@ -122,7 +135,7 @@ require __DIR__ . "/../partials/atas.php";
                 </div>
             <?php endif; ?>
 
-            <form method="POST" autocomplete="off">
+            <form method="POST" autocomplete="off" enctype="multipart/form-data">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="emp_id">
@@ -139,6 +152,18 @@ require __DIR__ . "/../partials/atas.php";
                             autofocus
                         >
                         <p class="field-note">Gunakan ID unik untuk setiap karyawan.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="foto_profil">Foto Profil</label>
+                        <input type="file" id="foto_profil" name="foto_profil" accept=".jpg,.jpeg,image/jpeg">
+                        <p class="field-note">JPG/JPEG, maksimal 2 MB. Boleh dikosongkan.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="file_cv">CV</label>
+                        <input type="file" id="file_cv" name="file_cv" accept=".pdf,application/pdf">
+                        <p class="field-note">PDF, maksimal 5 MB. Boleh dikosongkan.</p>
                     </div>
 
                     <div class="form-group">

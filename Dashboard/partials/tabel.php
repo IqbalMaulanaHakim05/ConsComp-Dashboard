@@ -146,9 +146,14 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
                             </td>
 
                             <td>
-                                <?= htmlspecialchars(
-                                    $row["employee_name"] ?? "-"
-                                ); ?>
+                                <a
+                                    class="employee-profile-link"
+                                    href="profil-karyawan.php?id=<?= (int) $row["id"]; ?>"
+                                >
+                                    <?= htmlspecialchars(
+                                        $row["employee_name"] ?? "-"
+                                    ); ?>
+                                </a>
                             </td>
 
                             <td>
