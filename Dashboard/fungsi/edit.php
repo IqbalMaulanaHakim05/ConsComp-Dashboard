@@ -8,6 +8,7 @@ require_once __DIR__ . "/sinkronisasi.php";
 
 wajibRole("admin", "superadmin");
 siapkanKolomMedia($conn);
+siapkanKolomProfil($conn);
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -35,6 +36,7 @@ if (!$data) {
 
 $form = [
     "employee_name" => (string) ($data["employee_name"] ?? ""),
+    "nik"=>(string)($data["nik"]??""), "alamat"=>(string)($data["alamat"]??""), "tanggal_lahir"=>(string)($data["tanggal_lahir"]??""), "agama"=>(string)($data["agama"]??""), "marital_status"=>(string)($data["marital_status"]??""), "kontak"=>(string)($data["kontak"]??""), "email"=>(string)($data["email"]??""),
     "emp_id" => (string) ($data["emp_id"] ?? ""),
     "position" => (string) ($data["position"] ?? ""),
     "department" => (string) ($data["department"] ?? ""),
@@ -50,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     $employeeName = $form["employee_name"];
+    $nik=$form["nik"]; $alamat=$form["alamat"]; $tanggalLahir=$form["tanggal_lahir"] !== "" ? $form["tanggal_lahir"] : null; $agama=$form["agama"]; $maritalStatus=$form["marital_status"]; $kontak=$form["kontak"]; $email=$form["email"];
     $empId = $form["emp_id"];
     $position = $form["position"];
     $department = $form["department"];
@@ -83,8 +86,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
         $fileCv = $data["file_cv"] ?? null;
         $fotoProfil = $data["foto_profil"] ?? null;
+        $fileIjazah = $data["file_ijazah"] ?? null;
+        $fileMcu = $data["file_mcu"] ?? null;
         $unggahCv = unggahMediaKaryawan($_FILES["file_cv"] ?? [], "cv", $pesan);
         $unggahFoto = unggahMediaKaryawan($_FILES["foto_profil"] ?? [], "foto", $pesan);
+        $unggahIjazah = unggahMediaKaryawan($_FILES["file_ijazah"] ?? [], "ijazah", $pesan);
+        $unggahMcu = unggahMediaKaryawan($_FILES["file_mcu"] ?? [], "mcu", $pesan);
 
         if ($unggahCv !== null) {
             $fileCv = $unggahCv;
@@ -92,10 +99,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($unggahFoto !== null) {
             $fotoProfil = $unggahFoto;
         }
+        if ($unggahIjazah !== null) $fileIjazah = $unggahIjazah;
+        if ($unggahMcu !== null) $fileMcu = $unggahMcu;
 
         if ($pesan === "") {
             $sql = "UPDATE karyawan SET
                         employee_name = ?,
+                        nik = ?, alamat = ?, tanggal_lahir = ?, agama = ?, marital_status = ?, kontak = ?, email = ?,
                         emp_id = ?,
                         position = ?,
                         department = ?,
@@ -104,7 +114,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         employment_status = ?,
                         performance_score = ?,
                         file_cv = ?,
-                        foto_profil = ?
+                        foto_profil = ?,
+                        file_ijazah = ?,
+                        file_mcu = ?
                     WHERE id = ?";
 
             $stmtUpdate = mysqli_prepare($conn, $sql);
@@ -114,8 +126,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 mysqli_stmt_bind_param(
                     $stmtUpdate,
-                    "ssssdsssssi",
-                    $employeeName,
+                    str_repeat("s", 11) . "d" . str_repeat("s", 7) . "i",
+                    $employeeName, $nik, $alamat, $tanggalLahir, $agama, $maritalStatus, $kontak, $email,
                     $empId,
                     $position,
                     $department,
@@ -124,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $employmentStatus,
                     $performanceScore,
                     $fileCv,
-                    $fotoProfil,
+                    $fotoProfil, $fileIjazah, $fileMcu,
                     $id
                 );
 
@@ -206,6 +218,8 @@ require __DIR__ . "/../partials/atas.php";
                         <input type="file" id="file_cv" name="file_cv" accept=".pdf,application/pdf">
                         <p class="field-note">Kosongkan jika tidak ingin mengganti CV. PDF, maksimal 5 MB.</p>
                     </div>
+                    <div class="form-group"><label for="file_ijazah">Ganti Ijazah</label><input type="file" id="file_ijazah" name="file_ijazah" accept=".pdf,application/pdf"><p class="field-note">Kosongkan jika tidak ingin mengganti. PDF, maksimal 5 MB.</p></div>
+                    <div class="form-group"><label for="file_mcu">Ganti MCU</label><input type="file" id="file_mcu" name="file_mcu" accept=".pdf,application/pdf"><p class="field-note">Kosongkan jika tidak ingin mengganti. PDF, maksimal 5 MB.</p></div>
 
                     <div class="form-group">
                         <label for="employee_name">
@@ -221,6 +235,14 @@ require __DIR__ . "/../partials/atas.php";
                             required
                         >
                     </div>
+
+                    <div class="form-group"><label for="nik">NIK</label><input type="text" id="nik" name="nik" value="<?= htmlspecialchars($form["nik"]); ?>" maxlength="50"></div>
+                    <div class="form-group"><label for="tanggal_lahir">Tanggal Lahir</label><input type="date" id="tanggal_lahir" name="tanggal_lahir" value="<?= htmlspecialchars($form["tanggal_lahir"]); ?>"></div>
+                    <div class="form-group"><label for="agama">Agama</label><input type="text" id="agama" name="agama" value="<?= htmlspecialchars($form["agama"]); ?>" maxlength="50"></div>
+                    <div class="form-group"><label for="marital_status">Status Kawin</label><select id="marital_status" name="marital_status"><option value="">Pilih status</option><option <?= $form["marital_status"] === "Single" ? "selected" : ""; ?>>Single</option><option <?= $form["marital_status"] === "Married" ? "selected" : ""; ?>>Married</option></select></div>
+                    <div class="form-group"><label for="kontak">Kontak</label><input type="text" id="kontak" name="kontak" value="<?= htmlspecialchars($form["kontak"]); ?>" maxlength="50"></div>
+                    <div class="form-group"><label for="email">Email</label><input type="email" id="email" name="email" value="<?= htmlspecialchars($form["email"]); ?>" maxlength="150"></div>
+                    <div class="form-group form-group-full"><label for="alamat">Alamat</label><textarea id="alamat" name="alamat" rows="3"><?= htmlspecialchars($form["alamat"]); ?></textarea></div>
 
                     <div class="form-group">
                         <label for="position">

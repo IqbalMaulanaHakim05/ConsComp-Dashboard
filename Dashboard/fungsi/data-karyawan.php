@@ -136,6 +136,14 @@ function ambilDataKaryawan(
     bool $izinkanSemua
 ): array {
     $kataKunci = trim($_GET["cari"] ?? "");
+    $filterKolom = (string) ($_GET["filter"] ?? "semua");
+    $kolomFilter = [
+        "semua" => "employee_name LIKE ? OR emp_id LIKE ? OR position LIKE ? OR department LIKE ? OR salary LIKE ? OR date_of_hire LIKE ? OR employment_status LIKE ? OR performance_score LIKE ?",
+        "id" => "emp_id LIKE ?", "posisi" => "position LIKE ?", "departemen" => "department LIKE ?",
+        "gaji" => "salary LIKE ?", "tanggal_masuk" => "date_of_hire LIKE ?", "status_kerja" => "employment_status LIKE ?", "performa" => "performance_score LIKE ?",
+    ];
+    if (!isset($kolomFilter[$filterKolom])) $filterKolom = "semua";
+    $kondisiFilter = $kolomFilter[$filterKolom];
 
     $batasParam = (string) ($_GET["batas"] ?? $batasDefault);
     $tanpaBatas = ($izinkanSemua && $batasParam === "semua");
@@ -154,14 +162,7 @@ function ambilDataKaryawan(
 
     // 1. Menghitung total data yang cocok lebih dulu (dasar pagination).
     if ($kataKunci !== "") {
-        $sqlHitung = "SELECT COUNT(*) AS total
-                      FROM karyawan
-                      WHERE employee_name LIKE ?
-                         OR emp_id LIKE ?
-                         OR position LIKE ?
-                         OR department LIKE ?
-                         OR employment_status LIKE ?
-                         OR performance_score LIKE ?";
+        $sqlHitung = "SELECT COUNT(*) AS total FROM karyawan WHERE " . $kondisiFilter;
 
         $stmtHitung = mysqli_prepare($conn, $sqlHitung);
 
@@ -169,16 +170,11 @@ function ambilDataKaryawan(
             die("Query hitung pencarian gagal disiapkan: " . mysqli_error($conn));
         }
 
-        mysqli_stmt_bind_param(
-            $stmtHitung,
-            "ssssss",
-            $pencarian,
-            $pencarian,
-            $pencarian,
-            $pencarian,
-            $pencarian,
-            $pencarian
-        );
+        $jumlahParameter = substr_count($kondisiFilter, "?");
+        $parameter = array_fill(0, $jumlahParameter, $pencarian);
+        $bind = [$stmtHitung, str_repeat("s", $jumlahParameter)];
+        foreach ($parameter as $k => &$nilai) $bind[] = &$nilai;
+        call_user_func_array("mysqli_stmt_bind_param", $bind);
 
         mysqli_stmt_execute($stmtHitung);
         $totalCocok = (int) (
@@ -219,15 +215,7 @@ function ambilDataKaryawan(
 
     // 3. Mengambil data sesuai halaman.
     if ($kataKunci !== "") {
-        $sql = "SELECT *
-                FROM karyawan
-                WHERE employee_name LIKE ?
-                   OR emp_id LIKE ?
-                   OR position LIKE ?
-                   OR department LIKE ?
-                   OR employment_status LIKE ?
-                   OR performance_score LIKE ?
-                ORDER BY id DESC" . $klausaLimit;
+        $sql = "SELECT * FROM karyawan WHERE " . $kondisiFilter . " ORDER BY id DESC" . $klausaLimit;
 
         $stmt = mysqli_prepare($conn, $sql);
 
@@ -235,16 +223,11 @@ function ambilDataKaryawan(
             die("Query pencarian gagal disiapkan: " . mysqli_error($conn));
         }
 
-        mysqli_stmt_bind_param(
-            $stmt,
-            "ssssss",
-            $pencarian,
-            $pencarian,
-            $pencarian,
-            $pencarian,
-            $pencarian,
-            $pencarian
-        );
+        $jumlahParameter = substr_count($kondisiFilter, "?");
+        $parameter = array_fill(0, $jumlahParameter, $pencarian);
+        $bind = [$stmt, str_repeat("s", $jumlahParameter)];
+        foreach ($parameter as $k => &$nilai) $bind[] = &$nilai;
+        call_user_func_array("mysqli_stmt_bind_param", $bind);
 
         mysqli_stmt_execute($stmt);
         $hasil = mysqli_stmt_get_result($stmt);
@@ -266,6 +249,7 @@ function ambilDataKaryawan(
         "jumlahData" => mysqli_num_rows($hasil),
         "totalCocok" => $totalCocok,
         "kataKunci" => $kataKunci,
+        "filterKolom" => $filterKolom,
         "batas" => $batas,
         "batasDiizinkan" => $batasDiizinkan,
         "tanpaBatas" => $tanpaBatas,

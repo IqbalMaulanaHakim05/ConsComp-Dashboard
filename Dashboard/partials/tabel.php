@@ -29,6 +29,7 @@ $paramDasar = [];
 if ($kataKunci !== "") {
     $paramDasar["cari"] = $kataKunci;
 }
+$paramDasar["filter"] = $filterKolom ?? "semua";
 $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
 
 ?>
@@ -44,6 +45,12 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
                     placeholder="Cari nama, ID, posisi, atau departemen"
                     value="<?= htmlspecialchars($kataKunci); ?>"
                 >
+
+                <select name="filter" title="Pilih kolom pencarian">
+                    <?php foreach (["semua"=>"Semua kolom", "id"=>"ID", "posisi"=>"Posisi", "departemen"=>"Departemen", "gaji"=>"Gaji", "tanggal_masuk"=>"Tanggal masuk", "status_kerja"=>"Status kerja", "performa"=>"Performa"] as $nilaiFilter=>$labelFilter): ?>
+                        <option value="<?= $nilaiFilter; ?>" <?= ($filterKolom ?? "semua") === $nilaiFilter ? "selected" : ""; ?>><?= $labelFilter; ?></option>
+                    <?php endforeach; ?>
+                </select>
 
                 <button
                     type="submit"
@@ -114,8 +121,6 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
                     <th>Posisi</th>
                     <th>Departemen</th>
                     <th>Gaji</th>
-                    <th>Jenis Kelamin</th>
-                    <th>Status Pernikahan</th>
                     <th>Tanggal Masuk</th>
                     <th>Status Kerja</th>
                     <th>Performa</th>
@@ -183,38 +188,6 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
 
                             <td>
                                 <?php
-                                $gender = trim(
-                                    $row["gender"] ?? ""
-                                );
-
-                                if (
-                                    $gender === "M"
-                                    || $gender === "Male"
-                                ) {
-                                    echo "Laki-laki";
-                                } elseif (
-                                    $gender === "F"
-                                    || $gender === "Female"
-                                ) {
-                                    echo "Perempuan";
-                                } else {
-                                    echo htmlspecialchars(
-                                        $gender !== ""
-                                            ? $gender
-                                            : "-"
-                                    );
-                                }
-                                ?>
-                            </td>
-
-                            <td>
-                                <?= htmlspecialchars(
-                                    $row["marital_status"] ?? "-"
-                                ); ?>
-                            </td>
-
-                            <td>
-                                <?php
                                 $tanggalMasuk =
                                     $row["date_of_hire"] ?? "";
 
@@ -277,7 +250,7 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
                 <?php else: ?>
                     <tr>
                         <td
-                            colspan="<?= $bolehAksi ? 12 : 11; ?>"
+                            colspan="<?= $bolehAksi ? 10 : 9; ?>"
                             class="empty-data"
                         >
                             <?php if ($kataKunci !== ""): ?>
