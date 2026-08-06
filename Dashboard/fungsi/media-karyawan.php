@@ -27,7 +27,7 @@ function siapkanKolomMedia(mysqli $conn): void
 
 function siapkanKolomProfil(mysqli $conn): void
 {
-    foreach (["nik" => "VARCHAR(50) NULL", "alamat" => "TEXT NULL", "tanggal_lahir" => "DATE NULL", "agama" => "VARCHAR(50) NULL", "marital_status" => "VARCHAR(50) NULL", "kontak" => "VARCHAR(50) NULL", "email" => "VARCHAR(150) NULL"] as $kolom => $tipe) {
+    foreach (["nik" => "VARCHAR(50) NULL", "alamat" => "TEXT NULL", "biografi" => "TEXT NULL", "riwayat_pekerjaan" => "TEXT NULL", "tanggal_riwayat_pekerjaan" => "DATE NULL", "riwayat_pendidikan" => "TEXT NULL", "tanggal_riwayat_pendidikan" => "DATE NULL", "tanggal_lahir" => "DATE NULL", "agama" => "VARCHAR(50) NULL", "marital_status" => "VARCHAR(50) NULL", "kontak" => "VARCHAR(50) NULL", "email" => "VARCHAR(150) NULL"] as $kolom => $tipe) {
         $aman = mysqli_real_escape_string($conn, $kolom);
         $cek = mysqli_query($conn, "SHOW COLUMNS FROM karyawan LIKE '$aman'");
         if ($cek && mysqli_num_rows($cek) === 0) mysqli_query($conn, "ALTER TABLE karyawan ADD COLUMN `$aman` $tipe");

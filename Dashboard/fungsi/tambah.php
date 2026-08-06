@@ -16,6 +16,8 @@ $form = [
     "employee_name" => "",
     "nik" => "",
     "alamat" => "",
+    "biografi" => "",
+    "riwayat_pekerjaan" => "", "tanggal_riwayat_pekerjaan" => "", "riwayat_pendidikan" => "", "tanggal_riwayat_pendidikan" => "",
     "tanggal_lahir" => "",
     "agama" => "",
     "marital_status" => "",
@@ -38,6 +40,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $employeeName = $form["employee_name"];
     $nik = $form["nik"];
     $alamat = $form["alamat"];
+    $biografi = $form["biografi"];
+    $riwayatPekerjaan = $form["riwayat_pekerjaan"]; $tanggalRiwayatPekerjaan = $form["tanggal_riwayat_pekerjaan"] !== "" ? $form["tanggal_riwayat_pekerjaan"] : null; $riwayatPendidikan = $form["riwayat_pendidikan"]; $tanggalRiwayatPendidikan = $form["tanggal_riwayat_pendidikan"] !== "" ? $form["tanggal_riwayat_pendidikan"] : null;
     $tanggalLahir = $form["tanggal_lahir"] !== "" ? $form["tanggal_lahir"] : null;
     $agama = $form["agama"];
     $maritalStatus = $form["marital_status"];
@@ -73,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($pesan === "") {
             $sql = "INSERT INTO karyawan (
                         employee_name,
-                        nik, alamat, tanggal_lahir, agama, marital_status, kontak, email,
+                        nik, alamat, biografi, riwayat_pekerjaan, tanggal_riwayat_pekerjaan, riwayat_pendidikan, tanggal_riwayat_pendidikan, tanggal_lahir, agama, marital_status, kontak, email,
                         emp_id,
                         position,
                         department,
@@ -85,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         foto_profil,
                         file_ijazah,
                         file_mcu
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = mysqli_prepare($conn, $sql);
 
@@ -94,10 +98,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 mysqli_stmt_bind_param(
                     $stmt,
-                    str_repeat("s", 11) . "d" . str_repeat("s", 7),
+                    str_repeat("s", 16) . "d" . str_repeat("s", 7),
                     $employeeName,
                     $nik,
                     $alamat,
+                    $biografi, $riwayatPekerjaan, $tanggalRiwayatPekerjaan, $riwayatPendidikan, $tanggalRiwayatPendidikan,
                     $tanggalLahir,
                     $agama,
                     $maritalStatus,
@@ -286,6 +291,11 @@ require __DIR__ . "/../partials/atas.php";
                 <div class="form-group"><label for="kontak">Kontak</label><input type="text" id="kontak" name="kontak" value="<?= htmlspecialchars($form["kontak"]); ?>" maxlength="50"></div>
                 <div class="form-group"><label for="email">Email</label><input type="email" id="email" name="email" value="<?= htmlspecialchars($form["email"]); ?>" maxlength="150"></div>
                 <div class="form-group form-group-full"><label for="alamat">Alamat</label><textarea id="alamat" name="alamat" rows="3"><?= htmlspecialchars($form["alamat"]); ?></textarea></div>
+                <div class="form-group form-group-full"><label for="biografi">Biografi Diri</label><textarea id="biografi" name="biografi" rows="5" maxlength="2000" placeholder="Tuliskan ringkasan diri, pengalaman, keahlian, atau tujuan karier karyawan."><?= htmlspecialchars($form["biografi"]); ?></textarea></div>
+                <div class="form-group form-group-full"><label for="riwayat_pekerjaan">Riwayat Pekerjaan</label><textarea id="riwayat_pekerjaan" name="riwayat_pekerjaan" rows="4"><?= htmlspecialchars($form["riwayat_pekerjaan"]); ?></textarea></div>
+                <div class="form-group"><label for="tanggal_riwayat_pekerjaan">Tanggal Riwayat Pekerjaan</label><input type="date" id="tanggal_riwayat_pekerjaan" name="tanggal_riwayat_pekerjaan" value="<?= htmlspecialchars($form["tanggal_riwayat_pekerjaan"]); ?>"></div>
+                <div class="form-group form-group-full"><label for="riwayat_pendidikan">Riwayat Pendidikan</label><textarea id="riwayat_pendidikan" name="riwayat_pendidikan" rows="4"><?= htmlspecialchars($form["riwayat_pendidikan"]); ?></textarea></div>
+                <div class="form-group"><label for="tanggal_riwayat_pendidikan">Tanggal Riwayat Pendidikan</label><input type="date" id="tanggal_riwayat_pendidikan" name="tanggal_riwayat_pendidikan" value="<?= htmlspecialchars($form["tanggal_riwayat_pendidikan"]); ?>"></div>
 
 
 
