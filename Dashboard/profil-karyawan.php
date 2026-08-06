@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 require __DIR__ . "/koneksi.php";
 require_once __DIR__ . "/fungsi/auth.php";
+require_once __DIR__ . "/fungsi/media-karyawan.php";
 
 wajibLogin();
+siapkanKolomProfil($conn);
 
 $id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
 $karyawan = null;
@@ -103,6 +105,20 @@ require __DIR__ . "/partials/atas.php";
             </article>
 
             <article class="profile-card">
+                <h3>Detail Karyawan</h3>
+                <dl class="profile-details">
+                    <div><dt>NIK</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "nik")); ?></dd></div>
+                    <div><dt>Alamat</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "alamat"))); ?></dd></div>
+                    <div><dt>Tanggal Lahir</dt><dd><?= htmlspecialchars(tanggalProfil($karyawan, "tanggal_lahir")); ?></dd></div>
+                    <div><dt>Agama</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "agama")); ?></dd></div>
+                    <div><dt>Jenis Kelamin</dt><dd><?= htmlspecialchars($genderTampil); ?></dd></div>
+                    <div><dt>Status Kawin</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "marital_status")); ?></dd></div>
+                    <div><dt>Kontak</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "kontak")); ?></dd></div>
+                    <div><dt>Email</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "email")); ?></dd></div>
+                </dl>
+            </article>
+
+            <article class="profile-card">
                 <h3>Status Pekerjaan</h3>
                 <dl class="profile-details">
                     <div><dt>Posisi</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "position")); ?></dd></div>
@@ -119,6 +135,11 @@ require __DIR__ . "/partials/atas.php";
                 <?php else: ?>
                     <p class="empty-data">CV belum diunggah.</p>
                 <?php endif; ?>
+                <?php foreach (["file_ijazah" => "Ijazah", "file_mcu" => "MCU"] as $kolomDokumen => $labelDokumen): ?>
+                    <?php if (!empty($karyawan[$kolomDokumen] ?? "") && is_file(__DIR__ . "/uploads/" . ($kolomDokumen === "file_ijazah" ? "ijazah" : "mcu") . "/" . basename((string) $karyawan[$kolomDokumen]))): ?>
+                        <a class="btn btn-primary" target="_blank" rel="noopener" href="uploads/<?= $kolomDokumen === "file_ijazah" ? "ijazah" : "mcu"; ?>/<?= rawurlencode(basename((string) $karyawan[$kolomDokumen])); ?>">Lihat / Unduh <?= $labelDokumen; ?> (PDF)</a>
+                    <?php else: ?><p class="empty-data"><?= $labelDokumen; ?> belum diunggah.</p><?php endif; ?>
+                <?php endforeach; ?>
             </article>
         </div>
 
