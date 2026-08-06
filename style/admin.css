@@ -415,7 +415,7 @@
 
         table {
             width: 100%;
-            min-width: 1250px;
+            min-width: 1450px;
             border-collapse: collapse;
         }
 
@@ -449,7 +449,7 @@
 
         th,
         td {
-            padding: 9px 8px;
+            padding: 12px 10px;
             border-bottom: 1px solid #e2e8f0;
             text-align: left;
             vertical-align: middle;
@@ -458,28 +458,6 @@
 
         th {
             white-space: nowrap;
-            text-align: center;
-        }
-
-        th .sort-link,
-        th .sort-link:visited,
-        .sort-link,
-        .sort-link:visited {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            color: #ffffff !important;
-            text-decoration: none !important;
-            font-weight: 700;
-        }
-
-        th .sort-link:hover,
-        th .sort-link.active {
-            color: #e9ddff !important;
-        }
-
-        .aksi-kolom {
-            text-align: center;
         }
 
         tbody tr:nth-child(even) {
@@ -501,7 +479,6 @@
 
         .action-buttons {
             display: flex;
-            justify-content: center;
             gap: 7px;
             white-space: nowrap;
         }

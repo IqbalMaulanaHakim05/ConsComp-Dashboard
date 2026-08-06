@@ -51,7 +51,7 @@ $aksiTopbar = $aksiTopbar ?? "";
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=<?= (int) filemtime(__DIR__ . "/../../style/admin.css"); ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260806-print2">
 </head>
 
 <body>
