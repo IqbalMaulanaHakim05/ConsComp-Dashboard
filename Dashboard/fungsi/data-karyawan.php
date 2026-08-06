@@ -114,11 +114,18 @@ function ambilDataGrafik(mysqli $conn): array
         $jumlahPerforma[] = (int) $row["jumlah"];
     }
 
+    $labelGender = ["Laki-laki", "Perempuan"];
+    $jumlahGender = [0, 0];
+    $queryGender = mysqli_query($conn, "SELECT gender, COUNT(*) AS jumlah FROM karyawan WHERE gender IN ('M', 'F') GROUP BY gender");
+    if ($queryGender) while ($row = mysqli_fetch_assoc($queryGender)) $jumlahGender[$row["gender"] === "F" ? 1 : 0] = (int) $row["jumlah"];
+
     return [
         "labelDepartemen" => $labelDepartemen,
         "jumlahDepartemen" => $jumlahDepartemen,
         "labelPerforma" => $labelPerforma,
         "jumlahPerforma" => $jumlahPerforma,
+        "labelGender" => $labelGender,
+        "jumlahGender" => $jumlahGender,
     ];
 }
 
