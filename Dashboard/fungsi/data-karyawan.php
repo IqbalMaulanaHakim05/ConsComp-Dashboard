@@ -159,6 +159,21 @@ function ambilDataKaryawan(
     }
 
     $pencarian = "%" . $kataKunci . "%";
+    $kolomUrut = [
+        "nomor" => "id",
+        "emp_id" => "emp_id",
+        "nama" => "employee_name",
+        "posisi" => "position",
+        "departemen" => "department",
+        "gaji" => "salary",
+        "tanggal_masuk" => "date_of_hire",
+        "status_kerja" => "employment_status",
+        "performa" => "performance_score",
+    ];
+    $sort = (string) ($_GET["sort"] ?? "");
+    $arah = strtolower((string) ($_GET["arah"] ?? "desc"));
+    $arah = $arah === "asc" ? "ASC" : "DESC";
+    $klausaUrut = " ORDER BY " . ($kolomUrut[$sort] ?? "id") . " " . $arah;
 
     // 1. Menghitung total data yang cocok lebih dulu (dasar pagination).
     if ($kataKunci !== "") {
@@ -215,7 +230,7 @@ function ambilDataKaryawan(
 
     // 3. Mengambil data sesuai halaman.
     if ($kataKunci !== "") {
-        $sql = "SELECT * FROM karyawan WHERE " . $kondisiFilter . " ORDER BY id DESC" . $klausaLimit;
+        $sql = "SELECT * FROM karyawan WHERE " . $kondisiFilter . $klausaUrut . $klausaLimit;
 
         $stmt = mysqli_prepare($conn, $sql);
 
@@ -236,7 +251,7 @@ function ambilDataKaryawan(
             $conn,
             "SELECT *
              FROM karyawan
-             ORDER BY id DESC" . $klausaLimit
+             " . $klausaUrut . $klausaLimit
         );
 
         if (!$hasil) {
@@ -250,6 +265,8 @@ function ambilDataKaryawan(
         "totalCocok" => $totalCocok,
         "kataKunci" => $kataKunci,
         "filterKolom" => $filterKolom,
+        "sort" => $sort,
+        "arah" => strtolower($arah),
         "batas" => $batas,
         "batasDiizinkan" => $batasDiizinkan,
         "tanpaBatas" => $tanpaBatas,

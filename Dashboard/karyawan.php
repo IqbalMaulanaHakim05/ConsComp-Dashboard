@@ -25,6 +25,8 @@ $izinkanSemua = $data["izinkanSemua"];
 $halaman = $data["halaman"];
 $totalHalaman = $data["totalHalaman"];
 $offset = $data["offset"];
+$sort = $data["sort"];
+$arah = $data["arah"];
 
 $judulHalaman = "Data Karyawan";
 $subjudulHalaman = "Seluruh data karyawan perusahaan.";
