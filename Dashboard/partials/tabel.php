@@ -226,7 +226,7 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
                             <td>
                                 <div class="action-buttons">
                                     <a
-                                        href="fungsi/edit.php?id=<?= (int) $row["id"]; ?>"
+                                        href="profil-karyawan.php?id=<?= (int) $row["id"]; ?>&edit=1"
                                         class="btn btn-warning"
                                     >
                                         Edit
