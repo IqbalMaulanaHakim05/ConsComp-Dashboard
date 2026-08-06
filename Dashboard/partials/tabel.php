@@ -31,6 +31,23 @@ if ($kataKunci !== "") {
 }
 $paramDasar["filter"] = $filterKolom ?? "semua";
 $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
+$sort = $sort ?? "";
+$arah = $arah ?? "desc";
+
+function tautanSortirTabel(string $label, string $kolom, array $parameter, string $sort, string $arah): string
+{
+    $aktif = $sort === $kolom;
+    $arahBerikutnya = $aktif && $arah === "asc" ? "desc" : "asc";
+    $ikon = !$aktif ? "↕" : ($arah === "asc" ? "↑" : "↓");
+    $query = http_build_query(array_merge($parameter, [
+        "sort" => $kolom,
+        "arah" => $arahBerikutnya,
+        "hal" => 1,
+    ]));
+
+    return '<a class="sort-link' . ($aktif ? ' active' : '') . '" data-sort-link href="?' . htmlspecialchars($query) . '">'
+        . htmlspecialchars($label) . ' <span aria-hidden="true">' . $ikon . '</span></a>';
+}
 
 ?>
     <section class="data-card">
@@ -115,17 +132,17 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
             <table>
                 <thead>
                 <tr>
-                    <th>No.</th>
-                    <th>ID Karyawan</th>
-                    <th>Nama</th>
-                    <th>Posisi</th>
-                    <th>Departemen</th>
-                    <th>Gaji</th>
-                    <th>Tanggal Masuk</th>
-                    <th>Status Kerja</th>
-                    <th>Performa</th>
+                    <th><?= tautanSortirTabel("No.", "nomor", $paramDasar, $sort, $arah); ?></th>
+                    <th><?= tautanSortirTabel("ID Karyawan", "emp_id", $paramDasar, $sort, $arah); ?></th>
+                    <th><?= tautanSortirTabel("Nama", "nama", $paramDasar, $sort, $arah); ?></th>
+                    <th><?= tautanSortirTabel("Posisi", "posisi", $paramDasar, $sort, $arah); ?></th>
+                    <th><?= tautanSortirTabel("Departemen", "departemen", $paramDasar, $sort, $arah); ?></th>
+                    <th><?= tautanSortirTabel("Gaji", "gaji", $paramDasar, $sort, $arah); ?></th>
+                    <th><?= tautanSortirTabel("Tanggal Masuk", "tanggal_masuk", $paramDasar, $sort, $arah); ?></th>
+                    <th><?= tautanSortirTabel("Status Kerja", "status_kerja", $paramDasar, $sort, $arah); ?></th>
+                    <th><?= tautanSortirTabel("Performa", "performa", $paramDasar, $sort, $arah); ?></th>
                     <?php if ($bolehAksi): ?>
-                        <th>Aksi</th>
+                        <th class="aksi-kolom">Aksi</th>
                     <?php endif; ?>
                 </tr>
                 </thead>
@@ -140,7 +157,7 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
                         $row = mysqli_fetch_assoc($hasil)
                     ): ?>
                         <tr>
-                            <td>
+                            <td class="aksi-kolom">
                                 <?= $nomor++; ?>
                             </td>
 
