@@ -5,10 +5,13 @@ require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/audit.php";
 require_once __DIR__ . "/media-karyawan.php";
 require_once __DIR__ . "/sinkronisasi.php";
+require_once __DIR__ . "/master-data.php";
 
 wajibRole("admin", "superadmin");
 siapkanKolomMedia($conn);
 siapkanKolomProfil($conn);
+siapkanMasterData($conn);
+$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
 
 $pesan = "";
 
@@ -23,7 +26,7 @@ $form = [
     "marital_status" => "",
     "kontak" => "",
     "email" => "",
-    "emp_id" => "",
+    "emp_id" => buatIdKaryawanOtomatis($conn),
     "position" => "",
     "department" => "",
     "salary" => "",
@@ -180,6 +183,7 @@ require __DIR__ . "/../partials/atas.php";
                         id="emp_id"
                         name="emp_id"
                         value="<?= htmlspecialchars($form["emp_id"]); ?>"
+                        readonly
                         placeholder="Contoh: EMP001"
                         maxlength="50"
                         required
@@ -205,14 +209,10 @@ require __DIR__ . "/../partials/atas.php";
                     <label for="department">
                         Departemen <span class="required">*</span>
                     </label>
-                    <input
-                        type="text"
+                    <select
                         id="department"
                         name="department"
-                        value="<?= htmlspecialchars($form["department"]); ?>"
-                        placeholder="Contoh: Teknologi Informasi"
-                        maxlength="120"
-                        required>
+                        required><option value="">Pilih departemen</option><?php foreach ($masterDepartemen as $item): ?><option <?= $form["department"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                 </div>
 
 
@@ -220,28 +220,21 @@ require __DIR__ . "/../partials/atas.php";
                     <label for="position">
                         Posisi <span class="required">*</span>
                     </label>
-                    <input
+                    <select
                         type="text"
                         id="position"
                         name="position"
-                        value="<?= htmlspecialchars($form["position"]); ?>"
-                        placeholder="Contoh: Software Engineer"
-                        maxlength="120"
-                        required>
+                        required><option value="">Pilih posisi</option><?php foreach ($masterPosisi as $item): ?><option <?= $form["position"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                 </div>
 
                 <div class="form-group">
                     <label for="employment_status">
                         Status Kerja <span class="required">*</span>
                     </label>
-                    <input
-                        type="text"
+                    <select
                         id="employment_status"
                         name="employment_status"
-                        value="<?= htmlspecialchars($form["employment_status"]); ?>"
-                        placeholder="Contoh: Aktif"
-                        maxlength="100"
-                        required>
+                            required><option value="">Pilih status kerja</option><?php foreach ($masterStatus as $item): ?><option <?= $form["employment_status"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                 </div>
 
                 <div class="form-group">

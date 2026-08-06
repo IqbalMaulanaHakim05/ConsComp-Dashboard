@@ -51,7 +51,7 @@ $aksiTopbar = $aksiTopbar ?? "";
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260806-darkcharts">
+    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260806-masterui">
 </head>
 
 <body>
@@ -108,6 +108,9 @@ $aksiTopbar = $aksiTopbar ?? "";
                 >
                     Pengaturan Halaman Publik
                 </a>
+                <?php if (punyaRole("superadmin")): ?>
+                    <a href="<?= htmlspecialchars(URL_DASAR); ?>master-data.php" class="<?= $halamanAktif === "master-data" ? "active" : ""; ?>">Master Departemen, Posisi &amp; Status</a>
+                <?php endif; ?>
 
                 <a
                     href="<?= htmlspecialchars(URL_DASAR); ?>pengguna.php"

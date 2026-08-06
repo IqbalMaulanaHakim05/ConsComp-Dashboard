@@ -1,21 +1,21 @@
 ﻿Employee_Name,EmpID,Position,Department,Salary,Sex,MaritalDesc,DateofHire,EmploymentStatus,PerformanceScore
-"Andi Pratama",EMP001,"Software Developer",IT,8500000.00,M,Single,2022-01-10,Active,88
-"Siti Rahmawati",EMP002,"HR Officer","Human Resources",6500000.00,F,Married,2021-03-15,Active,92
-"Budi Santoso",EMP003,Accountant,Finance,7000000.00,M,Married,2020-07-01,Active,84
-"Dewi Lestari",EMP004,"Marketing Specialist",Marketing,6800000.00,F,Single,2023-02-20,Active,90
-"Rizky Maulana",EMP005,"Network Administrator",IT,7800000.00,M,Single,2021-11-08,Active,86
-"Nabila Putri",EMP006,"Customer Service",Operations,5200000.00,F,Single,2024-01-05,Active,81
-"Fajar Nugroho",EMP007,"Sales Executive",Sales,6200000.00,M,Married,2022-06-13,Active,89
-"Maya Sari",EMP008,"Data Analyst",IT,8200000.00,F,Single,2023-04-17,Active,94
-"Arif Hidayat",EMP009,"Warehouse Supervisor",Operations,6400000.00,M,Married,2019-09-23,Active,83
-"Rina Kusuma",EMP010,"Procurement Staff",Procurement,6000000.00,F,Married,2020-12-07,Active,87
-"Dimas Saputra",EMP011,"UI/UX Designer",IT,7600000.00,M,Single,2023-08-14,Active,91
-"Ayu Wulandari",EMP012,"Legal Officer",Legal,7900000.00,F,Single,2021-05-24,Active,85
-"Yoga Prasetyo",EMP013,"Quality Control",Production,5900000.00,M,Married,2022-10-03,Active,82
-"Intan Permata",EMP014,"Recruitment Specialist","Human Resources",6700000.00,F,Single,2023-06-19,Active,93
-"Reza Kurniawan",EMP015,"Production Planner",Production,7100000.00,M,Married,2020-02-11,Active,80
-"Putri Amelia",EMP016,"Business Analyst",Strategy,8300000.00,F,Single,2022-09-12,Active,95
-"Hendra Wijaya",EMP017,"Maintenance Technician",Engineering,6100000.00,M,Married,2019-04-29,Active,78
-"Lina Marlina",EMP018,"Office Administrator","General Affairs",5500000.00,F,Married,2024-03-04,Active,86
-"Galih Ramadhan",EMP019,"Security Supervisor",Security,5800000.00,M,Married,2021-08-30,Active,79
-"Nanda Safitri",EMP020,"Content Writer",Marketing,6300000.00,F,Single,2023-11-06,Active,90
+"Andi Pratama",EMP001,"Software Developer",IT,8500000.00,M,Single,2022-01-10,Aktif,88
+"Siti Rahmawati",EMP002,"HR Officer","Human Resources",6500000.00,F,Married,2021-03-15,Aktif,92
+"Budi Santoso",EMP003,Accountant,Finance,7000000.00,M,Married,2020-07-01,Aktif,84
+"Dewi Lestari",EMP004,"Marketing Specialist",Marketing,6800000.00,F,Single,2023-02-20,Aktif,90
+"Rizky Maulana",EMP005,"Network Administrator",IT,7800000.00,M,Single,2021-11-08,Aktif,86
+"Nabila Putri",EMP006,"Customer Service",Operations,5200000.00,F,Single,2024-01-05,Aktif,81
+"Fajar Nugroho",EMP007,"Sales Executive",Sales,6200000.00,M,Married,2022-06-13,Aktif,89
+"Maya Sari",EMP008,"Data Analyst",IT,8200000.00,F,Single,2023-04-17,Aktif,94
+"Arif Hidayat",EMP009,"Warehouse Supervisor",Operations,6400000.00,M,Married,2019-09-23,Aktif,83
+"Rina Kusuma",EMP010,"Procurement Staff",Procurement,6000000.00,F,Married,2020-12-07,Aktif,87
+"Dimas Saputra",EMP011,"UI/UX Designer",IT,7600000.00,M,Single,2023-08-14,Aktif,91
+"Ayu Wulandari",EMP012,"Legal Officer",Legal,7900000.00,F,Single,2021-05-24,Aktif,85
+"Yoga Prasetyo",EMP013,"Quality Control",Production,5900000.00,M,Married,2022-10-03,Aktif,82
+"Intan Permata",EMP014,"Recruitment Specialist","Human Resources",6700000.00,F,Single,2023-06-19,Aktif,93
+"Reza Kurniawan",EMP015,"Production Planner",Production,7100000.00,M,Married,2020-02-11,Aktif,80
+"Putri Amelia",EMP016,"Business Analyst",Strategy,8300000.00,F,Single,2022-09-12,Aktif,95
+"Hendra Wijaya",EMP017,"Maintenance Technician",Engineering,6100000.00,M,Married,2019-04-29,Aktif,78
+"Lina Marlina",EMP018,"Office Administrator","General Affairs",5500000.00,F,Married,2024-03-04,Aktif,86
+"Galih Ramadhan",EMP019,"Security Supervisor",Security,5800000.00,M,Married,2021-08-30,Aktif,79
+"Nanda Safitri",EMP020,"Content Writer",Marketing,6300000.00,F,Single,2023-11-06,Aktif,90
