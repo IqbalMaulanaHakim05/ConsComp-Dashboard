@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
 |--------------------------------------------------------------------------
 | Autentikasi & otorisasi.
-| Login berbasis tabel `users` dengan tiga peran: superadmin, admin, viewer.
+| Login berbasis tabel `users` dengan dua peran: superadmin dan admin.
 |--------------------------------------------------------------------------
 */
 
@@ -51,7 +51,12 @@ if (!defined('URL_DASAR')) {
 
 function sudahLogin(): bool
 {
-    return isset($_SESSION['user']['id']);
+    return isset($_SESSION['user']['id'])
+        && in_array(
+            (string) ($_SESSION['user']['role'] ?? ''),
+            ['admin', 'superadmin'],
+            true
+        );
 }
 
 function penggunaAktif(): ?array

@@ -16,11 +16,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $hapusId = (int) ($_POST["id"] ?? 0);
         $superadminAktif = (int) ($_SESSION["user"]["id"] ?? 0);
 
-        $jumlahSuperadmin = (int) (mysqli_fetch_assoc(mysqli_query(
-            $conn,
-            "SELECT COUNT(*) AS total FROM users WHERE role = 'superadmin'"
-        ))["total"] ?? 0);
-
         $target = mysqli_fetch_assoc(mysqli_query(
             $conn,
             "SELECT role FROM users WHERE id = " . $hapusId . " LIMIT 1"
@@ -29,11 +24,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (!csrfValid($_POST["csrf_token"] ?? null)) {
             $pesan = "Sesi formulir tidak valid.";
             $tipePesan = "error";
+        } elseif (($target["role"] ?? "") !== "admin") {
+            $pesan = "Hanya akun admin yang dapat dihapus.";
+            $tipePesan = "error";
         } elseif ($hapusId === $superadminAktif) {
             $pesan = "Akun yang sedang digunakan tidak dapat dihapus.";
-            $tipePesan = "error";
-        } elseif (($target["role"] ?? "") === "superadmin" && $jumlahSuperadmin <= 1) {
-            $pesan = "Superadmin terakhir tidak dapat dihapus.";
             $tipePesan = "error";
         } else {
             $hapus = mysqli_prepare($conn, "DELETE FROM users WHERE id = ?");
@@ -57,13 +52,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $nama = trim((string) ($_POST["nama"] ?? ""));
         $username = trim((string) ($_POST["username"] ?? ""));
         $password = (string) ($_POST["password"] ?? "");
-        $role = (string) ($_POST["role"] ?? "viewer");
+        $role = "admin";
 
         if ($nama === "" || $username === "" || strlen($password) < 8) {
             $pesan = "Nama, username, dan password minimal 8 karakter wajib diisi.";
-            $tipePesan = "error";
-        } elseif (!in_array($role, ["admin", "viewer", "superadmin"], true)) {
-            $pesan = "Role pengguna tidak valid.";
             $tipePesan = "error";
         } else {
             $stmt = mysqli_prepare(
@@ -100,7 +92,7 @@ $daftarPengguna = mysqli_query(
 );
 
 $judulHalaman = "Manajemen Admin";
-$subjudulHalaman = "Kelola akun dan hak akses pengguna sistem.";
+$subjudulHalaman = "Kelola akun dengan akses admin.";
 $halamanAktif = "pengguna";
 
 require __DIR__ . "/partials/atas.php";
@@ -109,8 +101,8 @@ require __DIR__ . "/partials/atas.php";
     <div class="dashboard-chart">
         <section class="form-card">
             <div class="form-card-header">
-                <h2>Tambah Akun</h2>
-                <p>Buat akun baru untuk mengakses sistem.</p>
+                <h2>Tambah Admin</h2>
+                <p>Buat akun baru dengan akses admin.</p>
             </div>
 
             <div class="form-body">
@@ -138,12 +130,8 @@ require __DIR__ . "/partials/atas.php";
                     </div>
 
                     <div class="form-group">
-                        <label for="role">Role</label>
-                        <select id="role" name="role">
-                            <option value="viewer">Viewer</option>
-                            <option value="admin">Admin</option>
-                            <option value="superadmin">Superadmin</option>
-                        </select>
+                        <label>Role</label>
+                        <input value="Admin" readonly aria-label="Role akun baru">
                     </div>
 
                     <div class="form-actions">
@@ -175,22 +163,26 @@ require __DIR__ . "/partials/atas.php";
                                 <td><?= htmlspecialchars($pengguna["username"]); ?></td>
                                 <td><span class="badge"><?= htmlspecialchars(ucfirst($pengguna["role"])); ?></span></td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <a class="btn btn-warning" href="edit-pengguna.php?id=<?= (int) $pengguna["id"]; ?>">
-                                            Edit
-                                        </a>
+                                    <?php if ($pengguna["role"] === "admin"): ?>
+                                        <div class="action-buttons">
+                                            <a class="btn btn-warning" href="edit-pengguna.php?id=<?= (int) $pengguna["id"]; ?>">
+                                                Edit
+                                            </a>
 
-                                        <form
-                                            method="POST"
-                                            style="display:inline"
-                                            onsubmit="return confirm('Hapus akun ini?');"
-                                        >
-                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
-                                            <input type="hidden" name="aksi" value="hapus">
-                                            <input type="hidden" name="id" value="<?= (int) $pengguna["id"]; ?>">
-                                            <button class="btn btn-danger" type="submit">Hapus</button>
-                                        </form>
-                                    </div>
+                                            <form
+                                                method="POST"
+                                                style="display:inline"
+                                                onsubmit="return confirm('Hapus akun ini?');"
+                                            >
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+                                                <input type="hidden" name="aksi" value="hapus">
+                                                <input type="hidden" name="id" value="<?= (int) $pengguna["id"]; ?>">
+                                                <button class="btn btn-danger" type="submit">Hapus</button>
+                                            </form>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="field-note">Akun terlindungi</span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

@@ -96,7 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button class="submit" type="submit">Masuk ke Dashboard</button>
         </form>
 
-        <!-- <p class="hint">Akun awal &mdash; <strong>superadmin</strong>/super123, <strong>admin</strong>/admin123, <strong>viewer</strong>/viewer123. Demi keamanan, ganti password akun-akun ini di tabel <code>users</code> sebelum aplikasi digunakan secara publik.</p> -->
     </main>
 </div>
 <script>

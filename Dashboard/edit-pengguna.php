@@ -23,15 +23,20 @@ if (!$pengguna) {
     die("Akun tidak ditemukan.");
 }
 
+if ($pengguna["role"] !== "admin") {
+    http_response_code(403);
+    die("403 - Akun superadmin tidak dapat dikelola dari halaman ini.");
+}
+
 $pesan = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nama = trim((string) ($_POST["nama"] ?? ""));
-    $role = (string) ($_POST["role"] ?? "viewer");
+    $role = "admin";
     $password = (string) ($_POST["password"] ?? "");
 
-    if ($nama === "" || !in_array($role, ["admin", "viewer", "superadmin"], true)) {
-        $pesan = "Nama dan role wajib valid.";
+    if ($nama === "") {
+        $pesan = "Nama wajib diisi.";
     } elseif ($password !== "" && strlen($password) < 8) {
         $pesan = "Password baru minimal 8 karakter.";
     } else {
@@ -98,12 +103,8 @@ require __DIR__ . "/partials/atas.php";
                     </div>
 
                     <div class="form-group">
-                        <label for="role">Role</label>
-                        <select id="role" name="role">
-                            <option value="viewer" <?= $pengguna["role"] === "viewer" ? "selected" : ""; ?>>Viewer</option>
-                            <option value="admin" <?= $pengguna["role"] === "admin" ? "selected" : ""; ?>>Admin</option>
-                            <option value="superadmin" <?= $pengguna["role"] === "superadmin" ? "selected" : ""; ?>>Superadmin</option>
-                        </select>
+                        <label>Role</label>
+                        <input value="Admin" readonly aria-label="Role akun">
                     </div>
 
                     <div class="form-group full-width">
