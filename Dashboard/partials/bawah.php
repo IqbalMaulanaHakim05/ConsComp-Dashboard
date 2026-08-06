@@ -13,6 +13,18 @@
         const sidebar = document.getElementById("sidebar");
         sidebar.classList.toggle("show");
     }
+
+    const posisiSort = sessionStorage.getItem("posisi-sort-tabel");
+    if (posisiSort !== null) {
+        sessionStorage.removeItem("posisi-sort-tabel");
+        requestAnimationFrame(() => window.scrollTo(0, Number(posisiSort)));
+    }
+
+    document.querySelectorAll("[data-sort-link]").forEach((tautan) => {
+        tautan.addEventListener("click", () => {
+            sessionStorage.setItem("posisi-sort-tabel", String(window.scrollY));
+        });
+    });
 </script>
 
 </body>
