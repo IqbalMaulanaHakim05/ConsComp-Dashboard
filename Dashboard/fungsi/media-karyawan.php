@@ -14,6 +14,7 @@ function siapkanKolomMedia(mysqli $conn): void
     foreach ([
         "foto_profil" => "VARCHAR(255) NULL",
         "file_cv" => "VARCHAR(255) NULL",
+        "file_cv_generated" => "VARCHAR(255) NULL",
         "file_ijazah" => "VARCHAR(255) NULL",
         "file_mcu" => "VARCHAR(255) NULL",
     ] as $kolom => $tipe) {

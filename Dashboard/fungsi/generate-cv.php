@@ -60,7 +60,7 @@ $namaFile = sprintf(
 );
 $pathAkhir = $folderCv . DIRECTORY_SEPARATOR . $namaFile;
 $pathSementara = $pathAkhir . ".tmp";
-$fileCvLama = basename((string) ($karyawan["file_cv"] ?? ""));
+$fileCvLama = basename((string) ($karyawan["file_cv_generated"] ?? ""));
 $transaksiAktif = false;
 
 try {
@@ -75,7 +75,7 @@ try {
 
     mysqli_begin_transaction($conn);
     $transaksiAktif = true;
-    $update = mysqli_prepare($conn, "UPDATE karyawan SET file_cv = ? WHERE id = ?");
+    $update = mysqli_prepare($conn, "UPDATE karyawan SET file_cv_generated = ? WHERE id = ?");
     if (!$update) {
         throw new RuntimeException("Pembaruan profil karyawan gagal disiapkan.");
     }
