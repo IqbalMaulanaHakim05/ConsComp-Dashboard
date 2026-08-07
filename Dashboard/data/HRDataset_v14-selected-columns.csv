@@ -1,5 +1,4 @@
 ﻿Employee_Name,EmpID,Position,Department,Salary,Sex,MaritalDesc,DateofHire,EmploymentStatus,PerformanceScore
-"Andi Pratama",EMP001,"Software Developer",IT,8500000.00,M,Single,2022-01-10,Aktif,88
 "Siti Rahmawati",EMP002,"HR Officer","Human Resources",6500000.00,F,Married,2021-03-15,Aktif,92
 "Budi Santoso",EMP003,Accountant,Finance,7000000.00,M,Married,2020-07-01,Aktif,84
 "Dewi Lestari",EMP004,"Marketing Specialist",Marketing,6800000.00,F,Single,2023-02-20,Aktif,90

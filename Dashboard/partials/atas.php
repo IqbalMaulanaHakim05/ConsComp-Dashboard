@@ -197,4 +197,8 @@ $aksiTopbar = $aksiTopbar ?? "";
             <strong><?= (int) ($_GET["jumlah"] ?? 0); ?></strong>
             data karyawan telah menggantikan data SQL sebelumnya.
         </div>
+    <?php elseif ($pesanNotifikasi === "cv-berhasil"): ?>
+        <div class="alert">
+            CV PDF berhasil dibuat, disimpan ke profil karyawan, dan siap diunduh.
+        </div>
     <?php endif; ?>
