@@ -26,6 +26,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $warnaHero = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($_POST["warna_hero"] ?? ""))
         ? $_POST["warna_hero"]
         : "#0f172a";
+    $warnaDashboardAwal = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($_POST["warna_dashboard_awal"] ?? "")) ? $_POST["warna_dashboard_awal"] : "#1e3a8a";
+    $warnaDashboardAkhir = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($_POST["warna_dashboard_akhir"] ?? "")) ? $_POST["warna_dashboard_akhir"] : "#2563eb";
+    $warnaPieLaki = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($_POST["warna_pie_laki"] ?? "")) ? $_POST["warna_pie_laki"] : "#2563eb";
+    $warnaPiePerempuan = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($_POST["warna_pie_perempuan"] ?? "")) ? $_POST["warna_pie_perempuan"] : "#ec4899";
+    $warnaBarAwal = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($_POST["warna_bar_awal"] ?? "")) ? $_POST["warna_bar_awal"] : "#2563eb";
+    $warnaBarAkhir = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($_POST["warna_bar_akhir"] ?? "")) ? $_POST["warna_bar_akhir"] : "#93c5fd";
 
     if ($nama === "" || $judul === "" || $deskripsi === "" || $tombol === "") {
         $pesan = "Semua kolom teks wajib diisi.";
@@ -35,18 +41,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $conn,
             "UPDATE pengaturan_publik
              SET nama_situs = ?, judul_hero = ?, deskripsi_hero = ?,
-                 teks_tombol = ?, warna_utama = ?, warna_hero = ?
+                 teks_tombol = ?, warna_utama = ?, warna_hero = ?, warna_dashboard_awal = ?, warna_dashboard_akhir = ?, warna_pie_laki = ?, warna_pie_perempuan = ?, warna_bar_awal = ?, warna_bar_akhir = ?
              WHERE id = 1"
         );
         mysqli_stmt_bind_param(
             $stmt,
-            "ssssss",
+            "ssssssssssss",
             $nama,
             $judul,
             $deskripsi,
             $tombol,
             $warnaUtama,
-            $warnaHero
+            $warnaHero, $warnaDashboardAwal, $warnaDashboardAkhir, $warnaPieLaki, $warnaPiePerempuan, $warnaBarAwal, $warnaBarAkhir
         );
 
         if ($stmt && mysqli_stmt_execute($stmt)) {
@@ -95,6 +101,13 @@ require __DIR__ . "/partials/atas.php";
                             required
                         >
                     </div>
+
+                    <div class="form-group"><label for="warna_dashboard_awal">Gradien Dashboard Awal</label><input id="warna_dashboard_awal" type="color" name="warna_dashboard_awal" value="<?= htmlspecialchars($data["warna_dashboard_awal"] ?? "#1e3a8a"); ?>"></div>
+                    <div class="form-group"><label for="warna_dashboard_akhir">Gradien Dashboard Akhir</label><input id="warna_dashboard_akhir" type="color" name="warna_dashboard_akhir" value="<?= htmlspecialchars($data["warna_dashboard_akhir"] ?? "#2563eb"); ?>"></div>
+                    <div class="form-group"><label for="warna_pie_laki">Pie Laki-laki</label><input id="warna_pie_laki" type="color" name="warna_pie_laki" value="<?= htmlspecialchars($data["warna_pie_laki"] ?? "#2563eb"); ?>"></div>
+                    <div class="form-group"><label for="warna_pie_perempuan">Pie Perempuan</label><input id="warna_pie_perempuan" type="color" name="warna_pie_perempuan" value="<?= htmlspecialchars($data["warna_pie_perempuan"] ?? "#ec4899"); ?>"></div>
+                    <div class="form-group"><label for="warna_bar_awal">Bar Awal</label><input id="warna_bar_awal" type="color" name="warna_bar_awal" value="<?= htmlspecialchars($data["warna_bar_awal"] ?? "#2563eb"); ?>"></div>
+                    <div class="form-group"><label for="warna_bar_akhir">Bar Akhir</label><input id="warna_bar_akhir" type="color" name="warna_bar_akhir" value="<?= htmlspecialchars($data["warna_bar_akhir"] ?? "#93c5fd"); ?>"></div>
 
                     <div class="form-group">
                         <label for="teks_tombol">Teks Tombol Hero</label>

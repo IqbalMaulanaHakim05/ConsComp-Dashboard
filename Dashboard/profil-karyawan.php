@@ -5,9 +5,12 @@ declare(strict_types=1);
 require __DIR__ . "/koneksi.php";
 require_once __DIR__ . "/fungsi/auth.php";
 require_once __DIR__ . "/fungsi/media-karyawan.php";
+require_once __DIR__ . "/fungsi/master-data.php";
 
 wajibLogin();
 siapkanKolomProfil($conn);
+siapkanMasterData($conn);
+$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
 
 $id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
 $karyawan = null;
@@ -104,7 +107,9 @@ require __DIR__ . "/partials/atas.php";
                     ?>
                         <div class="form-group">
                             <label for="profile_<?= $field; ?>"><?= $label; ?></label>
-                            <?php if ($field === "alamat" || $field === "biografi"): ?>
+                            <?php if ($field === "position" || $field === "department" || $field === "employment_status"): ?>
+                                <select id="profile_<?= $field; ?>" name="<?= $field; ?>" required><option value="">Pilih</option><?php foreach (($field === "position" ? $masterPosisi : ($field === "department" ? $masterDepartemen : $masterStatus)) as $item): ?><option <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                            <?php elseif ($field === "alamat" || $field === "biografi"): ?>
                                 <textarea id="profile_<?= $field; ?>" name="<?= $field; ?>" rows="4"><?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?></textarea>
                             <?php elseif ($field === "gender"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>" required><option value="M" <?= ($karyawan[$field] ?? "") === "M" ? "selected" : ""; ?>>Laki-laki</option><option value="F" <?= ($karyawan[$field] ?? "") === "F" ? "selected" : ""; ?>>Perempuan</option></select>
@@ -218,7 +223,7 @@ require __DIR__ . "/partials/atas.php";
             </dl>
         </article>
 
-        <article class="profile-card">
+        <article class="profile-card profile-documents-card">
             <h3>Dokumen Pendukung</h3>
             <?php if ($modeEdit): ?>
                 <div class="profile-document-edit-grid">

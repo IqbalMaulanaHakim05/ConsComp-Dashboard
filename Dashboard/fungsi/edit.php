@@ -5,10 +5,13 @@ require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/audit.php";
 require_once __DIR__ . "/media-karyawan.php";
 require_once __DIR__ . "/sinkronisasi.php";
+require_once __DIR__ . "/master-data.php";
 
 wajibRole("admin", "superadmin");
 siapkanKolomMedia($conn);
 siapkanKolomProfil($conn);
+siapkanMasterData($conn);
+$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -198,14 +201,14 @@ require __DIR__ . "/../partials/atas.php";
                         <label for="emp_id">
                             ID Karyawan <span class="required">*</span>
                         </label>
-                        <input
+                        <select
                             type="text"
                             id="emp_id"
                             name="emp_id"
                             value="<?= htmlspecialchars($form["emp_id"]); ?>"
                             placeholder="Contoh: EMP001"
                             maxlength="50"
-                            required
+                            readonly
                             autofocus
                         >
                         <p class="field-note">ID harus tetap unik dan tidak boleh sama dengan karyawan lain.</p>
@@ -229,7 +232,7 @@ require __DIR__ . "/../partials/atas.php";
                         <label for="employee_name">
                             Nama Karyawan <span class="required">*</span>
                         </label>
-                        <input
+                        <select
                             type="text"
                             id="employee_name"
                             name="employee_name"
@@ -261,26 +264,18 @@ require __DIR__ . "/../partials/atas.php";
                             type="text"
                             id="position"
                             name="position"
-                            value="<?= htmlspecialchars($form["position"]); ?>"
-                            placeholder="Contoh: Software Engineer"
-                            maxlength="120"
-                            required
-                        >
+                            required><option value="">Pilih posisi</option><?php foreach ($masterPosisi as $item): ?><option <?= $form["position"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                     </div>
 
                     <div class="form-group">
                         <label for="department">
                             Departemen <span class="required">*</span>
                         </label>
-                        <input
+                        <select
                             type="text"
                             id="department"
                             name="department"
-                            value="<?= htmlspecialchars($form["department"]); ?>"
-                            placeholder="Contoh: Teknologi Informasi"
-                            maxlength="120"
-                            required
-                        >
+                            required><option value="">Pilih departemen</option><?php foreach ($masterDepartemen as $item): ?><option <?= $form["department"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                     </div>
 
                     <div class="form-group">
@@ -329,11 +324,7 @@ require __DIR__ . "/../partials/atas.php";
                             type="text"
                             id="employment_status"
                             name="employment_status"
-                            value="<?= htmlspecialchars($form["employment_status"]); ?>"
-                            placeholder="Contoh: Aktif"
-                            maxlength="100"
-                            required
-                        >
+                            required><option value="">Pilih status kerja</option><?php foreach ($masterStatus as $item): ?><option <?= $form["employment_status"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                     </div>
 
                     <div class="form-group">

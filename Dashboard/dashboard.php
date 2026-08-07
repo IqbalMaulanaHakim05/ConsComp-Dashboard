@@ -9,9 +9,11 @@
 require __DIR__ . "/koneksi.php";
 require __DIR__ . "/fungsi/auth.php";
 require __DIR__ . "/fungsi/data-karyawan.php";
+require_once __DIR__ . "/fungsi/pengaturan-publik.php";
 
 // Semua peran boleh melihat dashboard, tetapi wajib login.
 wajibLogin();
+$pengaturanDashboard = ambilPengaturanPublik($conn);
 
 // Statistik untuk kartu atas.
 $statistik = ambilStatistik($conn);
@@ -25,6 +27,8 @@ $labelDepartemen = $grafik["labelDepartemen"];
 $jumlahDepartemen = $grafik["jumlahDepartemen"];
 $labelPerforma = $grafik["labelPerforma"];
 $jumlahPerforma = $grafik["jumlahPerforma"];
+$labelGender = $grafik["labelGender"];
+$jumlahGender = $grafik["jumlahGender"];
 
 // Tabel ringkas: 15 baris, opsi 30 dan 50.
 $data = ambilDataKaryawan($conn, [15, 30, 50], 15, false);
@@ -47,7 +51,7 @@ $halamanAktif = "dashboard";
 require __DIR__ . "/partials/atas.php";
 
 ?>
-    <section class="statistics">
+    <section class="statistics" style="--dashboard-start: <?= htmlspecialchars($pengaturanDashboard["warna_dashboard_awal"] ?? "#1e3a8a"); ?>; --dashboard-end: <?= htmlspecialchars($pengaturanDashboard["warna_dashboard_akhir"] ?? "#2563eb"); ?>;">
 
         <div class="stat-card">
             <span>Total Karyawan</span>
