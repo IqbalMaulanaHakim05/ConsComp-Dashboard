@@ -274,13 +274,13 @@ require __DIR__ . "/partials/atas.php";
         && is_file(__DIR__ . "/uploads/cv/" . $cvUntukDiunduh)
     ):
     ?>
-        <a id="cv-auto-download" class="visually-hidden" download href="uploads/cv/<?= rawurlencode($cvUntukDiunduh); ?>">Unduh CV</a>
+        <a id="cv-auto-preview" aria-hidden="true" style="display: none;" target="_blank" rel="noopener" href="uploads/cv/<?= rawurlencode($cvUntukDiunduh); ?>">Lihat CV</a>
     <?php endif; ?>
 </section>
 <?php if (isset($cvUntukDiunduh) && $cvUntukDiunduh !== ""): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const tautan = document.getElementById('cv-auto-download');
+    const tautan = document.getElementById('cv-auto-preview');
     if (!tautan) return;
     tautan.click();
 

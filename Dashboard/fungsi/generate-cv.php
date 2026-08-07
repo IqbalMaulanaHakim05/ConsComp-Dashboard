@@ -105,11 +105,10 @@ try {
         }
     }
 
-    header(
-        "Location: ../profil-karyawan.php?id=" . $id
-        . "&pesan=cv-berhasil&unduh_cv=" . rawurlencode($namaFile)
-        . "#dokumen"
-    );
+    // Buka file PDF secara inline di browser. Tanpa header "attachment",
+    // browser akan menampilkan preview dan pengguna dapat mengunduhnya
+    // sendiri dari toolbar PDF bila diperlukan.
+    header("Location: ../uploads/cv/" . rawurlencode($namaFile));
     exit;
 } catch (Throwable $exception) {
     if ($transaksiAktif) {
