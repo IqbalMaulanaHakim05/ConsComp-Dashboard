@@ -57,8 +57,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if ($stmt && mysqli_stmt_execute($stmt)) {
             $data = ambilPengaturanPublik($conn);
-            $pesan = "Tampilan halaman publik berhasil disimpan.";
-            catatAktivitas($conn, "Mengubah tampilan halaman publik.");
+            $pesan = "Personalisasi tampilan berhasil disimpan.";
+            catatAktivitas($conn, "Mengubah personalisasi tampilan publik, dashboard, dan grafik analisis.");
         } else {
             $pesan = "Pengaturan gagal disimpan.";
             $tipePesan = "error";
@@ -141,12 +141,12 @@ require __DIR__ . "/partials/atas.php";
                 </section>
 
                 <section class="settings-section-card">
-                    <div class="settings-section-heading"><span class="settings-section-icon">◒</span><div><h3>Warna Grafik</h3><p>Atur warna pie chart dan bar chart.</p></div></div>
+                    <div class="settings-section-heading"><span class="settings-section-icon">◒</span><div><h3>Warna Grafik Dashboard &amp; Analisis</h3><p>Warna berikut digunakan oleh seluruh grafik pada dashboard dan halaman analisis.</p></div></div>
                     <div class="form-grid">
-                        <div class="form-group"><label for="warna_pie_laki">Pie Laki-laki</label><input id="warna_pie_laki" type="color" name="warna_pie_laki" value="<?= htmlspecialchars($data["warna_pie_laki"] ?? "#2563eb"); ?>"></div>
-                        <div class="form-group"><label for="warna_pie_perempuan">Pie Perempuan</label><input id="warna_pie_perempuan" type="color" name="warna_pie_perempuan" value="<?= htmlspecialchars($data["warna_pie_perempuan"] ?? "#ec4899"); ?>"></div>
-                        <div class="form-group"><label for="warna_bar_awal">Bar Awal</label><input id="warna_bar_awal" type="color" name="warna_bar_awal" value="<?= htmlspecialchars($data["warna_bar_awal"] ?? "#2563eb"); ?>"></div>
-                        <div class="form-group"><label for="warna_bar_akhir">Bar Akhir</label><input id="warna_bar_akhir" type="color" name="warna_bar_akhir" value="<?= htmlspecialchars($data["warna_bar_akhir"] ?? "#93c5fd"); ?>"></div>
+                        <div class="form-group"><label for="warna_pie_laki">Gender Laki-laki</label><input id="warna_pie_laki" type="color" name="warna_pie_laki" value="<?= htmlspecialchars($data["warna_pie_laki"] ?? "#2563eb"); ?>"></div>
+                        <div class="form-group"><label for="warna_pie_perempuan">Gender Perempuan</label><input id="warna_pie_perempuan" type="color" name="warna_pie_perempuan" value="<?= htmlspecialchars($data["warna_pie_perempuan"] ?? "#ec4899"); ?>"></div>
+                        <div class="form-group"><label for="warna_bar_awal">Warna Grafik Utama</label><input id="warna_bar_awal" type="color" name="warna_bar_awal" value="<?= htmlspecialchars($data["warna_bar_awal"] ?? "#2563eb"); ?>"></div>
+                        <div class="form-group"><label for="warna_bar_akhir">Warna Grafik Sekunder</label><input id="warna_bar_akhir" type="color" name="warna_bar_akhir" value="<?= htmlspecialchars($data["warna_bar_akhir"] ?? "#93c5fd"); ?>"></div>
                     </div>
                 </section>
 

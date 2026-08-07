@@ -54,3 +54,158 @@
         animation: none;
     }
 }
+
+/* Halaman analisis karyawan. */
+.analysis-page {
+    display: grid;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    gap: 22px;
+}
+
+.analysis-filter-card,
+.analysis-chart-card,
+.analysis-summary-card,
+.analysis-kpi-card {
+    max-width: 100%;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, .06);
+}
+
+.analysis-filter-card,
+.analysis-chart-card,
+.analysis-summary-card { max-width: 100%; min-width: 0; }
+.analysis-filter-card { padding: 22px; overflow: hidden; }
+.analysis-filter-heading,
+.analysis-summary-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+.analysis-filter-heading h2,
+.analysis-summary-heading h2,
+.analysis-chart-card h2 { margin: 0 0 5px; color: #172033; font-size: 18px; }
+.analysis-filter-heading p,
+.analysis-summary-heading p,
+.analysis-chart-card p { margin: 0; color: #64748b; font-size: 13px; }
+.analysis-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+}
+.analysis-filter-grid label { min-width: 0; color: #334155; font-size: 12px; font-weight: 700; }
+.analysis-filter-grid select,
+.analysis-filter-grid input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: 42px;
+    margin-top: 7px;
+    padding: 0 11px;
+    color: #1e293b;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+}
+.analysis-filter-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+
+.analysis-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+.analysis-kpi-card { padding: 20px; border-top: 4px solid var(--analysis-primary); }
+.analysis-kpi-card span { display: block; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .35px; }
+.analysis-kpi-card strong { display: block; margin: 8px 0 4px; color: #172033; font-size: clamp(21px, 2vw, 29px); line-height: 1.1; overflow-wrap: anywhere; }
+.analysis-kpi-card small { color: #94a3b8; font-size: 11px; }
+
+.analysis-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+.analysis-chart-card { overflow: hidden; padding: 21px; }
+.analysis-chart-wide { grid-column: 1 / -1; }
+.analysis-chart-wrap { position: relative; width: 100%; max-width: 100%; min-width: 0; height: 330px; margin-top: 17px; overflow: hidden; }
+.analysis-chart-wrap canvas { display: block; max-width: 100% !important; }
+.analysis-chart-dynamic { min-height: 320px; max-height: 760px; }
+
+.analysis-summary-card { padding: 22px; }
+.analysis-summary-card .table-responsive { width: 100%; max-width: 100%; min-width: 0; margin-top: 18px; overflow-x: auto; overscroll-behavior-inline: contain; }
+.analysis-summary-table { width: 100%; min-width: 720px; border-collapse: collapse; }
+.analysis-summary-table th,
+.analysis-summary-table td { padding: 13px 14px; border-bottom: 1px solid #e2e8f0; text-align: center; white-space: nowrap; }
+.analysis-summary-table th { color: #334155; background: #f8fafc; font-size: 12px; text-transform: uppercase; letter-spacing: .3px; }
+.analysis-summary-table td { color: #475569; font-size: 13px; }
+.analysis-summary-table th:first-child,
+.analysis-summary-table td:first-child { text-align: left; }
+.analysis-summary-table tbody tr:hover { background: #f8fbff; }
+
+/* Mengikuti pola dark mode komponen pada admin-base.css dan admin-settings.css. */
+:root[data-theme="dark"] .analysis-filter-card,
+:root[data-theme="dark"] .analysis-chart-card,
+:root[data-theme="dark"] .analysis-summary-card,
+:root[data-theme="dark"] .analysis-kpi-card {
+    color: #e2e8f0;
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .22);
+}
+:root[data-theme="dark"] .analysis-filter-heading h2,
+:root[data-theme="dark"] .analysis-summary-heading h2,
+:root[data-theme="dark"] .analysis-chart-card h2,
+:root[data-theme="dark"] .analysis-kpi-card strong { color: #f8fafc; }
+:root[data-theme="dark"] .analysis-filter-heading p,
+:root[data-theme="dark"] .analysis-summary-heading p,
+:root[data-theme="dark"] .analysis-chart-card p,
+:root[data-theme="dark"] .analysis-kpi-card span,
+:root[data-theme="dark"] .analysis-kpi-card small { color: #94a3b8; }
+:root[data-theme="dark"] .analysis-filter-grid label { color: #cbd5e1; }
+:root[data-theme="dark"] .analysis-filter-grid select,
+:root[data-theme="dark"] .analysis-filter-grid input {
+    color: #e2e8f0;
+    background: #0f172a;
+    border-color: #475569;
+    color-scheme: dark;
+}
+:root[data-theme="dark"] .analysis-summary-table th {
+    color: #cbd5e1;
+    background: #0f172a;
+    border-color: #334155;
+}
+:root[data-theme="dark"] .analysis-summary-table td { color: #cbd5e1; border-color: #334155; }
+:root[data-theme="dark"] .analysis-summary-table tbody tr:nth-child(even) { background: #263449; }
+:root[data-theme="dark"] .analysis-summary-table tbody tr:hover { background: #1e3a5f; }
+
+@media (max-width: 1050px) {
+    .analysis-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .analysis-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+    .analysis-filter-heading,
+    .analysis-summary-heading { align-items: stretch; flex-direction: column; }
+    .analysis-filter-grid,
+    .analysis-kpi-grid,
+    .analysis-chart-grid { grid-template-columns: 1fr; }
+    .analysis-chart-wide { grid-column: auto; }
+    .analysis-chart-wrap { height: 290px; }
+    .analysis-filter-actions .btn { width: 100%; }
+    .analysis-filter-card,
+    .analysis-chart-card,
+    .analysis-summary-card,
+    .analysis-kpi-card { padding: 17px; }
+}
+
+@media (max-width: 420px) {
+    .analysis-page { gap: 14px; }
+    .analysis-filter-grid { gap: 11px; }
+    .analysis-kpi-card strong { font-size: 20px; }
+    .analysis-chart-wrap { height: 260px; }
+}
