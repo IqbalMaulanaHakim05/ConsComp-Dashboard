@@ -29,6 +29,26 @@ $subjudulHalaman = $subjudulHalaman ?? "";
 // Path partial action bar; kosong berarti halaman tidak punya action bar.
 $aksiTopbar = $aksiTopbar ?? "";
 
+$cssPerHalaman = [
+    "dashboard" => "admin-dashboard.css",
+    "analisis" => "admin-dashboard.css",
+    "karyawan" => "admin-karyawan.css",
+    "tambah" => "admin-form.css",
+    "import" => "admin-form.css",
+    "edit" => "admin-form.css",
+    "profil-karyawan" => "admin-profile.css",
+    "master-data" => "admin-settings.css",
+    "pengguna" => "admin-settings.css",
+    "audit" => "admin-settings.css",
+    "pengaturan-publik" => "admin-settings.css",
+];
+$cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
+$kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
+if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
+    $cssHalamanAktif = "admin-profile.css";
+    $kelasHalaman = "profil-karyawan";
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -52,9 +72,12 @@ $aksiTopbar = $aksiTopbar ?? "";
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260806-masterui">
+    <?php if ($cssHalamanAktif !== ""): ?>
+        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=20260807-pagecss2">
+    <?php endif; ?>
 </head>
 
-<body>
+<body class="<?= htmlspecialchars($kelasHalaman); ?>-page">
 
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
@@ -70,14 +93,14 @@ $aksiTopbar = $aksiTopbar ?? "";
             href="<?= htmlspecialchars(URL_DASAR); ?>index.php"
             class="<?= $halamanAktif === "dashboard" ? "active" : ""; ?>"
         >
-            Dashboard
+            <span class="sidebar-icon" aria-hidden="true">⌂</span>Dashboard
         </a>
 
         <a
             href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php"
             class="<?= $halamanAktif === "karyawan" ? "active" : ""; ?>"
         >
-            Karyawan
+            <span class="sidebar-icon" aria-hidden="true">♙</span>Karyawan
         </a>
 
         <?php if (function_exists("punyaRole") && punyaRole("admin", "superadmin")): ?>
@@ -86,7 +109,7 @@ $aksiTopbar = $aksiTopbar ?? "";
                     href="<?= htmlspecialchars(URL_DASAR); ?>fungsi/tambah.php"
                     class="<?= $halamanAktif === "tambah" ? "active" : ""; ?>"
                 >
-                    Tambah Karyawan
+                    <span class="sidebar-icon" aria-hidden="true">+</span>Tambah Karyawan
                 </a>
             </div>
         <?php endif; ?>
@@ -95,7 +118,7 @@ $aksiTopbar = $aksiTopbar ?? "";
             href="<?= htmlspecialchars(URL_DASAR); ?>analisis.php"
             class="<?= $halamanAktif === "analisis" ? "active" : ""; ?>"
         >
-            Analisis
+            <span class="sidebar-icon" aria-hidden="true">◒</span>Analisis
         </a>
 
         <?php if (function_exists("punyaRole") && punyaRole("superadmin")): ?>
@@ -106,24 +129,24 @@ $aksiTopbar = $aksiTopbar ?? "";
                     href="<?= htmlspecialchars(URL_DASAR); ?>pengaturan-publik.php"
                     class="<?= $halamanAktif === "pengaturan-publik" ? "active" : ""; ?>"
                 >
-                    Pengaturan Halaman Publik
+                    <span class="sidebar-icon" aria-hidden="true">⚙</span>Personalisasi Tampilan
                 </a>
                 <?php if (punyaRole("superadmin")): ?>
-                    <a href="<?= htmlspecialchars(URL_DASAR); ?>master-data.php" class="<?= $halamanAktif === "master-data" ? "active" : ""; ?>">Master Departemen, Posisi &amp; Status</a>
+                    <a href="<?= htmlspecialchars(URL_DASAR); ?>master-data.php" class="<?= $halamanAktif === "master-data" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">▦</span>Master Departemen, Posisi &amp; Status</a>
                 <?php endif; ?>
 
                 <a
                     href="<?= htmlspecialchars(URL_DASAR); ?>pengguna.php"
                     class="<?= $halamanAktif === "pengguna" ? "active" : ""; ?>"
-                >
-                    Manajemen Admin
+                    >
+                    <span class="sidebar-icon" aria-hidden="true">♟</span>Manajemen Admin
                 </a>
 
                 <a
                     href="<?= htmlspecialchars(URL_DASAR); ?>audit-aktivitas.php"
                     class="<?= $halamanAktif === "audit" ? "active" : ""; ?>"
-                >
-                    Audit Aktivitas
+                    >
+                    <span class="sidebar-icon" aria-hidden="true">◷</span>Audit Aktivitas
                 </a>
             </div>
         <?php endif; ?>

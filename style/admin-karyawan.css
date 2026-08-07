@@ -1,0 +1,9 @@
+/* Komponen khusus daftar karyawan. */
+.karyawan-page .data-card,
+.karyawan-page .table-wrapper {
+    width: 100%;
+}
+
+.karyawan-page .employee-profile-link {
+    font-weight: 700;
+}

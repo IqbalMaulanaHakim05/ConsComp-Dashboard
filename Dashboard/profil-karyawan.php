@@ -36,7 +36,7 @@ if (!$karyawan) {
 ?>
     <section class="data-card">
         <p class="empty-data">Profil karyawan tidak ditemukan.</p>
-        <a class="btn btn-secondary" href="karyawan.php">Kembali ke Data Karyawan</a>
+        <a class="btn btn-secondary profile-back-link" href="karyawan.php"><span aria-hidden="true">←</span> Profil Karyawan</a>
     </section>
 <?php
     require __DIR__ . "/partials/bawah.php";
@@ -82,7 +82,7 @@ $modeEdit = isset($_GET["edit"]) && $_GET["edit"] === "1" && punyaRole("admin", 
 require __DIR__ . "/partials/atas.php";
 
 ?>
-<section class="profile-page">
+<section class="profile-page <?= $modeEdit ? "profile-edit-mode" : ""; ?>">
     <div class="profile-hero">
         <p class="profile-kicker">Profil Internal</p>
         <h2><?= htmlspecialchars($nama); ?></h2>
@@ -97,8 +97,8 @@ require __DIR__ . "/partials/atas.php";
                 <div class="profile-edit-grid">
                     <?php
                     $fieldEdit = [
-                        "employee_name" => "Nama Karyawan", "emp_id" => "ID Karyawan", "nik" => "NIK",
-                        "tanggal_lahir" => "Tanggal Lahir", "riwayat_pekerjaan" => "Riwayat Pekerjaan", "tanggal_riwayat_pekerjaan" => "Tanggal Riwayat Pekerjaan", "riwayat_pendidikan" => "Riwayat Pendidikan", "tanggal_riwayat_pendidikan" => "Tanggal Riwayat Pendidikan", "agama" => "Agama", "marital_status" => "Status Kawin",
+                        "employee_name" => "Nama Karyawan", "emp_id" => "ID Karyawan", "nik" => "NIK", "keahlian" => "Keahlian",
+                        "tanggal_lahir" => "Tanggal Lahir", "tanggal_mcu_terakhir" => "Tanggal MCU Terakhir", "riwayat_pekerjaan" => "Riwayat Pekerjaan", "tanggal_riwayat_pekerjaan" => "Tanggal Riwayat Pekerjaan", "riwayat_pendidikan" => "Riwayat Pendidikan", "tanggal_riwayat_pendidikan" => "Tanggal Riwayat Pendidikan", "agama" => "Agama", "marital_status" => "Status Kawin",
                         "kontak" => "Kontak", "email" => "Email", "position" => "Posisi", "department" => "Departemen",
                         "salary" => "Gaji", "gender" => "Jenis Kelamin", "employment_status" => "Status Kerja",
                         "performance_score" => "Skor Performa"
@@ -110,7 +110,7 @@ require __DIR__ . "/partials/atas.php";
                             <label for="profile_<?= $field; ?>"><?= $label; ?></label>
                             <?php if ($field === "position" || $field === "department" || $field === "employment_status"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>" required><option value="">Pilih</option><?php foreach (($field === "position" ? $masterPosisi : ($field === "department" ? $masterDepartemen : $masterStatus)) as $item): ?><option <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
-                            <?php elseif ($field === "alamat" || $field === "biografi"): ?>
+                            <?php elseif ($field === "alamat" || $field === "biografi" || $field === "keahlian"): ?>
                                 <textarea id="profile_<?= $field; ?>" name="<?= $field; ?>" rows="4"><?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?></textarea>
                             <?php elseif ($field === "gender"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>" required><option value="M" <?= ($karyawan[$field] ?? "") === "M" ? "selected" : ""; ?>>Laki-laki</option><option value="F" <?= ($karyawan[$field] ?? "") === "F" ? "selected" : ""; ?>>Perempuan</option></select>
@@ -146,6 +146,10 @@ require __DIR__ . "/partials/atas.php";
 
             <dl class="profile-details">
                 <div>
+                    <dt>Nama Karyawan</dt>
+                    <dd><?= htmlspecialchars(nilaiProfil($karyawan, "employee_name")); ?></dd>
+                </div>
+                <div>
                     <dt>ID Karyawan</dt>
                     <dd><?= htmlspecialchars(nilaiProfil($karyawan, "emp_id")); ?></dd>
                 </div>
@@ -175,6 +179,10 @@ require __DIR__ . "/partials/atas.php";
         <article class="profile-card profile-history-card">
             <h3>Informasi Karyawan</h3>
             <dl class="profile-details">
+                <div><dt>Kontak</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "kontak")); ?></dd></div>
+                <div><dt>Email</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "email")); ?></dd></div>
+                <div class="profile-biography-row"><dt>Biodata</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "biografi"))); ?></dd></div>
+                <div class="profile-biography-row"><dt>Keahlian</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "keahlian"))); ?></dd></div>
                 <div><dt>Riwayat Pekerjaan</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "riwayat_pekerjaan"))); ?></dd></div>
                 <div><dt>Tanggal Riwayat Pekerjaan</dt><dd><?= htmlspecialchars(tanggalProfil($karyawan, "tanggal_riwayat_pekerjaan")); ?></dd></div>
                 <div><dt>Riwayat Pendidikan</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "riwayat_pendidikan"))); ?></dd></div>
@@ -183,12 +191,8 @@ require __DIR__ . "/partials/atas.php";
         </article>
 
         <article class="profile-card profile-detail-card">
-            <h3>Detail Karyawan</h3>
+            <h3>Biodata Karyawan</h3>
             <dl class="profile-details">
-                <div class="profile-biography-row">
-                    <dt>Biografi Diri</dt>
-                    <dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "biografi"))); ?></dd>
-                </div>
                 <div>
                     <dt>NIK</dt>
                     <dd><?= htmlspecialchars(nilaiProfil($karyawan, "nik")); ?></dd>
@@ -213,14 +217,6 @@ require __DIR__ . "/partials/atas.php";
                     <dt>Status Kawin</dt>
                     <dd><?= htmlspecialchars(nilaiProfil($karyawan, "marital_status")); ?></dd>
                 </div>
-                <div>
-                    <dt>Kontak</dt>
-                    <dd><?= htmlspecialchars(nilaiProfil($karyawan, "kontak")); ?></dd>
-                </div>
-                <div>
-                    <dt>Email</dt>
-                    <dd><?= htmlspecialchars(nilaiProfil($karyawan, "email")); ?></dd>
-                </div>
             </dl>
         </article>
 
@@ -233,16 +229,30 @@ require __DIR__ . "/partials/atas.php";
                     <div class="form-group"><label for="inline_file_mcu">Ganti MCU</label><input id="inline_file_mcu" type="file" name="file_mcu" form="inline-edit-form" accept=".pdf,application/pdf"><p class="field-note">PDF, maksimal 5 MB.</p></div>
                 </div>
             <?php endif; ?>
-            <?php if (!empty($karyawan["file_cv"] ?? "") && is_file(__DIR__ . "/uploads/cv/" . basename((string) $karyawan["file_cv"]))): ?>
-                <a class="btn btn-primary" target="_blank" rel="noopener" href="uploads/cv/<?= rawurlencode(basename((string) $karyawan["file_cv"])); ?>">Lihat / Unduh CV (PDF)</a>
-            <?php else: ?>
-                <p class="empty-data">CV belum diunggah.</p>
-            <?php endif; ?>
-            <?php foreach (["file_ijazah" => "Ijazah", "file_mcu" => "MCU"] as $kolomDokumen => $labelDokumen): ?>
-                <?php if (!empty($karyawan[$kolomDokumen] ?? "") && is_file(__DIR__ . "/uploads/" . ($kolomDokumen === "file_ijazah" ? "ijazah" : "mcu") . "/" . basename((string) $karyawan[$kolomDokumen]))): ?>
-                    <a class="btn btn-primary" target="_blank" rel="noopener" href="uploads/<?= $kolomDokumen === "file_ijazah" ? "ijazah" : "mcu"; ?>/<?= rawurlencode(basename((string) $karyawan[$kolomDokumen])); ?>">Lihat / Unduh <?= $labelDokumen; ?> (PDF)</a>
-                <?php else: ?><p class="empty-data"><?= $labelDokumen; ?> belum diunggah.</p><?php endif; ?>
-            <?php endforeach; ?>
+            <div class="profile-document-list">
+                <div class="profile-document-row">
+                    <span>CV</span>
+                    <?php if (!empty($karyawan["file_cv"] ?? "") && is_file(__DIR__ . "/uploads/cv/" . basename((string) $karyawan["file_cv"]))): ?>
+                        <a class="btn btn-primary" target="_blank" rel="noopener" href="uploads/cv/<?= rawurlencode(basename((string) $karyawan["file_cv"])); ?>">Lihat/Unduh CV</a>
+                    <?php else: ?><em>Belum diunggah</em><?php endif; ?>
+                </div>
+                <?php foreach (["file_ijazah" => "Ijazah", "file_mcu" => "MCU"] as $kolomDokumen => $labelDokumen): ?>
+                    <div class="profile-document-row">
+                        <span><?= $labelDokumen; ?></span>
+                        <?php if (!empty($karyawan[$kolomDokumen] ?? "") && is_file(__DIR__ . "/uploads/" . ($kolomDokumen === "file_ijazah" ? "ijazah" : "mcu") . "/" . basename((string) $karyawan[$kolomDokumen]))): ?>
+                            <a class="btn btn-primary" target="_blank" rel="noopener" href="uploads/<?= $kolomDokumen === "file_ijazah" ? "ijazah" : "mcu"; ?>/<?= rawurlencode(basename((string) $karyawan[$kolomDokumen])); ?>">Lihat/Unduh <?= $labelDokumen; ?></a>
+                        <?php else: ?><em>Belum diunggah</em><?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+                <div class="profile-document-row profile-document-date">
+                    <span>Tanggal MCU terakhir</span>
+                    <?php if ($modeEdit): ?>
+                        <input class="profile-document-date-input" id="inline_tanggal_mcu_terakhir" type="date" name="tanggal_mcu_terakhir" form="inline-edit-form" value="<?= htmlspecialchars((string) ($karyawan["tanggal_mcu_terakhir"] ?? "")); ?>">
+                    <?php else: ?>
+                        <strong><?= htmlspecialchars(tanggalProfil($karyawan, "tanggal_mcu_terakhir")); ?></strong>
+                    <?php endif; ?>
+                </div>
+            </div>
         </article>
     </div>
 
@@ -277,6 +287,14 @@ require __DIR__ . "/partials/atas.php";
         <a id="cv-auto-preview" aria-hidden="true" style="display: none;" target="_blank" rel="noopener" href="uploads/cv/<?= rawurlencode($cvUntukDiunduh); ?>">Lihat CV</a>
     <?php endif; ?>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const page = document.querySelector('.profile-page');
+    const hero = page?.querySelector('.profile-hero');
+    const actions = page?.querySelector(':scope > .profile-actions');
+    if (page && hero && actions) page.insertBefore(actions, hero);
+});
+</script>
 <?php if (isset($cvUntukDiunduh) && $cvUntukDiunduh !== ""): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -301,11 +319,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!sourceForm || !editor) return;
     editor.style.display = 'none';
 
-    const fields = ['employee_name','emp_id','nik','alamat','tanggal_lahir','riwayat_pekerjaan','tanggal_riwayat_pekerjaan','riwayat_pendidikan','tanggal_riwayat_pendidikan','agama','marital_status','kontak','email','position','department','salary','gender','employment_status','performance_score','biografi'];
+    const fields = ['employee_name','emp_id','nik','alamat','tanggal_lahir','tanggal_mcu_terakhir','riwayat_pekerjaan','tanggal_riwayat_pekerjaan','riwayat_pendidikan','tanggal_riwayat_pendidikan','agama','marital_status','kontak','email','position','department','salary','gender','employment_status','performance_score','biografi','keahlian'];
     const labels = {
-        employee_name:'Nama Karyawan', emp_id:'ID Karyawan', nik:'NIK', alamat:'Alamat', tanggal_lahir:'Tanggal Lahir', riwayat_pekerjaan:'Riwayat Pekerjaan', tanggal_riwayat_pekerjaan:'Tanggal Riwayat Pekerjaan', riwayat_pendidikan:'Riwayat Pendidikan', tanggal_riwayat_pendidikan:'Tanggal Riwayat Pendidikan', agama:'Agama',
+        employee_name:'Nama Karyawan', emp_id:'ID Karyawan', nik:'NIK', alamat:'Alamat', tanggal_lahir:'Tanggal Lahir', tanggal_mcu_terakhir:'Tanggal MCU Terakhir', riwayat_pekerjaan:'Riwayat Pekerjaan', tanggal_riwayat_pekerjaan:'Tanggal Riwayat Pekerjaan', riwayat_pendidikan:'Riwayat Pendidikan', tanggal_riwayat_pendidikan:'Tanggal Riwayat Pendidikan', agama:'Agama',
         marital_status:'Status Kawin', kontak:'Kontak', email:'Email', position:'Posisi', department:'Departemen', salary:'Gaji',
-        gender:'Jenis Kelamin', employment_status:'Status Kerja', performance_score:'Skor Performa', biografi:'Biografi Diri'
+        gender:'Jenis Kelamin', employment_status:'Status Kerja', performance_score:'Skor Performa', biografi:'Biodata', keahlian:'Keahlian'
     };
     const detailRows = [...document.querySelectorAll('.profile-details > div')];
     const actionBox = document.querySelector('.profile-actions');

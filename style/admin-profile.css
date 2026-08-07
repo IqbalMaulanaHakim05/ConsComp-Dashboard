@@ -1,0 +1,346 @@
+/* Komponen khusus profil karyawan. */
+.profile-page .profile-hero,
+.profile-page .profile-grid,
+.profile-page .profile-actions {
+    width: 100%;
+}
+
+.profile-page .profile-export-form {
+    display: inline-flex;
+}
+
+/* Tampilan profil modern: header kuat dan kartu informasi dua kolom. */
+.profil-karyawan-page .profile-page {
+    position: relative;
+    padding-top: 0;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions {
+    position: static !important;
+    margin: 0 0 18px !important;
+    justify-content: flex-end;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions {
+    position: absolute;
+    top: -78px;
+    right: 230px;
+    left: 0;
+    z-index: 2;
+    margin: 0;
+    justify-content: flex-end;
+}
+
+.profil-karyawan-page .theme-toggle {
+    position: relative;
+    z-index: 10;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions .btn {
+    min-height: 42px;
+    padding: 10px 18px;
+    border-radius: 9px;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions > .btn-secondary:first-child {
+    order: 0;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions .profile-back-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: #0f172a;
+    background: transparent;
+    font-size: 22px;
+    font-weight: 500;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions .profile-back-link span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-right: 4px;
+    border: 1px solid currentColor;
+    border-radius: 6px;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions .profile-back-link:hover {
+    background: transparent;
+    color: #2563eb;
+}
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-page > .profile-actions .profile-back-link {
+    color: #f8fafc;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions .profile-export-form {
+    order: 1;
+}
+
+.profil-karyawan-page .profile-page > .profile-actions .btn-warning {
+    order: 2;
+}
+
+.profil-karyawan-page .profile-hero {
+    min-height: 150px;
+    margin-bottom: 24px;
+    padding: 30px 36px;
+    border-radius: 18px;
+    background: linear-gradient(120deg, #1e40af 0%, #2563eb 100%);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, .18);
+}
+
+.profil-karyawan-page .profile-kicker {
+    margin-bottom: 14px;
+    color: #dbeafe;
+    font-size: 14px;
+    letter-spacing: .03em;
+    text-transform: none;
+}
+
+.profil-karyawan-page .profile-hero h2 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 500;
+    letter-spacing: .01em;
+    text-transform: uppercase;
+}
+
+.profil-karyawan-page .profile-hero p:last-child {
+    display: none;
+}
+
+.profil-karyawan-page .profile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.profil-karyawan-page .profile-card {
+    min-width: 0;
+    padding: 28px 30px;
+    border: 1px solid rgba(226, 232, 240, .8);
+    border-radius: 18px;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
+}
+
+.profil-karyawan-page .profile-card h3 {
+    margin-bottom: 24px;
+    font-size: 21px;
+    letter-spacing: -.02em;
+}
+
+.profil-karyawan-page .profile-photo-wrap {
+    float: left;
+    width: 38%;
+    margin: 0 26px 8px 0;
+    padding: 0;
+    border: 0;
+}
+
+.profil-karyawan-page .profile-edit-mode .profile-photo-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.profil-karyawan-page .profile-edit-mode .profile-photo-edit {
+    width: 100%;
+    min-width: 0;
+    margin-top: 4px;
+}
+
+.profil-karyawan-page .profile-photo {
+    width: 100%;
+    max-width: 220px;
+    height: 220px;
+    border-radius: 18px;
+}
+
+.profil-karyawan-page .profile-card:first-child .profile-details {
+    min-height: 220px;
+}
+
+.profil-karyawan-page .profile-details div {
+    min-height: 48px;
+    align-items: center;
+    padding: 11px 0;
+}
+
+.profil-karyawan-page .profile-details dt {
+    color: #7c879c;
+    font-size: 15px;
+}
+
+.profil-karyawan-page .profile-details dd {
+    color: #111827;
+    font-size: 15px;
+}
+
+.profil-karyawan-page .profile-detail-card {
+    min-height: 0;
+    height: 100%;
+    align-self: stretch;
+    box-sizing: border-box;
+}
+
+.profil-karyawan-page .profile-detail-card h3 {
+    margin-bottom: 14px;
+    font-size: 20px;
+}
+
+.profil-karyawan-page .profile-detail-card .profile-details div {
+    min-height: 44px;
+    padding: 10px 0;
+}
+
+.profil-karyawan-page .profile-detail-card .profile-details dt,
+.profil-karyawan-page .profile-detail-card .profile-details dd {
+    font-size: 15px;
+}
+
+.profil-karyawan-page .profile-history-card,
+.profil-karyawan-page .profile-detail-card,
+.profil-karyawan-page .profile-documents-card {
+    min-height: 300px;
+}
+
+.profil-karyawan-page .profile-documents-card .btn {
+    display: flex;
+    width: 220px;
+    min-height: 46px;
+    padding: 11px 16px;
+    margin: 0;
+    justify-content: center;
+    border: 0;
+    border-radius: 10px;
+}
+
+.profil-karyawan-page .profile-document-list {
+    display: grid;
+    gap: 8px;
+}
+
+.profil-karyawan-page .profile-document-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 50px;
+    color: #7c879c;
+    font-size: 15px;
+}
+
+.profil-karyawan-page .profile-document-row em {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.profil-karyawan-page .profile-document-date {
+    margin-top: 9px;
+    padding-top: 14px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.profil-karyawan-page .profile-document-date strong {
+    color: #111827;
+    font-size: 14px;
+}
+
+.profil-karyawan-page .profile-document-date-input {
+    width: 125px;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    color: #475569;
+    background: #ffffff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.profil-karyawan-page .profile-document-date-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-document-date-input {
+    border-color: #475569;
+    color: #e2e8f0;
+    background: #0f172a;
+}
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-document-date {
+    border-color: #334155;
+}
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-document-date strong {
+    color: #f8fafc;
+}
+
+.profil-karyawan-page > .profile-page > .profile-actions,
+.profil-karyawan-page .profile-page > .profile-actions {
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.profil-karyawan-page .profile-export-button {
+    order: 3;
+}
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-card {
+    border-color: #334155;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .18);
+}
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-details dd {
+    color: #f8fafc;
+}
+
+@media screen and (max-width: 800px) {
+    .profil-karyawan-page .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profil-karyawan-page .profile-hero {
+        padding: 24px;
+    }
+
+    .profil-karyawan-page .profile-card {
+        padding: 22px;
+    }
+
+    .profil-karyawan-page .profile-page > .profile-actions {
+        position: static;
+        right: auto;
+        left: auto;
+        margin-top: 18px;
+        justify-content: flex-start;
+    }
+
+    .profil-karyawan-page .profile-page {
+        padding-top: 0;
+    }
+
+    .profil-karyawan-page .profile-page > .profile-actions .profile-back-link {
+        position: static;
+    }
+
+    .profil-karyawan-page .profile-document-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 0;
+    }
+
+    .profil-karyawan-page .profile-documents-card .btn {
+        width: 100%;
+    }
+}

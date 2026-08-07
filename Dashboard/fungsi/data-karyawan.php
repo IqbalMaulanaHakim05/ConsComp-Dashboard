@@ -144,6 +144,17 @@ function ambilDataKaryawan(
 ): array {
     $kataKunci = trim($_GET["cari"] ?? "");
     $filterKolom = (string) ($_GET["filter"] ?? "semua");
+    $sortPilihan = [
+        "id" => "id", "emp_id" => "emp_id", "nama" => "employee_name",
+        "posisi" => "position", "departemen" => "department", "gaji" => "CAST(salary AS DECIMAL(15,2))",
+        "tanggal_masuk" => "date_of_hire", "status_kerja" => "employment_status",
+        "performa" => "performance_score",
+    ];
+    $sort = (string) ($_GET["sort"] ?? "id");
+    if (!isset($sortPilihan[$sort])) $sort = "id";
+    $arah = strtoupper((string) ($_GET["arah"] ?? "DESC"));
+    if (!in_array($arah, ["ASC", "DESC"], true)) $arah = "DESC";
+    $klausaUrut = $sortPilihan[$sort] . " " . $arah . ", id DESC";
     $kolomFilter = [
         "semua" => "employee_name LIKE ? OR emp_id LIKE ? OR position LIKE ? OR department LIKE ? OR salary LIKE ? OR date_of_hire LIKE ? OR employment_status LIKE ? OR performance_score LIKE ?",
         "id" => "emp_id LIKE ?", "posisi" => "position LIKE ?", "departemen" => "department LIKE ?",
@@ -222,7 +233,7 @@ function ambilDataKaryawan(
 
     // 3. Mengambil data sesuai halaman.
     if ($kataKunci !== "") {
-        $sql = "SELECT * FROM karyawan WHERE " . $kondisiFilter . " ORDER BY id DESC" . $klausaLimit;
+        $sql = "SELECT * FROM karyawan WHERE " . $kondisiFilter . " ORDER BY " . $klausaUrut . $klausaLimit;
 
         $stmt = mysqli_prepare($conn, $sql);
 
@@ -243,7 +254,7 @@ function ambilDataKaryawan(
             $conn,
             "SELECT *
              FROM karyawan
-             ORDER BY id DESC" . $klausaLimit
+             ORDER BY " . $klausaUrut . $klausaLimit
         );
 
         if (!$hasil) {
@@ -257,6 +268,8 @@ function ambilDataKaryawan(
         "totalCocok" => $totalCocok,
         "kataKunci" => $kataKunci,
         "filterKolom" => $filterKolom,
+        "sort" => $sort,
+        "arah" => $arah,
         "batas" => $batas,
         "batasDiizinkan" => $batasDiizinkan,
         "tanpaBatas" => $tanpaBatas,

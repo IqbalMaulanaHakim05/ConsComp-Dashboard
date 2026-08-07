@@ -1,0 +1,213 @@
+/* Komponen bersama halaman tambah, edit, dan import. */
+.tambah-page .form-card,
+.edit-page .form-card,
+.import-page .form-card {
+    width: min(100%, 1080px);
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.tambah-page .form-actions,
+.edit-page .form-actions,
+.import-page .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tambah-page .form-card {
+    width: min(100%, 980px);
+    max-width: 980px;
+    border-radius: 20px;
+    background: transparent;
+    box-shadow: none;
+}
+
+.tambah-page .form-card-header {
+    display: none;
+}
+
+.tambah-page .form-card-header {
+    padding: 30px 34px 24px;
+    background: linear-gradient(135deg, #eff6ff, #ffffff);
+}
+
+.tambah-page .form-card-header h2 {
+    font-size: 23px;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+
+.tambah-page .form-body {
+    padding: 0;
+}
+
+.tambah-page .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.tambah-page .tambah-layout-card {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+    padding: 28px 30px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.tambah-page .tambah-main-card {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tambah-page .tambah-main-card .field-employee_name {
+    grid-column: span 2;
+}
+
+.tambah-page .tambah-personal-card .field-alamat,
+.tambah-page .tambah-personal-card .field-kontak,
+.tambah-page .tambah-personal-card .field-email {
+    grid-column: span 2;
+}
+
+.tambah-page .tambah-history-card .field-biografi,
+.tambah-page .tambah-history-card .field-keahlian {
+    grid-column: 1 / -1;
+}
+
+.tambah-page .tambah-documents-card {
+    grid-template-columns: 1fr 1fr;
+}
+
+.tambah-page .tambah-layout-card h3 {
+    grid-column: 1 / -1;
+    margin: 0 0 4px;
+    color: #111827;
+    font-size: 22px;
+    text-transform: uppercase;
+}
+
+.tambah-page .tambah-main-card,
+.tambah-page .tambah-personal-card,
+.tambah-page .tambah-history-card,
+.tambah-page .tambah-documents-card {
+    grid-column: 1 / -1;
+}
+
+.tambah-page .tambah-history-card .form-group-full,
+.tambah-page .tambah-documents-card .form-group-full {
+    grid-column: 1 / -1;
+}
+
+.tambah-page .tambah-documents-card .form-group input[type="file"] {
+    padding: 8px;
+    border-style: dashed;
+}
+
+.tambah-page .tambah-documents-card .form-group {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+    align-content: start;
+}
+
+.tambah-page .tambah-documents-card .form-group label {
+    margin: 0;
+}
+
+.tambah-page .tambah-documents-card .form-group input[type="file"] {
+    width: 220px;
+}
+
+.tambah-page .tambah-documents-card .field-note {
+    grid-column: 1 / -1;
+}
+
+:root[data-theme="dark"] .tambah-page .tambah-layout-card {
+    border-color: #334155;
+    background: #1e293b;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, .2);
+}
+
+:root[data-theme="dark"] .tambah-page .tambah-layout-card h3 {
+    color: #f8fafc;
+}
+
+:root[data-theme="dark"] .tambah-page .form-group label {
+    color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .tambah-page .form-group input,
+:root[data-theme="dark"] .tambah-page .form-group select,
+:root[data-theme="dark"] .tambah-page .form-group textarea {
+    color: #e2e8f0;
+    background: #0f172a;
+    border-color: #475569;
+}
+
+:root[data-theme="dark"] .tambah-page .form-group input::placeholder,
+:root[data-theme="dark"] .tambah-page .form-group textarea::placeholder {
+    color: #94a3b8;
+}
+
+:root[data-theme="dark"] .tambah-page .form-actions {
+    border-color: #334155;
+}
+
+.tambah-page .form-group-full {
+    grid-column: 1 / -1;
+}
+
+.tambah-page .form-group label {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.tambah-page .form-group input,
+.tambah-page .form-group select,
+.tambah-page .form-group textarea {
+    min-height: 42px;
+    border-radius: 10px;
+}
+
+.tambah-page .form-group textarea {
+    min-height: 92px;
+}
+
+.tambah-page .form-actions {
+    justify-content: flex-end;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid #dbe5f0;
+}
+
+.tambah-page .form-actions .btn {
+    min-width: 145px;
+    min-height: 44px;
+    border-radius: 10px;
+}
+
+@media screen and (max-width: 800px) {
+    .tambah-page .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tambah-page .form-card-header,
+    .tambah-page .form-body {
+        padding: 24px 20px;
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .tambah-page .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tambah-page .tambah-layout-card {
+        grid-template-columns: 1fr;
+        padding: 22px 18px;
+    }
+}

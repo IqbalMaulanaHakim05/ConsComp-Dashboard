@@ -1,0 +1,241 @@
+/* Komponen khusus master data, pengguna, audit, dan pengaturan publik. */
+.master-data-page .chart-card,
+.master-data-page .form-card,
+.master-data-page .data-card,
+.pengguna-page .chart-card,
+.pengguna-page .form-card,
+.pengguna-page .data-card,
+.audit-page .chart-card,
+.audit-page .form-card,
+.audit-page .data-card,
+.pengaturan-publik-page .chart-card,
+.pengaturan-publik-page .form-card,
+.pengaturan-publik-page .data-card {
+    width: 100%;
+}
+
+.master-data-page .master-data-grid {
+    width: 100%;
+    align-items: start;
+    grid-auto-rows: max-content;
+}
+
+.master-data-page .master-data-grid .chart-card {
+    min-height: 0;
+    height: max-content;
+    align-self: start;
+}
+
+/* Pengaturan halaman publik: layout editor yang lebih fokus dan modern. */
+.pengaturan-publik-page .form-card {
+    width: min(100%, 1380px);
+    max-width: 1380px;
+    margin-right: auto;
+    margin-left: auto;
+    overflow: hidden;
+    border: 1px solid #dbe5f0;
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, .08);
+}
+
+.pengaturan-publik-page .form-card-header {
+    position: relative;
+    padding: 26px 30px 24px;
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 70%);
+    border-bottom: 1px solid #e5edf6;
+}
+
+.pengaturan-publik-page .form-card-header::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    content: "";
+    background: linear-gradient(180deg, #2563eb, #7c3aed);
+}
+
+.pengaturan-publik-page .form-card-header h2 {
+    margin-bottom: 7px;
+    font-size: 20px;
+    letter-spacing: -.01em;
+}
+
+.pengaturan-publik-page .form-body {
+    padding: 28px 30px 30px;
+}
+
+.pengaturan-publik-page .form-grid {
+    gap: 22px 18px;
+}
+
+.pengaturan-publik-page form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.pengaturan-publik-page .settings-section-card {
+    margin: 0;
+    padding: 22px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.pengaturan-publik-page .form-actions {
+    grid-column: 1 / -1;
+}
+
+.pengaturan-publik-page .settings-section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.pengaturan-publik-page .settings-section-heading h3 {
+    margin: 0 0 4px;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.pengaturan-publik-page .settings-section-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.pengaturan-publik-page .settings-section-icon {
+    display: grid;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 9px;
+    color: #2563eb;
+    background: #dbeafe;
+    font-weight: 800;
+}
+
+.pengaturan-publik-page .form-group {
+    gap: 8px;
+}
+
+.pengaturan-publik-page .form-group label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    color: #475569;
+}
+
+.pengaturan-publik-page .form-group input:not([type="color"]),
+.pengaturan-publik-page .form-group textarea {
+    border-radius: 10px;
+    border-color: #d4dfeb;
+    box-shadow: 0 2px 5px rgba(15, 23, 42, .03);
+}
+
+.pengaturan-publik-page .form-group input:not([type="color"]):hover,
+.pengaturan-publik-page .form-group textarea:hover {
+    border-color: #a8bdd4;
+}
+
+.pengaturan-publik-page .form-group input[type="color"] {
+    width: 100%;
+    height: 44px;
+    padding: 5px;
+    border: 1px solid #d4dfeb;
+    border-radius: 10px;
+    background: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(15, 23, 42, .03);
+}
+
+.pengaturan-publik-page .form-group input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.pengaturan-publik-page .form-group input[type="color"]::-webkit-color-swatch {
+    border: 0;
+    border-radius: 6px;
+}
+
+.pengaturan-publik-page .form-actions {
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid #e5edf6;
+}
+
+.pengaturan-publik-page .form-actions .btn {
+    min-width: 150px;
+    border-radius: 10px;
+}
+
+:root[data-theme="dark"] .pengaturan-publik-page .form-card {
+    border-color: #334155;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .2);
+}
+
+:root[data-theme="dark"] .pengaturan-publik-page .form-card-header {
+    background: linear-gradient(135deg, #172554 0%, #1e293b 75%);
+    border-color: #334155;
+}
+
+:root[data-theme="dark"] .pengaturan-publik-page .form-group label {
+    color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .pengaturan-publik-page .form-group input[type="color"] {
+    border-color: #475569;
+    background: #0f172a;
+}
+
+:root[data-theme="dark"] .pengaturan-publik-page .form-actions {
+    border-color: #334155;
+}
+
+:root[data-theme="dark"] .pengaturan-publik-page .settings-section-card {
+    border-color: #334155;
+    background: #172033;
+}
+
+:root[data-theme="dark"] .pengaturan-publik-page .settings-section-heading h3 {
+    color: #f8fafc;
+}
+
+:root[data-theme="dark"] .pengaturan-publik-page .settings-section-icon {
+    color: #bfdbfe;
+    background: #1e3a8a;
+}
+
+@media (max-width: 720px) {
+    .pengaturan-publik-page .form-card-header,
+    .pengaturan-publik-page .form-body {
+        padding: 22px 18px;
+    }
+
+    .pengaturan-publik-page .settings-section-card {
+        padding: 17px;
+    }
+
+    .pengaturan-publik-page form {
+        grid-template-columns: 1fr;
+    }
+
+    .pengaturan-publik-page .form-actions {
+        grid-column: auto;
+    }
+
+    .pengaturan-publik-page .form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .pengaturan-publik-page .form-actions .btn {
+        width: 100%;
+    }
+}
