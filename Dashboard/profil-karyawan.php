@@ -8,6 +8,7 @@ require_once __DIR__ . "/fungsi/media-karyawan.php";
 require_once __DIR__ . "/fungsi/master-data.php";
 
 wajibLogin();
+siapkanKolomMedia($conn);
 siapkanKolomProfil($conn);
 siapkanMasterData($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
@@ -223,7 +224,7 @@ require __DIR__ . "/partials/atas.php";
             </dl>
         </article>
 
-        <article class="profile-card profile-documents-card">
+        <article class="profile-card profile-documents-card" id="dokumen">
             <h3>Dokumen Pendukung</h3>
             <?php if ($modeEdit): ?>
                 <div class="profile-document-edit-grid">
@@ -255,9 +256,40 @@ require __DIR__ . "/partials/atas.php";
                 <a class="btn btn-warning" href="profil-karyawan.php?id=<?= (int) $karyawan["id"]; ?>&edit=1">Edit Data</a>
             <?php endif; ?>
         <?php endif; ?>
-        <button class="btn btn-primary profile-export-button" type="button" onclick="window.print()">Export PDF</button>
+        <?php if (punyaRole("admin", "superadmin")): ?>
+            <form class="profile-export-form" method="POST" action="fungsi/generate-cv.php">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+                <input type="hidden" name="id" value="<?= (int) $karyawan["id"]; ?>">
+                <button class="btn btn-primary profile-export-button" type="submit">Export PDF</button>
+            </form>
+        <?php endif; ?>
     </div>
+
+    <?php
+    $cvUntukDiunduh = basename((string) ($_GET["unduh_cv"] ?? ""));
+    $cvAktif = basename((string) ($karyawan["file_cv"] ?? ""));
+    if (
+        $cvUntukDiunduh !== ""
+        && hash_equals($cvAktif, $cvUntukDiunduh)
+        && is_file(__DIR__ . "/uploads/cv/" . $cvUntukDiunduh)
+    ):
+    ?>
+        <a id="cv-auto-download" class="visually-hidden" download href="uploads/cv/<?= rawurlencode($cvUntukDiunduh); ?>">Unduh CV</a>
+    <?php endif; ?>
 </section>
+<?php if (isset($cvUntukDiunduh) && $cvUntukDiunduh !== ""): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tautan = document.getElementById('cv-auto-download');
+    if (!tautan) return;
+    tautan.click();
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete('unduh_cv');
+    history.replaceState({}, '', url.pathname + url.search + url.hash);
+});
+</script>
+<?php endif; ?>
 <?php
 require __DIR__ . "/partials/bawah.php";
 
