@@ -70,8 +70,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-$judulHalaman = "Pengaturan Halaman Publik";
-$subjudulHalaman = "Atur tampilan halaman publik tanpa perlu mengubah kode.";
+$judulHalaman = "Personalisasi Tampilan";
+$subjudulHalaman = "Atur tampilan halaman publik sesuai identitas website.";
 $halamanAktif = "pengaturan-publik";
 
 require __DIR__ . "/partials/atas.php";
@@ -79,7 +79,7 @@ require __DIR__ . "/partials/atas.php";
 ?>
     <section class="form-card">
         <div class="form-card-header">
-            <h2>Konten Halaman Publik</h2>
+            <h2>Personalisasi Tampilan</h2>
             <p>Perubahan langsung terlihat oleh pengunjung halaman publik.</p>
         </div>
 
@@ -91,7 +91,9 @@ require __DIR__ . "/partials/atas.php";
             <?php endif; ?>
 
             <form method="POST">
-                <div class="form-grid">
+                <section class="settings-section-card">
+                    <div class="settings-section-heading"><span class="settings-section-icon">✦</span><div><h3>Identitas &amp; Hero</h3><p>Atur teks utama yang tampil di halaman publik.</p></div></div>
+                    <div class="form-grid">
                     <div class="form-group">
                         <label for="nama_situs">Nama Situs</label>
                         <input
@@ -101,13 +103,6 @@ require __DIR__ . "/partials/atas.php";
                             required
                         >
                     </div>
-
-                    <div class="form-group"><label for="warna_dashboard_awal">Gradien Dashboard Awal</label><input id="warna_dashboard_awal" type="color" name="warna_dashboard_awal" value="<?= htmlspecialchars($data["warna_dashboard_awal"] ?? "#1e3a8a"); ?>"></div>
-                    <div class="form-group"><label for="warna_dashboard_akhir">Gradien Dashboard Akhir</label><input id="warna_dashboard_akhir" type="color" name="warna_dashboard_akhir" value="<?= htmlspecialchars($data["warna_dashboard_akhir"] ?? "#2563eb"); ?>"></div>
-                    <div class="form-group"><label for="warna_pie_laki">Pie Laki-laki</label><input id="warna_pie_laki" type="color" name="warna_pie_laki" value="<?= htmlspecialchars($data["warna_pie_laki"] ?? "#2563eb"); ?>"></div>
-                    <div class="form-group"><label for="warna_pie_perempuan">Pie Perempuan</label><input id="warna_pie_perempuan" type="color" name="warna_pie_perempuan" value="<?= htmlspecialchars($data["warna_pie_perempuan"] ?? "#ec4899"); ?>"></div>
-                    <div class="form-group"><label for="warna_bar_awal">Bar Awal</label><input id="warna_bar_awal" type="color" name="warna_bar_awal" value="<?= htmlspecialchars($data["warna_bar_awal"] ?? "#2563eb"); ?>"></div>
-                    <div class="form-group"><label for="warna_bar_akhir">Bar Akhir</label><input id="warna_bar_akhir" type="color" name="warna_bar_akhir" value="<?= htmlspecialchars($data["warna_bar_akhir"] ?? "#93c5fd"); ?>"></div>
 
                     <div class="form-group">
                         <label for="teks_tombol">Teks Tombol Hero</label>
@@ -134,26 +129,34 @@ require __DIR__ . "/partials/atas.php";
                         <textarea id="deskripsi_hero" name="deskripsi_hero" rows="4" required><?= htmlspecialchars($data["deskripsi_hero"] ?? ""); ?></textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label for="warna_utama">Warna Utama</label>
-                        <input
-                            id="warna_utama"
-                            type="color"
-                            name="warna_utama"
-                            value="<?= htmlspecialchars($data["warna_utama"] ?? "#2563eb"); ?>"
-                        >
                     </div>
+                </section>
 
-                    <div class="form-group">
-                        <label for="warna_hero">Warna Latar Hero</label>
-                        <input
-                            id="warna_hero"
-                            type="color"
-                            name="warna_hero"
-                            value="<?= htmlspecialchars($data["warna_hero"] ?? "#0f172a"); ?>"
-                        >
+                <section class="settings-section-card">
+                    <div class="settings-section-heading"><span class="settings-section-icon">▦</span><div><h3>Warna Dashboard</h3><p>Sesuaikan gradasi kartu statistik dashboard.</p></div></div>
+                    <div class="form-grid">
+                        <div class="form-group"><label for="warna_dashboard_awal">Gradien Dashboard Awal</label><input id="warna_dashboard_awal" type="color" name="warna_dashboard_awal" value="<?= htmlspecialchars($data["warna_dashboard_awal"] ?? "#1e3a8a"); ?>"></div>
+                        <div class="form-group"><label for="warna_dashboard_akhir">Gradien Dashboard Akhir</label><input id="warna_dashboard_akhir" type="color" name="warna_dashboard_akhir" value="<?= htmlspecialchars($data["warna_dashboard_akhir"] ?? "#2563eb"); ?>"></div>
                     </div>
-                </div>
+                </section>
+
+                <section class="settings-section-card">
+                    <div class="settings-section-heading"><span class="settings-section-icon">◒</span><div><h3>Warna Grafik</h3><p>Atur warna pie chart dan bar chart.</p></div></div>
+                    <div class="form-grid">
+                        <div class="form-group"><label for="warna_pie_laki">Pie Laki-laki</label><input id="warna_pie_laki" type="color" name="warna_pie_laki" value="<?= htmlspecialchars($data["warna_pie_laki"] ?? "#2563eb"); ?>"></div>
+                        <div class="form-group"><label for="warna_pie_perempuan">Pie Perempuan</label><input id="warna_pie_perempuan" type="color" name="warna_pie_perempuan" value="<?= htmlspecialchars($data["warna_pie_perempuan"] ?? "#ec4899"); ?>"></div>
+                        <div class="form-group"><label for="warna_bar_awal">Bar Awal</label><input id="warna_bar_awal" type="color" name="warna_bar_awal" value="<?= htmlspecialchars($data["warna_bar_awal"] ?? "#2563eb"); ?>"></div>
+                        <div class="form-group"><label for="warna_bar_akhir">Bar Akhir</label><input id="warna_bar_akhir" type="color" name="warna_bar_akhir" value="<?= htmlspecialchars($data["warna_bar_akhir"] ?? "#93c5fd"); ?>"></div>
+                    </div>
+                </section>
+
+                <section class="settings-section-card">
+                    <div class="settings-section-heading"><span class="settings-section-icon">●</span><div><h3>Warna Halaman</h3><p>Tentukan warna utama dan latar hero.</p></div></div>
+                    <div class="form-grid">
+                        <div class="form-group"><label for="warna_utama">Warna Utama</label><input id="warna_utama" type="color" name="warna_utama" value="<?= htmlspecialchars($data["warna_utama"] ?? "#2563eb"); ?>"></div>
+                        <div class="form-group"><label for="warna_hero">Warna Latar Hero</label><input id="warna_hero" type="color" name="warna_hero" value="<?= htmlspecialchars($data["warna_hero"] ?? "#0f172a"); ?>"></div>
+                    </div>
+                </section>
 
                 <div class="form-actions">
                     <a href="<?= htmlspecialchars(URL_DASAR); ?>../index.php" class="btn btn-secondary">

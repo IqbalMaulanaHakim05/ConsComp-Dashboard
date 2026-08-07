@@ -153,6 +153,7 @@ function buatHtmlCv(array $karyawan): string
                     <div class="meta-row"><span class="meta-label">Jenis Kelamin</span><span class="meta-value"><?= escapeCv(genderCv($karyawan)); ?></span></div>
                     <div class="meta-row"><span class="meta-label">Agama</span><span class="meta-value"><?= escapeCv(nilaiCv($karyawan, "agama")); ?></span></div>
                     <div class="meta-row"><span class="meta-label">Status Pernikahan</span><span class="meta-value"><?= escapeCv(nilaiCv($karyawan, "marital_status")); ?></span></div>
+                    <div class="meta-row"><span class="meta-label">MCU Terakhir</span><span class="meta-value"><?= escapeCv(tanggalCv($karyawan, "tanggal_mcu_terakhir")); ?></span></div>
                 </section>
 
             </td>
@@ -161,6 +162,11 @@ function buatHtmlCv(array $karyawan): string
                 <section class="section">
                     <h2 class="section-title">Profil Profesional</h2>
                     <p class="summary"><?= nl2br(escapeCv(nilaiCv($karyawan, "biografi", "Belum ada ringkasan profil profesional."))); ?></p>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">Keahlian</h2>
+                    <p class="summary"><?= nl2br(escapeCv(nilaiCv($karyawan, "keahlian", "Belum ada data keahlian."))); ?></p>
                 </section>
 
                 <section class="section">

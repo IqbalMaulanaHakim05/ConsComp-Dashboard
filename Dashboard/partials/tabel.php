@@ -31,6 +31,8 @@ if ($kataKunci !== "") {
 }
 $paramDasar["filter"] = $filterKolom ?? "semua";
 $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
+$paramDasar["sort"] = $sort ?? "id";
+$paramDasar["arah"] = $arah ?? "DESC";
 
 ?>
     <section class="data-card">
@@ -46,10 +48,17 @@ $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
                     value="<?= htmlspecialchars($kataKunci); ?>"
                 >
 
-                <select name="filter" title="Pilih kolom pencarian">
-                    <?php foreach (["semua"=>"Semua kolom", "id"=>"ID", "posisi"=>"Posisi", "departemen"=>"Departemen", "gaji"=>"Gaji", "tanggal_masuk"=>"Tanggal masuk", "status_kerja"=>"Status kerja", "performa"=>"Performa"] as $nilaiFilter=>$labelFilter): ?>
-                        <option value="<?= $nilaiFilter; ?>" <?= ($filterKolom ?? "semua") === $nilaiFilter ? "selected" : ""; ?>><?= $labelFilter; ?></option>
+                <input type="hidden" name="filter" value="semua">
+
+                <select name="sort" title="Urutkan berdasarkan">
+                    <?php foreach (["id"=>"ID", "emp_id"=>"ID Karyawan", "nama"=>"Nama", "posisi"=>"Posisi", "departemen"=>"Departemen", "gaji"=>"Gaji", "tanggal_masuk"=>"Tanggal masuk", "status_kerja"=>"Status kerja", "performa"=>"Performa"] as $nilaiSort=>$labelSort): ?>
+                        <option value="<?= $nilaiSort; ?>" <?= ($sort ?? "id") === $nilaiSort ? "selected" : ""; ?>>Urut: <?= $labelSort; ?></option>
                     <?php endforeach; ?>
+                </select>
+
+                <select name="arah" onchange="this.form.submit()" title="Arah urutan">
+                    <option value="ASC" <?= ($arah ?? "DESC") === "ASC" ? "selected" : ""; ?>>Naik (A–Z)</option>
+                    <option value="DESC" <?= ($arah ?? "DESC") === "DESC" ? "selected" : ""; ?>>Turun (Z–A)</option>
                 </select>
 
                 <button
