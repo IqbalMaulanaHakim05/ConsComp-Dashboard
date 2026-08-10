@@ -9,10 +9,11 @@ wajibRole("admin", "superadmin", "pic", "koordinator", "manager");
 
 $kataKunci = trim((string) ($_GET["cari"] ?? ""));
 $departemen = trim((string) ($_GET["department"] ?? ""));
-$periodeBulan = max(1, min(12, (int) ($_GET["bulan"] ?? date("n"))));
-$periodeTahun = max(2000, min(2100, (int) ($_GET["tahun"] ?? date("Y"))));
+$posisiFilter = trim((string) ($_GET["position"] ?? ""));
 $cakupan = roleOperasional() ? " AND k.department_id = " . (int) (departmentIdPengguna() ?? 0) : "";
 $departemenPilihan = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
+$filterOperasional = roleOperasional();
+$daftarPosisi = mysqli_query($conn, "SELECT DISTINCT position FROM karyawan WHERE position IS NOT NULL AND TRIM(position) <> ''" . ($filterOperasional ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0) : "") . " ORDER BY position ASC");
 $komponenPendapatan = mysqli_query($conn, "SELECT id, kode, nama FROM jenis_komponen_gaji WHERE kategori = 'pendapatan' AND is_active = 1 ORDER BY nama ASC");
 $daftarKomponenPendapatan = [];
 while ($komponen = mysqli_fetch_assoc($komponenPendapatan)) $daftarKomponenPendapatan[] = $komponen;
@@ -23,6 +24,7 @@ $namaPotongan = mysqli_query($conn, "SELECT DISTINCT nama FROM potongan_karyawan
 $daftarPotongan = [];
 while ($potongan = mysqli_fetch_assoc($namaPotongan)) $daftarPotongan[] = $potongan["nama"];
 
+$filterSql = $filterOperasional ? " AND (? = '' OR k.position = ?)" : " AND (? = '' OR k.department_id = ?)";
 $sql = "SELECT
             k.id, k.emp_id, k.employee_name, k.position, k.department,
             COALESCE(lembur.total_upah_lembur, 0) AS total_upah_lembur,
@@ -34,16 +36,15 @@ $sql = "SELECT
             FROM overtime_reports o
             INNER JOIN overtime_compensations oc ON oc.overtime_id = o.id
             WHERE o.status IN ('disetujui', 'selesai')
-              AND MONTH(o.mulai_at) = " . $periodeBulan . "
-              AND YEAR(o.mulai_at) = " . $periodeTahun . "
             GROUP BY o.karyawan_id
         ) lembur ON lembur.karyawan_id = k.id
-        WHERE (? = '' OR k.employee_name LIKE CONCAT('%', ?, '%') OR k.emp_id LIKE CONCAT('%', ?, '%'))" . $cakupan . "
-          AND (? = '' OR k.department_id = ?)
+        WHERE (? = '' OR k.employee_name LIKE CONCAT('%', ?, '%') OR k.emp_id LIKE CONCAT('%', ?, '%'))" . $cakupan . $filterSql . "
         ORDER BY k.employee_name ASC";
 $stmt = mysqli_prepare($conn, $sql);
 $departemenId = $departemen === '' ? 0 : (int) $departemen;
-mysqli_stmt_bind_param($stmt, "sssii", $kataKunci, $kataKunci, $kataKunci, $departemen, $departemenId);
+$filterNilai = $filterOperasional ? $posisiFilter : $departemen;
+if ($filterOperasional) mysqli_stmt_bind_param($stmt, "sssss", $kataKunci, $kataKunci, $kataKunci, $filterNilai, $filterNilai);
+else mysqli_stmt_bind_param($stmt, "sssii", $kataKunci, $kataKunci, $kataKunci, $filterNilai, $departemenId);
 mysqli_stmt_execute($stmt);
 $hasil = mysqli_stmt_get_result($stmt);
 
@@ -61,14 +62,15 @@ require __DIR__ . "/partials/atas.php";
     </div>
     <form method="GET" class="filter-bar">
         <input name="cari" value="<?= htmlspecialchars($kataKunci); ?>" placeholder="Cari nama atau ID karyawan">
-        <select name="bulan"><?php for ($bulan = 1; $bulan <= 12; $bulan++): ?><option value="<?= $bulan; ?>" <?= $periodeBulan === $bulan ? "selected" : ""; ?>>Bulan <?= $bulan; ?></option><?php endfor; ?></select>
-        <input name="tahun" type="number" min="2000" max="2100" value="<?= $periodeTahun; ?>">
-        <select name="department">
+        <?php if ($filterOperasional): ?><select name="position">
+            <option value="">Semua posisi</option>
+            <?php while ($posisi = mysqli_fetch_assoc($daftarPosisi)): ?><option value="<?= htmlspecialchars($posisi["position"]); ?>" <?= $posisiFilter === $posisi["position"] ? "selected" : ""; ?>><?= htmlspecialchars($posisi["position"]); ?></option><?php endwhile; ?>
+        </select><?php else: ?><select name="department">
             <option value="">Semua departemen</option>
             <?php while ($item = mysqli_fetch_assoc($departemenPilihan)): ?>
                 <option value="<?= (int) $item["id"]; ?>" <?= $departemenId === (int) $item["id"] ? "selected" : ""; ?>><?= htmlspecialchars($item["nama"]); ?></option>
             <?php endwhile; ?>
-        </select>
+        </select><?php endif; ?>
         <button class="btn btn-primary" type="submit">Filter</button>
     </form>
     <div class="table-wrapper">
@@ -97,7 +99,7 @@ require __DIR__ . "/partials/atas.php";
                     <?php $hasilPendapatanManual = mysqli_query($conn, "SELECT nama, nilai FROM pendapatan_tambahan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiManual = []; if ($hasilPendapatanManual) while ($itemManual = mysqli_fetch_assoc($hasilPendapatanManual)) $nilaiManual[$itemManual["nama"]] = (float) $itemManual["nilai"]; foreach ($daftarPendapatanManual as $namaManual): ?><td><?= isset($nilaiManual[$namaManual]) && $nilaiManual[$namaManual] > 0 ? "Rp " . number_format($nilaiManual[$namaManual], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
                     <?php $hasilPotongan = mysqli_query($conn, "SELECT nama, nilai FROM potongan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiPotongan = []; if ($hasilPotongan) while ($itemPotongan = mysqli_fetch_assoc($hasilPotongan)) $nilaiPotongan[$itemPotongan["nama"]] = (float) $itemPotongan["nilai"]; foreach ($daftarPotongan as $namaPotonganItem): ?><td><?= isset($nilaiPotongan[$namaPotonganItem]) && $nilaiPotongan[$namaPotonganItem] > 0 ? "Rp " . number_format($nilaiPotongan[$namaPotonganItem], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
                     <td><?= htmlspecialchars((string) ($baris["berlaku_mulai"] ?? "-")); ?></td>
-                    <td><?php if (punyaRole("admin", "superadmin")): ?><a class="btn btn-warning" href="edit-upah.php?id=<?= (int) $baris["id"]; ?>">Edit</a><form method="POST" action="fungsi/generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="bulan" value="<?= $periodeBulan; ?>"><input type="hidden" name="tahun" value="<?= $periodeTahun; ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php else: ?>-<?php endif; ?></td>
+                    <td><?php if (punyaRole("admin", "superadmin")): ?><a class="btn btn-warning" href="edit-upah.php?id=<?= (int) $baris["id"]; ?>">Edit</a><form method="POST" action="fungsi/generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php else: ?>-<?php endif; ?></td>
                 </tr>
             <?php endwhile; ?>
             </tbody>

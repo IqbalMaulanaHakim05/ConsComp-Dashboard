@@ -5,8 +5,6 @@ require_once __DIR__ . "/auth.php";
 wajibRole("admin", "superadmin");
 if ($_SERVER["REQUEST_METHOD"] !== "POST" || !csrfValid($_POST["csrf_token"] ?? null)) { http_response_code(403); exit("Permintaan tidak valid."); }
 $id = (int) ($_POST["id"] ?? 0);
-$periodeBulan = max(1, min(12, (int) ($_POST["bulan"] ?? date("n"))));
-$periodeTahun = max(2000, min(2100, (int) ($_POST["tahun"] ?? date("Y"))));
 $stmt = mysqli_prepare($conn, "SELECT k.emp_id, k.employee_name, k.position, k.kontak, pg.gaji_pokok, pg.uang_makan FROM karyawan k LEFT JOIN profil_gaji pg ON pg.karyawan_id = k.id WHERE k.id = ? LIMIT 1");
 mysqli_stmt_bind_param($stmt, "i", $id); mysqli_stmt_execute($stmt); $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)); mysqli_stmt_close($stmt);
 if (!$data) { http_response_code(404); exit("Data karyawan tidak ditemukan."); }
@@ -14,7 +12,7 @@ $items = [["Gaji Pokok", (float) ($data["gaji_pokok"] ?? 0)], ["Uang Makan", (fl
 $tambahan = mysqli_query($conn, "SELECT nama, nilai FROM pendapatan_tambahan_karyawan WHERE karyawan_id = " . $id . " ORDER BY id ASC");
 if ($tambahan) while ($item = mysqli_fetch_assoc($tambahan)) $items[] = [(string) $item["nama"], (float) $item["nilai"]];
 $total = 0.0; foreach ($items as $item) $total += $item[1];
-$lembur = mysqli_query($conn, "SELECT SUM(oc.jumlah_upah) AS total FROM overtime_reports o INNER JOIN overtime_compensations oc ON oc.overtime_id = o.id WHERE o.karyawan_id = " . $id . " AND o.status IN ('disetujui', 'selesai') AND MONTH(o.mulai_at) = " . $periodeBulan . " AND YEAR(o.mulai_at) = " . $periodeTahun);
+$lembur = mysqli_query($conn, "SELECT SUM(oc.jumlah_upah) AS total FROM overtime_reports o INNER JOIN overtime_compensations oc ON oc.overtime_id = o.id WHERE o.karyawan_id = " . $id . " AND o.status IN ('disetujui', 'selesai')");
 $totalLembur = (float) ((mysqli_fetch_assoc($lembur)["total"] ?? 0));
 if ($totalLembur > 0) { $items[] = ["Upah Lembur", $totalLembur]; $total += $totalLembur; }
 $potonganItems = [];

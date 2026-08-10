@@ -94,13 +94,14 @@ require __DIR__ . "/partials/atas.php";
     </div>
 
     <div class="analysis-chart-grid">
-        <article class="analysis-chart-card"><h2>Karyawan per Departemen</h2><p>Jumlah karyawan pada setiap departemen.</p><div class="analysis-chart-wrap"><canvas id="chartDepartment"></canvas></div></article>
         <article class="analysis-chart-card"><h2>Status Kerja</h2><p>Komposisi status kerja karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartStatus"></canvas></div></article>
         <article class="analysis-chart-card analysis-chart-wide"><h2>Karyawan per Posisi</h2><p>Jumlah karyawan pada seluruh posisi yang tersedia.</p><div class="analysis-chart-wrap analysis-chart-dynamic" style="height: <?= max(320, count($analisis["posisi"]["label"]) * 34); ?>px"><canvas id="chartPosition"></canvas></div></article>
         <article class="analysis-chart-card"><h2>Tren Penerimaan Karyawan</h2><p>Jumlah karyawan berdasarkan bulan masuk.</p><div class="analysis-chart-wrap"><canvas id="chartHiring"></canvas></div></article>
         <article class="analysis-chart-card"><h2>Jenis Kelamin</h2><p>Komposisi jenis kelamin karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartGender"></canvas></div></article>
-        <article class="analysis-chart-card"><h2>Rata-rata Gaji per Departemen</h2><p>Perbandingan rata-rata gaji antar departemen.</p><div class="analysis-chart-wrap"><canvas id="chartSalary"></canvas></div></article>
-        <article class="analysis-chart-card"><h2>Rata-rata Performa per Departemen</h2><p>Perbandingan skor performa antar departemen.</p><div class="analysis-chart-wrap"><canvas id="chartPerformance"></canvas></div></article>
+        <?php if (!roleOperasional()): ?>
+            <article class="analysis-chart-card"><h2>Rata-rata Gaji per Departemen</h2><p>Perbandingan rata-rata gaji antar departemen.</p><div class="analysis-chart-wrap"><canvas id="chartSalary"></canvas></div></article>
+            <article class="analysis-chart-card"><h2>Rata-rata Performa per Departemen</h2><p>Perbandingan skor performa antar departemen.</p><div class="analysis-chart-wrap"><canvas id="chartPerformance"></canvas></div></article>
+        <?php endif; ?>
     </div>
 
     <article class="analysis-summary-card">
@@ -187,12 +188,13 @@ require __DIR__ . "/partials/atas.php";
         charts.push(new Chart(canvas, { type: 'doughnut', data: { labels: data.label, datasets: [{ data: data.nilai, backgroundColor: colors, borderColor: initialTheme.surface, borderWidth: 3 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom' } } } }));
     };
 
-    bar('chartDepartment', datasets.department);
     bar('chartPosition', datasets.position, true);
     doughnut('chartStatus', datasets.status, datasets.status.label.map((_, index) => palette[index % palette.length]));
     doughnut('chartGender', datasets.gender, datasets.gender.label.map(label => label === 'Perempuan' ? female : male));
+    <?php if (!roleOperasional()): ?>
     bar('chartSalary', datasets.salary, false, value => currencyId.format(value));
     bar('chartPerformance', datasets.performance, false, value => Number(value).toFixed(1));
+    <?php endif; ?>
 
     const hiring = document.getElementById('chartHiring');
     if (hiring) charts.push(new Chart(hiring, { type: 'line', data: { labels: datasets.hiring.label, datasets: [{ data: datasets.hiring.nilai, borderColor: primary, backgroundColor: hexToRgba(primary, .14), fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: secondary }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: commonScales } }));

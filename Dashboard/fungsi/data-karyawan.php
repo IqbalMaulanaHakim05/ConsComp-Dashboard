@@ -73,6 +73,8 @@ function ambilDataGrafik(mysqli $conn): array
     $jumlahDepartemen = [];
     $labelPerforma = [];
     $jumlahPerforma = [];
+    $labelPosisi = [];
+    $jumlahPosisi = [];
 
     $queryDepartemen = mysqli_query(
         $conn,
@@ -116,6 +118,9 @@ function ambilDataGrafik(mysqli $conn): array
         $jumlahPerforma[] = (int) $row["jumlah"];
     }
 
+    $queryPosisi = mysqli_query($conn, "SELECT position, COUNT(*) AS jumlah FROM karyawan WHERE position IS NOT NULL AND position != ''" . $cakupan . " GROUP BY position ORDER BY jumlah DESC");
+    if ($queryPosisi) while ($row = mysqli_fetch_assoc($queryPosisi)) { $labelPosisi[] = $row["position"]; $jumlahPosisi[] = (int) $row["jumlah"]; }
+
     $labelGender = ["Laki-laki", "Perempuan"];
     $jumlahGender = [0, 0];
     $queryGender = mysqli_query($conn, "SELECT gender, COUNT(*) AS jumlah FROM karyawan WHERE gender IN ('M', 'F')" . $cakupan . " GROUP BY gender");
@@ -126,6 +131,8 @@ function ambilDataGrafik(mysqli $conn): array
         "jumlahDepartemen" => $jumlahDepartemen,
         "labelPerforma" => $labelPerforma,
         "jumlahPerforma" => $jumlahPerforma,
+        "labelPosisi" => $labelPosisi,
+        "jumlahPosisi" => $jumlahPosisi,
         "labelGender" => $labelGender,
         "jumlahGender" => $jumlahGender,
     ];

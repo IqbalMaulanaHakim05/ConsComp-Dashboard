@@ -27,6 +27,8 @@ $labelDepartemen = $grafik["labelDepartemen"];
 $jumlahDepartemen = $grafik["jumlahDepartemen"];
 $labelPerforma = $grafik["labelPerforma"];
 $jumlahPerforma = $grafik["jumlahPerforma"];
+$labelPosisi = $grafik["labelPosisi"];
+$jumlahPosisi = $grafik["jumlahPosisi"];
 $labelGender = $grafik["labelGender"];
 $jumlahGender = $grafik["jumlahGender"];
 

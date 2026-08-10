@@ -12,14 +12,14 @@
     <section class="dashboard-chart" style="--dashboard-start: <?= htmlspecialchars($pengaturanDashboard["warna_dashboard_awal"] ?? "#1e3a8a"); ?>; --dashboard-end: <?= htmlspecialchars($pengaturanDashboard["warna_dashboard_akhir"] ?? "#2563eb"); ?>; --pie-male: <?= htmlspecialchars($pengaturanDashboard["warna_pie_laki"] ?? "#2563eb"); ?>; --pie-female: <?= htmlspecialchars($pengaturanDashboard["warna_pie_perempuan"] ?? "#ec4899"); ?>; --bar-start: <?= htmlspecialchars($pengaturanDashboard["warna_bar_awal"] ?? "#2563eb"); ?>; --bar-end: <?= htmlspecialchars($pengaturanDashboard["warna_bar_akhir"] ?? "#93c5fd"); ?>;">
 
         <div class="chart-card">
-            <h2>Jumlah Karyawan per Departemen</h2>
+            <h2><?= roleOperasional() ? "Jumlah Karyawan per Posisi" : "Jumlah Karyawan per Departemen"; ?></h2>
 
             <p>
-                Perbandingan jumlah karyawan pada setiap departemen.
+                Perbandingan jumlah karyawan pada setiap <?= roleOperasional() ? "posisi" : "departemen"; ?>.
             </p>
 
             <div class="chart-wrapper">
-                <canvas id="grafikDepartemen"></canvas>
+                <canvas id="<?= roleOperasional() ? "grafikPosisi" : "grafikDepartemen"; ?>"></canvas>
             </div>
         </div>
 
@@ -43,13 +43,13 @@
     Chart.defaults.borderColor = document.documentElement.dataset.theme === "dark" ? "#334155" : "#e2e8f0";
     const labelDepartemen =
         <?= json_encode(
-            $labelDepartemen,
+            roleOperasional() ? $labelPosisi : $labelDepartemen,
             JSON_UNESCAPED_UNICODE
         ); ?>;
 
     const jumlahDepartemen =
         <?= json_encode(
-            $jumlahDepartemen
+            roleOperasional() ? $jumlahPosisi : $jumlahDepartemen
         ); ?>;
 
     const labelPerforma =
@@ -68,7 +68,7 @@
 
     const elemenGrafikDepartemen =
         document.getElementById(
-            "grafikDepartemen"
+            "<?= roleOperasional() ? "grafikPosisi" : "grafikDepartemen"; ?>"
         );
 
     const chartColors = getComputedStyle(document.querySelector('.dashboard-chart'));
