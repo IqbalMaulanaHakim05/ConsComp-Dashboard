@@ -12,13 +12,14 @@
  */
 function ambilStatistik(mysqli $conn): array
 {
+    $cakupan = roleOperasional() ? " WHERE department_id = " . (int) (departmentIdPengguna() ?? 0) : "";
     $totalKaryawan = 0;
     $totalDepartemen = 0;
     $rataRataPerforma = 0.0;
 
     $queryKaryawan = mysqli_query(
         $conn,
-        "SELECT COUNT(*) AS total FROM karyawan"
+        "SELECT COUNT(*) AS total FROM karyawan" . $cakupan
     );
 
     if ($queryKaryawan) {
@@ -32,7 +33,7 @@ function ambilStatistik(mysqli $conn): array
         "SELECT COUNT(DISTINCT department) AS total
          FROM karyawan
          WHERE department IS NOT NULL
-           AND department != ''"
+           AND department != ''" . (roleOperasional() ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0) : "")
     );
 
     if ($queryDepartemen) {
@@ -46,7 +47,7 @@ function ambilStatistik(mysqli $conn): array
         "SELECT AVG(performance_score) AS rata_rata
          FROM karyawan
          WHERE performance_score IS NOT NULL
-           AND performance_score != ''"
+           AND performance_score != ''" . (roleOperasional() ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0) : "")
     );
 
     if ($queryPerforma) {
@@ -67,6 +68,7 @@ function ambilStatistik(mysqli $conn): array
  */
 function ambilDataGrafik(mysqli $conn): array
 {
+    $cakupan = roleOperasional() ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0) : "";
     $labelDepartemen = [];
     $jumlahDepartemen = [];
     $labelPerforma = [];
@@ -79,7 +81,7 @@ function ambilDataGrafik(mysqli $conn): array
             COUNT(*) AS jumlah
          FROM karyawan
          WHERE department IS NOT NULL
-           AND department != ''
+           AND department != ''" . $cakupan . "
          GROUP BY department
          ORDER BY jumlah DESC"
     );
@@ -100,7 +102,7 @@ function ambilDataGrafik(mysqli $conn): array
             COUNT(*) AS jumlah
          FROM karyawan
          WHERE performance_score IS NOT NULL
-           AND performance_score != ''
+           AND performance_score != ''" . $cakupan . "
          GROUP BY performance_score
          ORDER BY jumlah DESC"
     );
@@ -116,7 +118,7 @@ function ambilDataGrafik(mysqli $conn): array
 
     $labelGender = ["Laki-laki", "Perempuan"];
     $jumlahGender = [0, 0];
-    $queryGender = mysqli_query($conn, "SELECT gender, COUNT(*) AS jumlah FROM karyawan WHERE gender IN ('M', 'F') GROUP BY gender");
+    $queryGender = mysqli_query($conn, "SELECT gender, COUNT(*) AS jumlah FROM karyawan WHERE gender IN ('M', 'F')" . $cakupan . " GROUP BY gender");
     if ($queryGender) while ($row = mysqli_fetch_assoc($queryGender)) $jumlahGender[$row["gender"] === "F" ? 1 : 0] = (int) $row["jumlah"];
 
     return [
@@ -142,6 +144,7 @@ function ambilDataKaryawan(
     int $batasDefault,
     bool $izinkanSemua
 ): array {
+    $cakupan = roleOperasional() ? "department_id = " . (int) (departmentIdPengguna() ?? 0) : "1=1";
     $kataKunci = trim($_GET["cari"] ?? "");
     $filterKolom = (string) ($_GET["filter"] ?? "semua");
     $sortPilihan = [
@@ -180,7 +183,7 @@ function ambilDataKaryawan(
 
     // 1. Menghitung total data yang cocok lebih dulu (dasar pagination).
     if ($kataKunci !== "") {
-        $sqlHitung = "SELECT COUNT(*) AS total FROM karyawan WHERE " . $kondisiFilter;
+        $sqlHitung = "SELECT COUNT(*) AS total FROM karyawan WHERE " . $cakupan . " AND (" . $kondisiFilter . ")";
 
         $stmtHitung = mysqli_prepare($conn, $sqlHitung);
 
@@ -203,7 +206,7 @@ function ambilDataKaryawan(
     } else {
         $queryTotal = mysqli_query(
             $conn,
-            "SELECT COUNT(*) AS total FROM karyawan"
+            "SELECT COUNT(*) AS total FROM karyawan WHERE " . $cakupan
         );
         $totalCocok = (int) (
             mysqli_fetch_assoc($queryTotal)["total"] ?? 0
@@ -233,7 +236,7 @@ function ambilDataKaryawan(
 
     // 3. Mengambil data sesuai halaman.
     if ($kataKunci !== "") {
-        $sql = "SELECT * FROM karyawan WHERE " . $kondisiFilter . " ORDER BY " . $klausaUrut . $klausaLimit;
+        $sql = "SELECT * FROM karyawan WHERE " . $cakupan . " AND (" . $kondisiFilter . ") ORDER BY " . $klausaUrut . $klausaLimit;
 
         $stmt = mysqli_prepare($conn, $sql);
 
@@ -254,6 +257,7 @@ function ambilDataKaryawan(
             $conn,
             "SELECT *
              FROM karyawan
+             WHERE " . $cakupan . "
              ORDER BY " . $klausaUrut . $klausaLimit
         );
 

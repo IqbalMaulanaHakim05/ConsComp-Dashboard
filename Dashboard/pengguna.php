@@ -24,8 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (!csrfValid($_POST["csrf_token"] ?? null)) {
             $pesan = "Sesi formulir tidak valid.";
             $tipePesan = "error";
-        } elseif (($target["role"] ?? "") !== "admin") {
-            $pesan = "Hanya akun admin yang dapat dihapus.";
+        } elseif (!in_array(($target["role"] ?? ""), ["admin", "pic", "koordinator", "manager", "viewer"], true)) {
+            $pesan = "Akun dengan role ini tidak dapat dihapus.";
             $tipePesan = "error";
         } elseif ($hapusId === $superadminAktif) {
             $pesan = "Akun yang sedang digunakan tidak dapat dihapus.";
@@ -52,24 +52,33 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $nama = trim((string) ($_POST["nama"] ?? ""));
         $username = trim((string) ($_POST["username"] ?? ""));
         $password = (string) ($_POST["password"] ?? "");
-        $role = "admin";
+        $role = (string) ($_POST["role"] ?? "admin");
+        $departmentId = (int) ($_POST["department_id"] ?? 0);
+        $roleDiizinkan = ["admin", "pic", "koordinator", "manager"];
 
-        if ($nama === "" || $username === "" || strlen($password) < 8) {
+        if ($nama === "" || $username === "" || strlen($password) < 8 || !in_array($role, $roleDiizinkan, true)) {
             $pesan = "Nama, username, dan password minimal 8 karakter wajib diisi.";
+            $tipePesan = "error";
+        } elseif (in_array($role, ["pic", "koordinator", "manager"], true) && $departmentId <= 0) {
+            $pesan = "Departemen wajib dipilih untuk role operasional.";
             $tipePesan = "error";
         } else {
             $stmt = mysqli_prepare(
                 $conn,
-                "INSERT INTO users (username, password, nama, role) VALUES (?, ?, ?, ?)"
+                "INSERT INTO users (username, password, nama, role, department_id) VALUES (?, ?, ?, ?, NULLIF(?, 0))"
             );
 
             if ($stmt) {
                 $hash = password_hash($password, PASSWORD_DEFAULT);
-                mysqli_stmt_bind_param($stmt, "ssss", $username, $hash, $nama, $role);
+                mysqli_stmt_bind_param($stmt, "ssssi", $username, $hash, $nama, $role, $departmentId);
 
                 if (mysqli_stmt_execute($stmt)) {
                     $pesan = "Akun berhasil ditambahkan.";
-                    catatAktivitas($conn, "Menambahkan pengguna " . $username . " dengan role " . $role . ".");
+                    catatAktivitas(
+                        $conn,
+                        "Menambahkan pengguna " . $username . " dengan role " . $role
+                            . " dan departemen ID " . ($departmentId > 0 ? (string) $departmentId : "semua") . "."
+                    );
                 } else {
                     $pesan = mysqli_stmt_errno($stmt) === 1062
                         ? "Username sudah digunakan."
@@ -90,6 +99,7 @@ $daftarPengguna = mysqli_query(
     $conn,
     "SELECT id, username, nama, role FROM users ORDER BY nama ASC"
 );
+$daftarDepartemen = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
 
 $judulHalaman = "Manajemen Admin";
 $subjudulHalaman = "Kelola akun dengan akses admin.";
@@ -101,8 +111,8 @@ require __DIR__ . "/partials/atas.php";
     <div class="dashboard-chart">
         <section class="form-card">
             <div class="form-card-header">
-                <h2>Tambah Admin</h2>
-                <p>Buat akun baru dengan akses admin.</p>
+                        <h2>Tambah Akun</h2>
+                        <p>Buat akun baru dengan hak akses sesuai kebutuhan.</p>
             </div>
 
             <div class="form-body">
@@ -130,8 +140,23 @@ require __DIR__ . "/partials/atas.php";
                     </div>
 
                     <div class="form-group">
-                        <label>Role</label>
-                        <input value="Admin" readonly aria-label="Role akun baru">
+                        <label for="role">Role</label>
+                        <select id="role" name="role" required>
+                            <option value="admin">Admin</option>
+                            <option value="pic">PIC</option>
+                            <option value="koordinator">Koordinator</option>
+                            <option value="manager">Manager</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department_id">Departemen</label>
+                        <select id="department_id" name="department_id">
+                            <option value="0">Semua departemen / tidak terikat</option>
+                            <?php while ($departemen = mysqli_fetch_assoc($daftarDepartemen)): ?>
+                                <option value="<?= (int) $departemen["id"]; ?>"><?= htmlspecialchars($departemen["nama"]); ?></option>
+                            <?php endwhile; ?>
+                        </select>
                     </div>
 
                     <div class="form-actions">
@@ -163,12 +188,13 @@ require __DIR__ . "/partials/atas.php";
                                 <td><?= htmlspecialchars($pengguna["username"]); ?></td>
                                 <td><span class="badge"><?= htmlspecialchars(ucfirst($pengguna["role"])); ?></span></td>
                                 <td>
-                                    <?php if ($pengguna["role"] === "admin"): ?>
+                                    <?php if ($pengguna["role"] !== "superadmin"): ?>
                                         <div class="action-buttons">
                                             <a class="btn btn-warning" href="edit-pengguna.php?id=<?= (int) $pengguna["id"]; ?>">
                                                 Edit
                                             </a>
 
+                                            <?php if (in_array($pengguna["role"], ["admin", "pic", "koordinator", "manager", "viewer"], true)): ?>
                                             <form
                                                 method="POST"
                                                 style="display:inline"
@@ -179,6 +205,7 @@ require __DIR__ . "/partials/atas.php";
                                                 <input type="hidden" name="id" value="<?= (int) $pengguna["id"]; ?>">
                                                 <button class="btn btn-danger" type="submit">Hapus</button>
                                             </form>
+                                            <?php endif; ?>
                                         </div>
                                     <?php else: ?>
                                         <span class="field-note">Akun terlindungi</span>

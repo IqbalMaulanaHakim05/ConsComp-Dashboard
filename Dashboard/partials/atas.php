@@ -98,28 +98,43 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
         <a
             href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php"
-            class="<?= $halamanAktif === "karyawan" ? "active" : ""; ?>"
+            class="<?= in_array($halamanAktif, ["karyawan", "analisis", "upah", "lembur", "periode-gaji"], true) ? "active" : ""; ?>"
         >
-            <span class="sidebar-icon" aria-hidden="true">♙</span>Karyawan
+            <span class="sidebar-icon" aria-hidden="true">♙</span>Data Karyawan
         </a>
 
-        <?php if (function_exists("punyaRole") && punyaRole("admin", "superadmin")): ?>
-            <div class="sidebar-tree-children">
+        <div class="sidebar-tree-children">
+            <?php if (function_exists("punyaRole") && punyaRole("admin", "superadmin")): ?>
                 <a
                     href="<?= htmlspecialchars(URL_DASAR); ?>fungsi/tambah.php"
                     class="<?= $halamanAktif === "tambah" ? "active" : ""; ?>"
                 >
                     <span class="sidebar-icon" aria-hidden="true">+</span>Tambah Karyawan
                 </a>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
 
-        <a
-            href="<?= htmlspecialchars(URL_DASAR); ?>analisis.php"
-            class="<?= $halamanAktif === "analisis" ? "active" : ""; ?>"
-        >
-            <span class="sidebar-icon" aria-hidden="true">◒</span>Analisis
-        </a>
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>analisis.php"
+                class="<?= $halamanAktif === "analisis" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">◒</span>Analisis
+            </a>
+
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>upah.php"
+                class="<?= $halamanAktif === "upah" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">Rp</span>Upah
+            </a>
+
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>lembur.php"
+                class="<?= $halamanAktif === "lembur" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">↗</span>Lembur
+            </a>
+
+        </div>
 
         <?php if (function_exists("punyaRole") && punyaRole("superadmin")): ?>
             <div class="sidebar-group-title">Pengaturan</div>

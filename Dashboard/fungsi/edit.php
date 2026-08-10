@@ -144,6 +144,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 );
 
                 if (mysqli_stmt_execute($stmtUpdate)) {
+                    mysqli_query($conn, "DELETE FROM riwayat_pendidikan WHERE karyawan_id = " . $id);
+                    $insertPendidikan = mysqli_prepare($conn, "INSERT INTO riwayat_pendidikan (karyawan_id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)");
+                    foreach ((array) ($_POST["pendidikan"] ?? []) as $itemPendidikan) {
+                        $institusi = trim((string) ($itemPendidikan["institusi"] ?? "")); if ($institusi === "") continue;
+                        $jenjang = trim((string) ($itemPendidikan["jenjang"] ?? "")); $jurusan = trim((string) ($itemPendidikan["jurusan"] ?? "")); $mulai = trim((string) ($itemPendidikan["tanggal_mulai"] ?? "")); $selesai = trim((string) ($itemPendidikan["tanggal_selesai"] ?? "")); $keterangan = trim((string) ($itemPendidikan["keterangan"] ?? ""));
+                        mysqli_stmt_bind_param($insertPendidikan, "issssss", $id, $institusi, $jenjang, $jurusan, $mulai, $selesai, $keterangan); mysqli_stmt_execute($insertPendidikan);
+                    }
+                    mysqli_stmt_close($insertPendidikan);
+                    mysqli_query($conn, "DELETE FROM riwayat_pekerjaan WHERE karyawan_id = " . $id);
+                    $insertPekerjaan = mysqli_prepare($conn, "INSERT INTO riwayat_pekerjaan (karyawan_id, nama_perusahaan, posisi, departemen, tanggal_mulai, tanggal_selesai, deskripsi) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)");
+                    foreach ((array) ($_POST["pekerjaan"] ?? []) as $itemPekerjaan) {
+                        $perusahaan = trim((string) ($itemPekerjaan["nama_perusahaan"] ?? "")); if ($perusahaan === "") continue;
+                        $posisiRiwayat = trim((string) ($itemPekerjaan["posisi"] ?? "")); $departemenRiwayat = trim((string) ($itemPekerjaan["departemen"] ?? "")); $mulaiRiwayat = trim((string) ($itemPekerjaan["tanggal_mulai"] ?? "")); $selesaiRiwayat = trim((string) ($itemPekerjaan["tanggal_selesai"] ?? "")); $deskripsiRiwayat = trim((string) ($itemPekerjaan["deskripsi"] ?? ""));
+                        mysqli_stmt_bind_param($insertPekerjaan, "issssss", $id, $perusahaan, $posisiRiwayat, $departemenRiwayat, $mulaiRiwayat, $selesaiRiwayat, $deskripsiRiwayat); mysqli_stmt_execute($insertPekerjaan);
+                    }
+                    mysqli_stmt_close($insertPekerjaan);
                     try {
                         sinkronkanSemuaDataset($conn);
                     } catch (Throwable $error) {

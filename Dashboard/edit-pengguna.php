@@ -12,7 +12,7 @@ $id = (int) ($_GET["id"] ?? $_POST["id"] ?? 0);
 
 $stmt = mysqli_prepare(
     $conn,
-    "SELECT id, username, nama, role FROM users WHERE id = ? LIMIT 1"
+    "SELECT id, username, nama, role, department_id FROM users WHERE id = ? LIMIT 1"
 );
 mysqli_stmt_bind_param($stmt, "i", $id);
 mysqli_stmt_execute($stmt);
@@ -23,7 +23,7 @@ if (!$pengguna) {
     die("Akun tidak ditemukan.");
 }
 
-if ($pengguna["role"] !== "admin") {
+if ($pengguna["role"] === "superadmin") {
     http_response_code(403);
     die("403 - Akun superadmin tidak dapat dikelola dari halaman ini.");
 }
@@ -32,11 +32,14 @@ $pesan = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nama = trim((string) ($_POST["nama"] ?? ""));
-    $role = "admin";
+    $role = (string) ($_POST["role"] ?? "admin");
+    $departmentId = (int) ($_POST["department_id"] ?? 0);
     $password = (string) ($_POST["password"] ?? "");
 
-    if ($nama === "") {
+    if ($nama === "" || !in_array($role, ["admin", "pic", "koordinator", "manager", "viewer"], true)) {
         $pesan = "Nama wajib diisi.";
+    } elseif (in_array($role, ["pic", "koordinator", "manager"], true) && $departmentId <= 0) {
+        $pesan = "Departemen wajib dipilih untuk role operasional.";
     } elseif ($password !== "" && strlen($password) < 8) {
         $pesan = "Password baru minimal 8 karakter.";
     } else {
@@ -44,21 +47,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $update = mysqli_prepare(
                 $conn,
-                "UPDATE users SET nama = ?, role = ?, password = ? WHERE id = ?"
+                "UPDATE users SET nama = ?, role = ?, department_id = NULLIF(?, 0), password = ? WHERE id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssi", $nama, $role, $hash, $id);
+            mysqli_stmt_bind_param($update, "ssisi", $nama, $role, $departmentId, $hash, $id);
         } else {
             $update = mysqli_prepare(
                 $conn,
-                "UPDATE users SET nama = ?, role = ? WHERE id = ?"
+                "UPDATE users SET nama = ?, role = ?, department_id = NULLIF(?, 0) WHERE id = ?"
             );
-            mysqli_stmt_bind_param($update, "ssi", $nama, $role, $id);
+            mysqli_stmt_bind_param($update, "ssii", $nama, $role, $departmentId, $id);
         }
 
         if ($update && mysqli_stmt_execute($update)) {
             catatAktivitas(
                 $conn,
-                "Mengubah pengguna " . $pengguna["username"] . " menjadi role " . $role . "."
+                "Mengubah pengguna " . $pengguna["username"]
+                    . " menjadi role " . $role
+                    . " dan departemen ID " . ($departmentId > 0 ? (string) $departmentId : "semua") . "."
             );
             mysqli_stmt_close($update);
             header("Location: pengguna.php");
@@ -73,7 +78,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $pengguna["nama"] = $nama;
     $pengguna["role"] = $role;
+    $pengguna["department_id"] = $departmentId;
 }
+
+$daftarDepartemen = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
 
 $judulHalaman = "Edit Akun";
 $subjudulHalaman = "Perbarui informasi dan hak akses akun.";
@@ -103,8 +111,22 @@ require __DIR__ . "/partials/atas.php";
                     </div>
 
                     <div class="form-group">
-                        <label>Role</label>
-                        <input value="Admin" readonly aria-label="Role akun">
+                        <label for="role">Role</label>
+                        <select id="role" name="role" required>
+                            <?php foreach (["admin" => "Admin", "pic" => "PIC", "koordinator" => "Koordinator", "manager" => "Manager", "viewer" => "Viewer"] as $nilai => $label): ?>
+                                <option value="<?= $nilai; ?>" <?= $pengguna["role"] === $nilai ? "selected" : ""; ?>><?= $label; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department_id">Departemen</label>
+                        <select id="department_id" name="department_id">
+                            <option value="0">Semua departemen / tidak terikat</option>
+                            <?php while ($departemen = mysqli_fetch_assoc($daftarDepartemen)): ?>
+                                <option value="<?= (int) $departemen["id"]; ?>" <?= (int) ($pengguna["department_id"] ?? 0) === (int) $departemen["id"] ? "selected" : ""; ?>><?= htmlspecialchars($departemen["nama"]); ?></option>
+                            <?php endwhile; ?>
+                        </select>
                     </div>
 
                     <div class="form-group full-width">

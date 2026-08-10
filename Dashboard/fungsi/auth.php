@@ -54,7 +54,7 @@ function sudahLogin(): bool
     return isset($_SESSION['user']['id'])
         && in_array(
             (string) ($_SESSION['user']['role'] ?? ''),
-            ['admin', 'superadmin'],
+            ['admin', 'superadmin', 'pic', 'koordinator', 'manager'],
             true
         );
 }
@@ -72,6 +72,42 @@ function namaPengguna(): string
 function rolePengguna(): string
 {
     return (string) ($_SESSION['user']['role'] ?? '');
+}
+
+function departmentIdPengguna(): ?int
+{
+    $nilai = $_SESSION['user']['department_id'] ?? null;
+    return $nilai === null || $nilai === '' ? null : (int) $nilai;
+}
+
+function roleOperasional(): bool
+{
+    return in_array(rolePengguna(), ['pic', 'koordinator', 'manager'], true);
+}
+
+function karyawanDalamCakupan(mysqli $conn, int $id): ?array
+{
+    $sql = "SELECT * FROM karyawan WHERE id = ?";
+    if (roleOperasional()) {
+        $sql .= " AND department_id = ?";
+    }
+    $sql .= " LIMIT 1";
+
+    $stmt = mysqli_prepare($conn, $sql);
+    if (!$stmt) {
+        return null;
+    }
+
+    if (roleOperasional()) {
+        $departmentId = (int) (departmentIdPengguna() ?? 0);
+        mysqli_stmt_bind_param($stmt, "ii", $id, $departmentId);
+    } else {
+        mysqli_stmt_bind_param($stmt, "i", $id);
+    }
+    mysqli_stmt_execute($stmt);
+    $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
+    mysqli_stmt_close($stmt);
+    return $data;
 }
 
 /**
@@ -125,7 +161,7 @@ function loginPengguna(mysqli $conn, string $username, string $password): bool
 {
     $stmt = mysqli_prepare(
         $conn,
-        "SELECT id, username, password, nama, role
+        "SELECT id, username, password, nama, role, department_id, is_active
          FROM users
          WHERE username = ?
          LIMIT 1"
@@ -140,7 +176,11 @@ function loginPengguna(mysqli $conn, string $username, string $password): bool
     $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
     mysqli_stmt_close($stmt);
 
-    if (!$data || !password_verify($password, $data['password'])) {
+    if (!$data || (int) $data['is_active'] !== 1 || !password_verify($password, $data['password'])) {
+        return false;
+    }
+
+    if (in_array($data['role'], ['pic', 'koordinator', 'manager'], true) && empty($data['department_id'])) {
         return false;
     }
 
@@ -152,6 +192,7 @@ function loginPengguna(mysqli $conn, string $username, string $password): bool
         'username' => (string) $data['username'],
         'nama' => (string) $data['nama'],
         'role' => (string) $data['role'],
+        'department_id' => $data['department_id'] === null ? null : (int) $data['department_id'],
     ];
     $_SESSION['waktu_login'] = time();
 

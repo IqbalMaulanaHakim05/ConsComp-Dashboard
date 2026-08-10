@@ -39,6 +39,7 @@ require __DIR__ . "/partials/atas.php";
         </div>
 
         <div class="analysis-filter-grid">
+            <?php if (!roleOperasional()): ?>
             <label>Departemen
                 <select name="department">
                     <option value="">Semua departemen</option>
@@ -47,6 +48,7 @@ require __DIR__ . "/partials/atas.php";
                     <?php endforeach; ?>
                 </select>
             </label>
+            <?php endif; ?>
             <label>Posisi
                 <select name="position">
                     <option value="">Semua posisi</option>
@@ -84,6 +86,8 @@ require __DIR__ . "/partials/atas.php";
 
     <div class="analysis-kpi-grid">
         <article class="analysis-kpi-card"><span>Total Karyawan</span><strong><?= number_format($kpi["total"], 0, ",", "."); ?></strong><small>Data sesuai filter aktif</small></article>
+        <article class="analysis-kpi-card"><span>Laki-laki</span><strong><?= number_format($kpi["laki_laki"], 0, ",", "."); ?></strong><small>Total karyawan laki-laki</small></article>
+        <article class="analysis-kpi-card"><span>Perempuan</span><strong><?= number_format($kpi["perempuan"], 0, ",", "."); ?></strong><small>Total karyawan perempuan</small></article>
         <article class="analysis-kpi-card"><span>Karyawan Aktif</span><strong><?= number_format($kpi["aktif"], 0, ",", "."); ?></strong><small>Status Active atau Aktif</small></article>
         <article class="analysis-kpi-card"><span>Rata-rata Gaji</span><strong>Rp <?= number_format($kpi["rata_gaji"], 0, ",", "."); ?></strong><small>Rata-rata data gaji valid</small></article>
         <article class="analysis-kpi-card"><span>Rata-rata Performa</span><strong><?= number_format($kpi["rata_performa"], 1, ",", "."); ?></strong><small>Rata-rata skor performa</small></article>

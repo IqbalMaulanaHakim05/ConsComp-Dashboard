@@ -62,11 +62,14 @@ function pilihanKolomAnalisis(mysqli $conn, string $kolom): array
         return [];
     }
 
+    $cakupan = roleOperasional()
+        ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0)
+        : "";
     $hasil = mysqli_query(
         $conn,
         "SELECT DISTINCT `$kolom` AS nilai
          FROM karyawan
-         WHERE `$kolom` IS NOT NULL AND TRIM(`$kolom`) <> ''
+         WHERE `$kolom` IS NOT NULL AND TRIM(`$kolom`) <> ''" . $cakupan . "
          ORDER BY `$kolom` ASC"
     );
 
@@ -141,6 +144,11 @@ function ambilAnalisisKaryawan(mysqli $conn): array
             $tipe .= "s";
         }
     }
+    if (roleOperasional()) {
+        $kondisi[] = "department_id = ?";
+        $parameter[] = (string) (departmentIdPengguna() ?? 0);
+        $tipe .= "i";
+    }
     if ($filter["date_from"] !== "") {
         $kondisi[] = "date_of_hire >= ?";
         $parameter[] = $filter["date_from"];
@@ -156,6 +164,8 @@ function ambilAnalisisKaryawan(mysqli $conn): array
         $conn,
         "SELECT
             COUNT(*) AS total,
+            SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END) AS laki_laki,
+            SUM(CASE WHEN gender = 'F' THEN 1 ELSE 0 END) AS perempuan,
             SUM(CASE WHEN LOWER(TRIM(employment_status)) IN ('active', 'aktif') THEN 1 ELSE 0 END) AS aktif,
             AVG(CAST(NULLIF(REPLACE(salary, ',', ''), '') AS DECIMAL(15,2))) AS rata_gaji,
             AVG(CAST(NULLIF(performance_score, '') AS DECIMAL(10,2))) AS rata_performa
@@ -286,6 +296,8 @@ function ambilAnalisisKaryawan(mysqli $conn): array
         "pilihan" => $pilihan,
         "kpi" => [
             "total" => (int) ($kpi["total"] ?? 0),
+            "laki_laki" => (int) ($kpi["laki_laki"] ?? 0),
+            "perempuan" => (int) ($kpi["perempuan"] ?? 0),
             "aktif" => (int) ($kpi["aktif"] ?? 0),
             "rata_gaji" => (float) ($kpi["rata_gaji"] ?? 0),
             "rata_performa" => (float) ($kpi["rata_performa"] ?? 0),
