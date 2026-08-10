@@ -33,6 +33,7 @@ $form = [
     "department" => "",
     "salary" => "",
     "gender" => "",
+    "date_of_hire" => "",
     "employment_status" => "",
     "performance_score" => "",
 ];
@@ -59,6 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $department = $form["department"];
     $salary = (float) $form["salary"];
     $gender = $form["gender"];
+    $dateOfHire = $form["date_of_hire"];
     $employmentStatus = $form["employment_status"];
     $performanceScore = $form["performance_score"];
 
@@ -69,12 +71,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $department === ""
         || $form["salary"] === ""
         || $gender === ""
+        || $dateOfHire === ""
         || $employmentStatus === ""
         || $performanceScore === ""
     ) {
         $pesan = "Semua kolom wajib diisi.";
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
+    } elseif (
+        !preg_match("/^\d{4}-\d{2}-\d{2}$/", $dateOfHire)
+        || !checkdate(
+            (int) substr($dateOfHire, 5, 2),
+            (int) substr($dateOfHire, 8, 2),
+            (int) substr($dateOfHire, 0, 4)
+        )
+    ) {
+        $pesan = "Tanggal masuk tidak valid.";
     } else {
         $fileCv = unggahMediaKaryawan($_FILES["file_cv"] ?? [], "cv", $pesan);
         $fileIjazah = unggahMediaKaryawan($_FILES["file_ijazah"] ?? [], "ijazah", $pesan);
@@ -90,13 +102,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         department,
                         salary,
                         gender,
+                        date_of_hire,
                         employment_status,
                         performance_score,
                         file_cv,
                         foto_profil,
                         file_ijazah,
                         file_mcu
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = mysqli_prepare($conn, $sql);
 
@@ -105,7 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 mysqli_stmt_bind_param(
                     $stmt,
-                    str_repeat("s", 18) . "d" . str_repeat("s", 7),
+                    str_repeat("s", 18) . "d" . str_repeat("s", 8),
                     $employeeName,
                     $nik,
                     $alamat,
@@ -121,6 +134,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $department,
                     $salary,
                     $gender,
+                    $dateOfHire,
                     $employmentStatus,
                     $performanceScore,
                     $fileCv,
@@ -337,6 +351,18 @@ require __DIR__ . "/../partials/atas.php";
                         inputmode="numeric"
                         required>
                 </div>
+
+                <div class="form-group">
+                    <label for="date_of_hire">
+                        Tanggal Masuk <span class="required">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        id="date_of_hire"
+                        name="date_of_hire"
+                        value="<?= htmlspecialchars($form["date_of_hire"]); ?>"
+                        required>
+                </div>
             </div>
 
             <div class="form-actions">
@@ -375,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const cards = [
-        makeCard('Isi Data Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score'], 'tambah-main-card'),
+        makeCard('Isi Data Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score','date_of_hire'], 'tambah-main-card'),
         makeCard('Informasi Pribadi', ['alamat','tanggal_lahir','agama','gender','marital_status','kontak','email'], 'tambah-personal-card'),
         makeCard('Biodata & Riwayat', ['biografi','keahlian','riwayat_pendidikan','tanggal_riwayat_pendidikan','riwayat_pekerjaan','tanggal_riwayat_pekerjaan'], 'tambah-history-card'),
         makeCard('Berkas Pendukung', ['foto_profil','file_cv','file_ijazah','file_mcu','tanggal_mcu_terakhir'], 'tambah-documents-card')
