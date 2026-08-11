@@ -1,0 +1,53 @@
+.lembur-page .main-content > .form-card,
+.lembur-page .main-content > .data-card {
+    width: 100%;
+    max-width: 1280px;
+    margin-right: auto;
+    margin-left: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.lembur-page .main-content > .form-card { margin-bottom: 24px; }
+.lembur-page .form-card-header { padding: 20px 26px; background: linear-gradient(135deg, #f8fafc, #eef4ff); border-bottom: 1px solid #e2e8f0; }
+.lembur-page .form-card-header h2 { margin: 0; font-size: 20px; }
+.lembur-page .form-body { padding: 24px 26px 26px; }
+.lembur-page .form-body > form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 20px; align-items: end; }
+.lembur-page .form-body .form-group { margin: 0; }
+.lembur-page .form-body .form-group:first-of-type,
+.lembur-page .form-body .form-group:has(textarea) { grid-column: 1 / -1; }
+.lembur-page .form-body label { display: block; margin-bottom: 7px; font-weight: 700; }
+.lembur-page .form-body input,
+.lembur-page .form-body select,
+.lembur-page .form-body textarea { width: 100%; min-height: 44px; border-radius: 10px; }
+.lembur-page .form-body textarea { min-height: 92px; resize: vertical; }
+.lembur-page .form-body > form > .btn { grid-column: 1 / -1; justify-self: end; min-width: 150px; min-height: 42px; }
+
+.lembur-page .data-card { padding: 0; }
+.lembur-page .data-card-header { padding: 20px 24px 14px; }
+.lembur-page .data-card-header h2 { margin: 0; font-size: 20px; }
+.lembur-page .table-wrapper { padding: 0 20px 20px; }
+.lembur-page table { min-width: 980px; }
+.lembur-page table th { padding: 13px 14px; }
+.lembur-page table td { padding: 14px; vertical-align: middle; }
+.lembur-page table td:last-child { min-width: 220px; }
+.lembur-page table td:last-child > form { display: inline-flex !important; align-items: center; flex-wrap: wrap; gap: 8px; margin: 2px 6px 2px 0 !important; }
+.lembur-page table td:last-child input { min-width: 155px; min-height: 38px; padding: 7px 10px; border-radius: 8px; }
+.lembur-page table td:last-child .btn { min-height: 38px; padding: 8px 14px; white-space: nowrap; }
+
+:root[data-theme="dark"] .lembur-page .main-content > .form-card,
+:root[data-theme="dark"] .lembur-page .main-content > .data-card { border-color: #334155; }
+:root[data-theme="dark"] .lembur-page .form-card-header { background: linear-gradient(135deg, #1e293b, #172554); border-color: #334155; }
+
+@media screen and (max-width: 760px) {
+    .lembur-page .form-body > form { grid-template-columns: 1fr; }
+    .lembur-page .form-body .form-group,
+    .lembur-page .form-body .form-group:first-of-type,
+    .lembur-page .form-body .form-group:has(textarea),
+    .lembur-page .form-body > form > .btn { grid-column: 1; }
+    .lembur-page .form-body > form > .btn { width: 100%; }
+    .lembur-page .form-card-header,
+    .lembur-page .form-body { padding-right: 18px; padding-left: 18px; }
+    .lembur-page .table-wrapper { padding-right: 12px; padding-left: 12px; }
+}

@@ -14,6 +14,8 @@ siapkanMasterData($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
 
 $pesan = "";
+$riwayatPendidikanForm = [];
+$riwayatPekerjaanForm = [];
 
 $form = [
     "employee_name" => "",
@@ -43,12 +45,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $form[$namaKolom] = trim($_POST[$namaKolom] ?? "");
     }
 
+    $riwayatPendidikanForm = array_values(array_filter((array) ($_POST["pendidikan"] ?? []), static fn($item): bool => is_array($item) && trim((string) ($item["institusi"] ?? "")) !== ""));
+    $riwayatPekerjaanForm = array_values(array_filter((array) ($_POST["pekerjaan"] ?? []), static fn($item): bool => is_array($item) && trim((string) ($item["nama_perusahaan"] ?? "")) !== ""));
+
     $employeeName = $form["employee_name"];
     $nik = $form["nik"];
     $alamat = $form["alamat"];
     $biografi = $form["biografi"];
     $keahlian = $form["keahlian"];
-    $riwayatPekerjaan = $form["riwayat_pekerjaan"]; $tanggalRiwayatPekerjaan = $form["tanggal_riwayat_pekerjaan"] !== "" ? $form["tanggal_riwayat_pekerjaan"] : null; $riwayatPendidikan = $form["riwayat_pendidikan"]; $tanggalRiwayatPendidikan = $form["tanggal_riwayat_pendidikan"] !== "" ? $form["tanggal_riwayat_pendidikan"] : null;
+    $riwayatPekerjaan = trim((string) ($riwayatPekerjaanForm[0]["nama_perusahaan"] ?? ""));
+    $tanggalRiwayatPekerjaan = trim((string) ($riwayatPekerjaanForm[0]["tanggal_selesai"] ?? "")) ?: null;
+    $riwayatPendidikan = trim((string) ($riwayatPendidikanForm[0]["institusi"] ?? ""));
+    $tanggalRiwayatPendidikan = trim((string) ($riwayatPendidikanForm[0]["tanggal_selesai"] ?? "")) ?: null;
     $tanggalLahir = $form["tanggal_lahir"] !== "" ? $form["tanggal_lahir"] : null;
     $tanggalMcuTerakhir = $form["tanggal_mcu_terakhir"] !== "" ? $form["tanggal_mcu_terakhir"] : null;
     $agama = $form["agama"];
@@ -94,6 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $fotoProfil = unggahMediaKaryawan($_FILES["foto_profil"] ?? [], "foto", $pesan);
 
         if ($pesan === "") {
+            mysqli_begin_transaction($conn);
             $sql = "INSERT INTO karyawan (
                         employee_name,
                         nik, alamat, biografi, keahlian, riwayat_pekerjaan, tanggal_riwayat_pekerjaan, riwayat_pendidikan, tanggal_riwayat_pendidikan, tanggal_lahir, tanggal_mcu_terakhir, agama, marital_status, kontak, email,
@@ -114,6 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $stmt = mysqli_prepare($conn, $sql);
 
             if (!$stmt) {
+                mysqli_rollback($conn);
                 $pesan = "Query gagal disiapkan: " . mysqli_error($conn);
             } else {
                 mysqli_stmt_bind_param(
@@ -145,20 +155,49 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 if (mysqli_stmt_execute($stmt)) {
                     try {
-                        sinkronkanSemuaDataset($conn);
+                        $karyawanBaruId = (int) mysqli_insert_id($conn);
+                        if ($riwayatPendidikanForm !== []) {
+                            $stmtPendidikan = mysqli_prepare($conn, "INSERT INTO riwayat_pendidikan (karyawan_id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan) VALUES (?, ?, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''))");
+                            foreach ($riwayatPendidikanForm as $item) {
+                                $institusi = trim((string) ($item["institusi"] ?? "")); $jenjang = trim((string) ($item["jenjang"] ?? "")); $jurusan = trim((string) ($item["jurusan"] ?? ""));
+                                $tanggalMulai = trim((string) ($item["tanggal_mulai"] ?? "")); $tanggalSelesai = trim((string) ($item["tanggal_selesai"] ?? "")); $keterangan = trim((string) ($item["keterangan"] ?? ""));
+                                mysqli_stmt_bind_param($stmtPendidikan, "issssss", $karyawanBaruId, $institusi, $jenjang, $jurusan, $tanggalMulai, $tanggalSelesai, $keterangan); mysqli_stmt_execute($stmtPendidikan);
+                            }
+                            mysqli_stmt_close($stmtPendidikan);
+                        }
+                        if ($riwayatPekerjaanForm !== []) {
+                            $stmtPekerjaan = mysqli_prepare($conn, "INSERT INTO riwayat_pekerjaan (karyawan_id, nama_perusahaan, posisi, departemen, tanggal_mulai, tanggal_selesai, deskripsi) VALUES (?, ?, NULLIF(?, ''), NULL, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''))");
+                            foreach ($riwayatPekerjaanForm as $item) {
+                                $namaPerusahaan = trim((string) ($item["nama_perusahaan"] ?? "")); $posisiRiwayat = trim((string) ($item["posisi"] ?? ""));
+                                $tanggalMulai = trim((string) ($item["tanggal_mulai"] ?? "")); $tanggalSelesai = trim((string) ($item["tanggal_selesai"] ?? "")); $deskripsiRiwayat = trim((string) ($item["deskripsi"] ?? ""));
+                                mysqli_stmt_bind_param($stmtPekerjaan, "isssss", $karyawanBaruId, $namaPerusahaan, $posisiRiwayat, $tanggalMulai, $tanggalSelesai, $deskripsiRiwayat); mysqli_stmt_execute($stmtPekerjaan);
+                            }
+                            mysqli_stmt_close($stmtPekerjaan);
+                        }
+                        mysqli_commit($conn);
                     } catch (Throwable $error) {
-                        error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
+                        mysqli_rollback($conn);
+                        $pesan = "Data riwayat gagal disimpan: " . $error->getMessage();
+                        error_log($pesan);
                     }
 
-                    catatAktivitas($conn, "Menambahkan karyawan " . $employeeName . " (" . $empId . ").");
-                    mysqli_stmt_close($stmt);
-                    header("Location: ../karyawan.php?pesan=tambah-berhasil");
-                    exit;
+                    if ($pesan === "") {
+                        try {
+                            sinkronkanSemuaDataset($conn);
+                        } catch (Throwable $error) {
+                            error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
+                        }
+                        catatAktivitas($conn, "Menambahkan karyawan " . $employeeName . " (" . $empId . ").");
+                        mysqli_stmt_close($stmt);
+                        header("Location: ../karyawan.php?pesan=tambah-berhasil");
+                        exit;
+                    }
                 }
 
-                if (mysqli_stmt_errno($stmt) === 1062) {
+                if ($pesan === "" && mysqli_stmt_errno($stmt) === 1062) {
                     $pesan = "ID karyawan sudah digunakan. Gunakan ID yang berbeda.";
-                } else {
+                } elseif ($pesan === "") {
+                    mysqli_rollback($conn);
                     $pesan = "Data gagal ditambahkan: " . mysqli_stmt_error($stmt);
                 }
 
@@ -403,9 +442,41 @@ document.addEventListener('DOMContentLoaded', function () {
     const cards = [
         makeCard('Isi Data Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score','date_of_hire'], 'tambah-main-card'),
         makeCard('Informasi Pribadi', ['alamat','tanggal_lahir','agama','gender','marital_status','kontak','email'], 'tambah-personal-card'),
-        makeCard('Biodata & Riwayat', ['biografi','keahlian','riwayat_pendidikan','tanggal_riwayat_pendidikan','riwayat_pekerjaan','tanggal_riwayat_pekerjaan'], 'tambah-history-card'),
+        makeCard('Biodata & Riwayat', ['biografi','keahlian'], 'tambah-history-card'),
         makeCard('Berkas Pendukung', ['foto_profil','file_cv','file_ijazah','file_mcu','tanggal_mcu_terakhir'], 'tambah-documents-card')
     ];
+    const historyCard = cards[2];
+    historyCard.insertAdjacentHTML('beforeend', '<section class="history-section"><div class="history-heading"><h4>Riwayat Pendidikan</h4><button class="history-add" id="add-education" type="button">Tambah +</button></div><div id="education-list" class="history-list"></div></section><section class="history-section"><div class="history-heading"><h4>Riwayat Pekerjaan</h4><button class="history-add" id="add-work" type="button">Tambah +</button></div><div id="work-list" class="history-list"></div></section>');
+
+    const educationList = historyCard.querySelector('#education-list');
+    const workList = historyCard.querySelector('#work-list');
+    let educationIndex = 0;
+    let workIndex = 0;
+    const educationInitial = <?= json_encode($riwayatPendidikanForm, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const workInitial = <?= json_encode($riwayatPekerjaanForm, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[char]));
+
+    const addEducation = (data = {}) => {
+        const index = educationIndex++;
+        const row = document.createElement('div');
+        row.className = 'history-entry history-entry-education';
+        row.innerHTML = `<label>Institusi<input name="pendidikan[${index}][institusi]" value="${esc(data.institusi)}"></label><label>Jenjang<input name="pendidikan[${index}][jenjang]" value="${esc(data.jenjang)}"></label><label>Jurusan<input name="pendidikan[${index}][jurusan]" value="${esc(data.jurusan)}"></label><label>Tanggal mulai<input type="date" name="pendidikan[${index}][tanggal_mulai]" value="${esc(data.tanggal_mulai)}"></label><label>Tanggal selesai<input type="date" name="pendidikan[${index}][tanggal_selesai]" value="${esc(data.tanggal_selesai)}"></label><button class="history-remove" type="button" aria-label="Hapus riwayat pendidikan">&#128465;</button>`;
+        row.querySelector('.history-remove').addEventListener('click', () => row.remove());
+        educationList.appendChild(row);
+    };
+    const addWork = (data = {}) => {
+        const index = workIndex++;
+        const row = document.createElement('div');
+        row.className = 'history-entry history-entry-work';
+        row.innerHTML = `<label>Nama perusahaan<input name="pekerjaan[${index}][nama_perusahaan]" value="${esc(data.nama_perusahaan)}"></label><label>Posisi<input name="pekerjaan[${index}][posisi]" value="${esc(data.posisi)}"></label><label>Tanggal mulai<input type="date" name="pekerjaan[${index}][tanggal_mulai]" value="${esc(data.tanggal_mulai)}"></label><label>Tanggal selesai<input type="date" name="pekerjaan[${index}][tanggal_selesai]" value="${esc(data.tanggal_selesai)}"></label><label>Deskripsi<input name="pekerjaan[${index}][deskripsi]" value="${esc(data.deskripsi)}"></label><button class="history-remove" type="button" aria-label="Hapus riwayat pekerjaan">&#128465;</button>`;
+        row.querySelector('.history-remove').addEventListener('click', () => row.remove());
+        workList.appendChild(row);
+    };
+    (educationInitial.length ? educationInitial : [{}]).forEach(addEducation);
+    (workInitial.length ? workInitial : [{}]).forEach(addWork);
+    historyCard.querySelector('#add-education').addEventListener('click', () => addEducation());
+    historyCard.querySelector('#add-work').addEventListener('click', () => addWork());
+
     grid.replaceChildren(...cards);
 });
 </script>

@@ -46,6 +46,13 @@ if (!$karyawan) {
     exit("Data karyawan tidak ditemukan.");
 }
 
+$riwayatPendidikan = [];
+$hasilPendidikan = mysqli_query($conn, "SELECT institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan FROM riwayat_pendidikan WHERE karyawan_id = " . (int) $id . " ORDER BY COALESCE(tanggal_mulai, tanggal_selesai) DESC, id DESC");
+if ($hasilPendidikan) while ($item = mysqli_fetch_assoc($hasilPendidikan)) $riwayatPendidikan[] = $item;
+$riwayatPekerjaan = [];
+$hasilPekerjaan = mysqli_query($conn, "SELECT nama_perusahaan, posisi, departemen, tanggal_mulai, tanggal_selesai, deskripsi FROM riwayat_pekerjaan WHERE karyawan_id = " . (int) $id . " ORDER BY COALESCE(tanggal_mulai, tanggal_selesai) DESC, id DESC");
+if ($hasilPekerjaan) while ($item = mysqli_fetch_assoc($hasilPekerjaan)) $riwayatPekerjaan[] = $item;
+
 $folderCv = dirname(__DIR__) . DIRECTORY_SEPARATOR . "uploads" . DIRECTORY_SEPARATOR . "cv";
 if (!is_dir($folderCv) && !mkdir($folderCv, 0755, true) && !is_dir($folderCv)) {
     http_response_code(500);
@@ -64,7 +71,7 @@ $fileCvLama = basename((string) ($karyawan["file_cv_generated"] ?? ""));
 $transaksiAktif = false;
 
 try {
-    $pdf = buatPdfCv($karyawan);
+    $pdf = buatPdfCv($karyawan, $riwayatPendidikan, $riwayatPekerjaan);
     if (file_put_contents($pathSementara, $pdf, LOCK_EX) === false) {
         throw new RuntimeException("CV sementara gagal disimpan.");
     }

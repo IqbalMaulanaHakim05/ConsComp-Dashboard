@@ -29,6 +29,13 @@ if (!$karyawan) {
     exit("CV tidak dapat ditampilkan karena data karyawan tidak ditemukan.");
 }
 
+$riwayatPendidikan = [];
+$hasilPendidikan = mysqli_query($conn, "SELECT institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan FROM riwayat_pendidikan WHERE karyawan_id = " . (int) $id . " ORDER BY COALESCE(tanggal_mulai, tanggal_selesai) DESC, id DESC");
+if ($hasilPendidikan) while ($item = mysqli_fetch_assoc($hasilPendidikan)) $riwayatPendidikan[] = $item;
+$riwayatPekerjaan = [];
+$hasilPekerjaan = mysqli_query($conn, "SELECT nama_perusahaan, posisi, departemen, tanggal_mulai, tanggal_selesai, deskripsi FROM riwayat_pekerjaan WHERE karyawan_id = " . (int) $id . " ORDER BY COALESCE(tanggal_mulai, tanggal_selesai) DESC, id DESC");
+if ($hasilPekerjaan) while ($item = mysqli_fetch_assoc($hasilPekerjaan)) $riwayatPekerjaan[] = $item;
+
 header("Content-Type: text/html; charset=UTF-8");
 header("X-Robots-Tag: noindex, nofollow, noarchive");
-echo buatHtmlCv($karyawan);
+echo buatHtmlCv($karyawan, $riwayatPendidikan, $riwayatPekerjaan);

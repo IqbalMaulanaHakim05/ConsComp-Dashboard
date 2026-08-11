@@ -184,8 +184,8 @@ require __DIR__ . "/partials/atas.php";
                 <div><dt>Email</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "email")); ?></dd></div>
                 <div class="profile-biography-row"><dt>Biodata</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "biografi"))); ?></dd></div>
                 <div class="profile-biography-row"><dt>Keahlian</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "keahlian"))); ?></dd></div>
-                <div class="profile-biography-row"><dt>Riwayat Pekerjaan</dt><dd><?php if ($riwayatPekerjaan === []): ?>-<?php else: ?><?php foreach ($riwayatPekerjaan as $item): ?><strong><?= htmlspecialchars($item["nama_perusahaan"]); ?></strong> - <?= htmlspecialchars($item["posisi"] ?? ""); ?><br><small><?= htmlspecialchars($item["tanggal_mulai"] ?? ""); ?> s/d <?= htmlspecialchars($item["tanggal_selesai"] ?? "Sekarang"); ?></small><?php if ($modeEdit): ?><form method="POST" action="fungsi/riwayat.php" style="display:inline"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>"><input type="hidden" name="jenis" value="pekerjaan"><input type="hidden" name="aksi" value="hapus"><input type="hidden" name="riwayat_id" value="<?= (int) $item["id"]; ?>"><button class="btn btn-danger" type="submit">Hapus</button></form><?php endif; ?><br><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pekerjaan">+ Tambah Pekerjaan</button><?php endif; ?></dd></div>
-                <div class="profile-biography-row"><dt>Riwayat Pendidikan</dt><dd><?php if ($riwayatPendidikan === []): ?>-<?php else: ?><?php foreach ($riwayatPendidikan as $item): ?><strong><?= htmlspecialchars($item["institusi"]); ?></strong> - <?= htmlspecialchars($item["jenjang"] ?? ""); ?> <?= htmlspecialchars($item["jurusan"] ?? ""); ?><br><small><?= htmlspecialchars($item["tanggal_mulai"] ?? ""); ?> s/d <?= htmlspecialchars($item["tanggal_selesai"] ?? ""); ?></small><?php if ($modeEdit): ?><form method="POST" action="fungsi/riwayat.php" style="display:inline"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>"><input type="hidden" name="jenis" value="pendidikan"><input type="hidden" name="aksi" value="hapus"><input type="hidden" name="riwayat_id" value="<?= (int) $item["id"]; ?>"><button class="btn btn-danger" type="submit">Hapus</button></form><?php endif; ?><br><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pendidikan">+ Tambah Pendidikan</button><?php endif; ?></dd></div>
+                <div class="profile-history-row"><dt>Riwayat Pekerjaan</dt><dd><?php if ($riwayatPekerjaan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPekerjaan as $item): ?><div class="profile-history-entry"><div><strong><?= htmlspecialchars($item["nama_perusahaan"]); ?></strong><span> - <?= htmlspecialchars($item["posisi"] ?? ""); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if ($modeEdit): ?><form method="POST" action="fungsi/riwayat.php"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>"><input type="hidden" name="jenis" value="pekerjaan"><input type="hidden" name="aksi" value="hapus"><input type="hidden" name="riwayat_id" value="<?= (int) $item["id"]; ?>"><button class="btn btn-danger" type="submit">Hapus</button></form><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pekerjaan">+ Tambah Pekerjaan</button><?php endif; ?></dd></div>
+                <div class="profile-history-row"><dt>Riwayat Pendidikan</dt><dd><?php if ($riwayatPendidikan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPendidikan as $item): ?><div class="profile-history-entry"><div><strong><?= htmlspecialchars($item["institusi"]); ?></strong><span> - <?= htmlspecialchars(trim((string) ($item["jenjang"] ?? "") . " " . (string) ($item["jurusan"] ?? ""))); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if ($modeEdit): ?><form method="POST" action="fungsi/riwayat.php"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>"><input type="hidden" name="jenis" value="pendidikan"><input type="hidden" name="aksi" value="hapus"><input type="hidden" name="riwayat_id" value="<?= (int) $item["id"]; ?>"><button class="btn btn-danger" type="submit">Hapus</button></form><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pendidikan">+ Tambah Pendidikan</button><?php endif; ?></dd></div>
             </dl>
         </article>
 
@@ -317,7 +317,39 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <?php endif; ?>
-<?php if ($modeEdit): ?><dialog id="history-dialog"><form method="POST" action="fungsi/riwayat.php"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>"><input type="hidden" name="aksi" value="tambah"><input type="hidden" id="history-type" name="jenis"><h3 id="history-title"></h3><div id="history-fields"></div><button class="btn btn-success" type="submit">Simpan</button><button class="btn btn-secondary" type="button" onclick="document.getElementById('history-dialog').close()">Batal</button></form></dialog><script>document.querySelectorAll('.open-history').forEach(button => button.addEventListener('click', () => { const type = button.dataset.type; document.getElementById('history-type').value = type; document.getElementById('history-title').textContent = type === 'pendidikan' ? 'Tambah Pendidikan' : 'Tambah Pekerjaan'; document.getElementById('history-fields').innerHTML = type === 'pendidikan' ? '<input name="institusi" placeholder="Institusi" required><input name="jenjang" placeholder="Jenjang"><input name="jurusan" placeholder="Jurusan"><input name="tanggal_mulai" type="date"><input name="tanggal_selesai" type="date"><input name="keterangan" placeholder="Keterangan">' : '<input name="nama_perusahaan" placeholder="Nama Perusahaan" required><input name="posisi" placeholder="Posisi"><input name="departemen" placeholder="Departemen"><input name="tanggal_mulai" type="date"><input name="tanggal_selesai" type="date"><input name="deskripsi" placeholder="Deskripsi">'; document.getElementById('history-dialog').showModal(); }));</script><?php endif; ?>
+<?php if ($modeEdit): ?>
+<dialog id="history-dialog" class="history-dialog">
+    <form method="POST" action="fungsi/riwayat.php">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+        <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">
+        <input type="hidden" name="aksi" value="tambah">
+        <input type="hidden" id="history-type" name="jenis">
+        <h3 id="history-title"></h3>
+        <div id="history-fields" class="history-dialog-fields"></div>
+        <div class="history-dialog-actions"><button class="btn btn-secondary" type="button" id="close-history-dialog">Batal</button><button class="btn btn-success" type="submit">Simpan</button></div>
+    </form>
+</dialog>
+<script>
+(() => {
+    const dialog = document.getElementById('history-dialog');
+    const fields = document.getElementById('history-fields');
+    const templates = {
+        pendidikan: '<label>Institusi<input name="institusi" required></label><label>Jenjang<input name="jenjang"></label><label>Jurusan<input name="jurusan"></label><label>Tanggal mulai<input name="tanggal_mulai" type="date"></label><label>Tanggal selesai<input name="tanggal_selesai" type="date"></label>',
+        pekerjaan: '<label>Nama perusahaan<input name="nama_perusahaan" required></label><label>Posisi<input name="posisi"></label><label>Tanggal mulai<input name="tanggal_mulai" type="date"></label><label>Tanggal selesai<input name="tanggal_selesai" type="date"></label><label>Deskripsi<input name="deskripsi"></label>'
+    };
+    document.querySelectorAll('.open-history').forEach(button => button.addEventListener('click', () => {
+        const type = button.dataset.type;
+        document.getElementById('history-type').value = type;
+        document.getElementById('history-title').textContent = type === 'pendidikan' ? 'Tambah Pendidikan' : 'Tambah Pekerjaan';
+        fields.className = 'history-dialog-fields history-dialog-fields-' + type;
+        fields.innerHTML = templates[type];
+        dialog.showModal();
+    }));
+    document.getElementById('close-history-dialog').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+})();
+</script>
+<?php endif; ?>
 <?php
 require __DIR__ . "/partials/bawah.php";
 

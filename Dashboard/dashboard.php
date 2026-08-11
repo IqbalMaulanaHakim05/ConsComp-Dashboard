@@ -14,6 +14,8 @@ require_once __DIR__ . "/fungsi/pengaturan-publik.php";
 // Semua peran boleh melihat dashboard, tetapi wajib login.
 wajibLogin();
 $pengaturanDashboard = ambilPengaturanPublik($conn);
+$kartuDashboardAktif = json_decode((string) ($pengaturanDashboard["kartu_dashboard"] ?? ""), true);
+if (!is_array($kartuDashboardAktif)) $kartuDashboardAktif = ["total_karyawan", "total_departemen", "rata_performa"];
 
 // Statistik untuk kartu atas.
 $statistik = ambilStatistik($conn);
@@ -55,7 +57,7 @@ require __DIR__ . "/partials/atas.php";
 ?>
     <section class="statistics" style="--dashboard-start: <?= htmlspecialchars($pengaturanDashboard["warna_dashboard_awal"] ?? "#1e3a8a"); ?>; --dashboard-end: <?= htmlspecialchars($pengaturanDashboard["warna_dashboard_akhir"] ?? "#2563eb"); ?>;">
 
-        <div class="stat-card">
+        <?php if (in_array("total_karyawan", $kartuDashboardAktif, true)): ?><div class="stat-card">
             <span>Total Karyawan</span>
 
             <h3>
@@ -65,9 +67,9 @@ require __DIR__ . "/partials/atas.php";
             <p>
                 Seluruh data dalam database
             </p>
-        </div>
+        </div><?php endif; ?>
 
-        <div class="stat-card">
+        <?php if (in_array("total_departemen", $kartuDashboardAktif, true)): ?><div class="stat-card">
             <span>Total Departemen</span>
 
             <h3>
@@ -77,9 +79,9 @@ require __DIR__ . "/partials/atas.php";
             <p>
                 Departemen yang tersedia
             </p>
-        </div>
+        </div><?php endif; ?>
 
-        <div class="stat-card">
+        <?php if (in_array("rata_performa", $kartuDashboardAktif, true)): ?><div class="stat-card">
             <span>Total Performa</span>
 
             <h3>
@@ -94,7 +96,7 @@ require __DIR__ . "/partials/atas.php";
             <p>
                 Rata-rata skor performa karyawan
             </p>
-        </div>
+        </div><?php endif; ?>
 
     </section>
 

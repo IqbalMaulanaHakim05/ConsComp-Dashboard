@@ -41,6 +41,7 @@ $cssPerHalaman = [
     "pengguna" => "admin-settings.css",
     "audit" => "admin-settings.css",
     "pengaturan-publik" => "admin-settings.css",
+    "lembur" => "admin-overtime.css",
 ];
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
 $kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
@@ -73,7 +74,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260806-masterui">
     <?php if ($cssHalamanAktif !== ""): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=20260807-pagecss2">
+        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=20260811-layout8">
     <?php endif; ?>
 </head>
 

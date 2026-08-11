@@ -10,6 +10,10 @@ wajibRole("admin", "superadmin", "pic", "koordinator", "manager");
 $kataKunci = trim((string) ($_GET["cari"] ?? ""));
 $departemen = trim((string) ($_GET["department"] ?? ""));
 $posisiFilter = trim((string) ($_GET["position"] ?? ""));
+$bulanFilter = max(0, min(12, (int) ($_GET["bulan"] ?? 0)));
+$tahunFilter = max(0, (int) ($_GET["tahun"] ?? 0));
+$filterPeriodeProfil = ($bulanFilter > 0 ? " AND MONTH(pg.berlaku_mulai) = " . $bulanFilter : "")
+    . ($tahunFilter > 0 ? " AND YEAR(pg.berlaku_mulai) = " . $tahunFilter : "");
 $cakupan = roleOperasional() ? " AND k.department_id = " . (int) (departmentIdPengguna() ?? 0) : "";
 $departemenPilihan = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
 $filterOperasional = roleOperasional();
@@ -23,6 +27,13 @@ while ($pendapatan = mysqli_fetch_assoc($namaPendapatanManual)) $daftarPendapata
 $namaPotongan = mysqli_query($conn, "SELECT DISTINCT nama FROM potongan_karyawan ORDER BY nama ASC");
 $daftarPotongan = [];
 while ($potongan = mysqli_fetch_assoc($namaPotongan)) $daftarPotongan[] = $potongan["nama"];
+$tahunPilihan = [(int) date("Y")];
+$hasilTahun = mysqli_query($conn, "SELECT DISTINCT YEAR(berlaku_mulai) AS tahun FROM profil_gaji WHERE berlaku_mulai IS NOT NULL ORDER BY tahun DESC");
+if ($hasilTahun) while ($itemTahun = mysqli_fetch_assoc($hasilTahun)) {
+    $nilaiTahun = (int) $itemTahun["tahun"];
+    if ($nilaiTahun > 0 && !in_array($nilaiTahun, $tahunPilihan, true)) $tahunPilihan[] = $nilaiTahun;
+}
+rsort($tahunPilihan);
 
 $filterSql = $filterOperasional ? " AND (? = '' OR k.position = ?)" : " AND (? = '' OR k.department_id = ?)";
 $sql = "SELECT
@@ -38,7 +49,7 @@ $sql = "SELECT
             WHERE o.status IN ('disetujui', 'selesai')
             GROUP BY o.karyawan_id
         ) lembur ON lembur.karyawan_id = k.id
-        WHERE (? = '' OR k.employee_name LIKE CONCAT('%', ?, '%') OR k.emp_id LIKE CONCAT('%', ?, '%'))" . $cakupan . $filterSql . "
+        WHERE (? = '' OR k.employee_name LIKE CONCAT('%', ?, '%') OR k.emp_id LIKE CONCAT('%', ?, '%'))" . $cakupan . $filterSql . $filterPeriodeProfil . "
         ORDER BY k.employee_name ASC";
 $stmt = mysqli_prepare($conn, $sql);
 $departemenId = $departemen === '' ? 0 : (int) $departemen;
@@ -71,6 +82,16 @@ require __DIR__ . "/partials/atas.php";
                 <option value="<?= (int) $item["id"]; ?>" <?= $departemenId === (int) $item["id"] ? "selected" : ""; ?>><?= htmlspecialchars($item["nama"]); ?></option>
             <?php endwhile; ?>
         </select><?php endif; ?>
+        <select name="bulan">
+            <option value="0">Semua bulan</option>
+            <?php foreach ([1 => "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"] as $nomorBulan => $namaBulan): ?>
+                <option value="<?= $nomorBulan; ?>" <?= $bulanFilter === $nomorBulan ? "selected" : ""; ?>><?= $namaBulan; ?></option>
+            <?php endforeach; ?>
+        </select>
+        <select name="tahun">
+            <option value="0">Semua tahun</option>
+            <?php foreach ($tahunPilihan as $tahun): ?><option value="<?= $tahun; ?>" <?= $tahunFilter === $tahun ? "selected" : ""; ?>><?= $tahun; ?></option><?php endforeach; ?>
+        </select>
         <button class="btn btn-primary" type="submit">Filter</button>
     </form>
     <div class="table-wrapper">

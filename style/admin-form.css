@@ -79,6 +79,20 @@
     grid-column: 1 / -1;
 }
 
+.tambah-page .tambah-history-card { grid-template-columns: 1fr; }
+.tambah-page .tambah-history-card .form-group textarea { min-height: 125px; font-size: 16px; }
+.tambah-page .history-section { min-width: 0; padding-top: 6px; }
+.tambah-page .history-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.tambah-page .history-heading h4 { margin: 0; color: #111827; font-size: 18px; }
+.tambah-page .history-add { padding: 7px 11px; color: #64748b; background: #fff; border: 1px solid #94a3b8; border-radius: 9px; cursor: pointer; font-size: 15px; }
+.tambah-page .history-list { display: grid; gap: 16px; }
+.tambah-page .history-entry { display: grid; grid-template-columns: minmax(180px, 1.35fr) minmax(100px, .7fr) minmax(110px, .75fr) minmax(155px, 1fr) minmax(155px, 1fr) 52px; align-items: end; gap: 14px; }
+.tambah-page .history-entry-work { grid-template-columns: minmax(180px, 1.3fr) minmax(120px, .75fr) minmax(155px, 1fr) minmax(155px, 1fr) minmax(180px, 1.3fr) 52px; }
+.tambah-page .history-entry label { display: grid; gap: 7px; color: #111827; font-size: 14px; }
+.tambah-page .history-entry input { width: 100%; min-width: 0; height: 48px; padding: 0 12px; border: 1px solid #94a3b8; border-radius: 11px; }
+.tambah-page .history-remove { width: 52px; height: 48px; color: #e11d48; background: #fff1f2; border: 1px solid #fb7185; border-radius: 11px; cursor: pointer; font-size: 22px; }
+.tambah-page .history-remove:hover { color: #fff; background: #e11d48; }
+
 .tambah-page .tambah-documents-card {
     grid-template-columns: 1fr 1fr;
 }
@@ -137,6 +151,11 @@
 :root[data-theme="dark"] .tambah-page .tambah-layout-card h3 {
     color: #f8fafc;
 }
+
+:root[data-theme="dark"] .tambah-page .history-heading h4,
+:root[data-theme="dark"] .tambah-page .history-entry label { color: #e2e8f0; }
+:root[data-theme="dark"] .tambah-page .history-add,
+:root[data-theme="dark"] .tambah-page .history-entry input { color: #e2e8f0; background: #0f172a; border-color: #475569; }
 
 :root[data-theme="dark"] .tambah-page .form-group label {
     color: #cbd5e1;
@@ -202,6 +221,10 @@
     .tambah-page .form-body {
         padding: 24px 20px;
     }
+
+    .tambah-page .history-section { overflow-x: auto; padding-bottom: 8px; }
+    .tambah-page .history-heading { position: sticky; left: 0; }
+    .tambah-page .history-entry { min-width: 940px; }
 }
 
 @media screen and (max-width: 560px) {

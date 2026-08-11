@@ -25,9 +25,14 @@ function siapkanPengaturanPublik(mysqli $conn): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     );
 
-    foreach (["warna_dashboard_awal" => "CHAR(7) NOT NULL DEFAULT '#1e3a8a'", "warna_dashboard_akhir" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_pie_laki" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_pie_perempuan" => "CHAR(7) NOT NULL DEFAULT '#ec4899'", "warna_bar_awal" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_bar_akhir" => "CHAR(7) NOT NULL DEFAULT '#93c5fd'"] as $kolom => $tipe) {
+    foreach (["warna_dashboard_awal" => "CHAR(7) NOT NULL DEFAULT '#1e3a8a'", "warna_dashboard_akhir" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_pie_laki" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_pie_perempuan" => "CHAR(7) NOT NULL DEFAULT '#ec4899'", "warna_bar_awal" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_bar_akhir" => "CHAR(7) NOT NULL DEFAULT '#93c5fd'", "warna_grafik_status" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_grafik_tren" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_grafik_posisi" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_grafik_departemen" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_grafik_gaji" => "CHAR(7) NOT NULL DEFAULT '#2563eb'", "warna_grafik_performa" => "CHAR(7) NOT NULL DEFAULT '#2563eb'"] as $kolom => $tipe) {
         $cek = mysqli_query($conn, "SHOW COLUMNS FROM pengaturan_publik LIKE '$kolom'");
         if ($cek && mysqli_num_rows($cek) === 0) mysqli_query($conn, "ALTER TABLE pengaturan_publik ADD COLUMN `$kolom` $tipe");
+    }
+
+    foreach (["kolom_tabel_publik", "kartu_dashboard"] as $kolomJson) {
+        $cek = mysqli_query($conn, "SHOW COLUMNS FROM pengaturan_publik LIKE '$kolomJson'");
+        if ($cek && mysqli_num_rows($cek) === 0) mysqli_query($conn, "ALTER TABLE pengaturan_publik ADD COLUMN `$kolomJson` TEXT NULL");
     }
 
     mysqli_query(

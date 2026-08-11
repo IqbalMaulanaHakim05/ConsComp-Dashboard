@@ -28,7 +28,7 @@ $halamanAktif = "analisis";
 
 require __DIR__ . "/partials/atas.php";
 ?>
-<section class="analysis-page" style="--analysis-primary: <?= htmlspecialchars($pengaturanDashboard["warna_bar_awal"] ?? "#2563eb"); ?>; --analysis-secondary: <?= htmlspecialchars($pengaturanDashboard["warna_bar_akhir"] ?? "#93c5fd"); ?>; --analysis-male: <?= htmlspecialchars($pengaturanDashboard["warna_pie_laki"] ?? "#2563eb"); ?>; --analysis-female: <?= htmlspecialchars($pengaturanDashboard["warna_pie_perempuan"] ?? "#ec4899"); ?>;">
+<section class="analysis-page" style="--analysis-primary: <?= htmlspecialchars($pengaturanDashboard["warna_bar_awal"] ?? "#2563eb"); ?>; --analysis-secondary: <?= htmlspecialchars($pengaturanDashboard["warna_bar_akhir"] ?? "#93c5fd"); ?>; --analysis-male: <?= htmlspecialchars($pengaturanDashboard["warna_pie_laki"] ?? "#2563eb"); ?>; --analysis-female: <?= htmlspecialchars($pengaturanDashboard["warna_pie_perempuan"] ?? "#ec4899"); ?>; --analysis-status: <?= htmlspecialchars($pengaturanDashboard["warna_grafik_status"] ?? "#2563eb"); ?>; --analysis-trend: <?= htmlspecialchars($pengaturanDashboard["warna_grafik_tren"] ?? "#2563eb"); ?>; --analysis-position: <?= htmlspecialchars($pengaturanDashboard["warna_grafik_posisi"] ?? "#2563eb"); ?>; --analysis-department: <?= htmlspecialchars($pengaturanDashboard["warna_grafik_departemen"] ?? "#2563eb"); ?>; --analysis-salary: <?= htmlspecialchars($pengaturanDashboard["warna_grafik_gaji"] ?? "#2563eb"); ?>; --analysis-performance: <?= htmlspecialchars($pengaturanDashboard["warna_grafik_performa"] ?? "#2563eb"); ?>;">
     <form class="analysis-filter-card" method="GET" action="analisis.php">
         <div class="analysis-filter-heading">
             <div>
@@ -95,9 +95,18 @@ require __DIR__ . "/partials/atas.php";
 
     <div class="analysis-chart-grid">
         <article class="analysis-chart-card"><h2>Status Kerja</h2><p>Komposisi status kerja karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartStatus"></canvas></div></article>
-        <article class="analysis-chart-card analysis-chart-wide"><h2>Karyawan per Posisi</h2><p>Jumlah karyawan pada seluruh posisi yang tersedia.</p><div class="analysis-chart-wrap analysis-chart-dynamic" style="height: <?= max(320, count($analisis["posisi"]["label"]) * 34); ?>px"><canvas id="chartPosition"></canvas></div></article>
+        <?php if (roleOperasional()): ?>
+            <article class="analysis-chart-card analysis-chart-wide"><h2>Karyawan per Posisi</h2><p>Jumlah karyawan pada seluruh posisi di departemen Anda.</p><div class="analysis-chart-wrap analysis-chart-dynamic" style="height: <?= max(320, count($analisis["posisi"]["label"]) * 34); ?>px"><canvas id="chartPosition"></canvas></div></article>
+        <?php endif; ?>
         <article class="analysis-chart-card"><h2>Tren Penerimaan Karyawan</h2><p>Jumlah karyawan berdasarkan bulan masuk.</p><div class="analysis-chart-wrap"><canvas id="chartHiring"></canvas></div></article>
-        <article class="analysis-chart-card"><h2>Jenis Kelamin</h2><p>Komposisi jenis kelamin karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartGender"></canvas></div></article>
+        <?php if (roleOperasional()): ?>
+            <article class="analysis-chart-card"><h2>Jenis Kelamin</h2><p>Komposisi jenis kelamin karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartGender"></canvas></div></article>
+        <?php else: ?>
+            <div class="analysis-chart-pair">
+                <article class="analysis-chart-card"><h2>Jenis Kelamin</h2><p>Komposisi jenis kelamin karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartGender"></canvas></div></article>
+                <article class="analysis-chart-card"><h2>Karyawan per Departemen</h2><p>Jumlah karyawan pada seluruh departemen yang tersedia.</p><div class="analysis-chart-wrap"><canvas id="chartDepartment"></canvas></div></article>
+            </div>
+        <?php endif; ?>
         <?php if (!roleOperasional()): ?>
             <article class="analysis-chart-card"><h2>Rata-rata Gaji per Departemen</h2><p>Perbandingan rata-rata gaji antar departemen.</p><div class="analysis-chart-wrap"><canvas id="chartSalary"></canvas></div></article>
             <article class="analysis-chart-card"><h2>Rata-rata Performa per Departemen</h2><p>Perbandingan skor performa antar departemen.</p><div class="analysis-chart-wrap"><canvas id="chartPerformance"></canvas></div></article>
@@ -144,6 +153,12 @@ require __DIR__ . "/partials/atas.php";
     const secondary = root.getPropertyValue('--analysis-secondary').trim() || '#93c5fd';
     const male = root.getPropertyValue('--analysis-male').trim() || '#2563eb';
     const female = root.getPropertyValue('--analysis-female').trim() || '#ec4899';
+    const statusColor = root.getPropertyValue('--analysis-status').trim() || primary;
+    const trendColor = root.getPropertyValue('--analysis-trend').trim() || primary;
+    const positionColor = root.getPropertyValue('--analysis-position').trim() || primary;
+    const departmentColor = root.getPropertyValue('--analysis-department').trim() || primary;
+    const salaryColor = root.getPropertyValue('--analysis-salary').trim() || primary;
+    const performanceColor = root.getPropertyValue('--analysis-performance').trim() || primary;
     const palette = [primary, secondary, male, female];
     const numberId = new Intl.NumberFormat('id-ID');
     const currencyId = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
@@ -169,12 +184,12 @@ require __DIR__ . "/partials/atas.php";
     Chart.defaults.borderColor = initialTheme.grid;
 
     const commonScales = { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } };
-    const bar = (id, data, horizontal = false, formatter = null) => {
+    const bar = (id, data, horizontal = false, formatter = null, color = primary) => {
         const canvas = document.getElementById(id);
         if (!canvas) return;
         charts.push(new Chart(canvas, {
             type: 'bar',
-            data: { labels: data.label, datasets: [{ data: data.nilai, backgroundColor: primary, borderColor: secondary, borderWidth: 1, borderRadius: 6 }] },
+            data: { labels: data.label, datasets: [{ data: data.nilai, backgroundColor: color, borderColor: secondary, borderWidth: 1, borderRadius: 6 }] },
             options: {
                 responsive: true, maintainAspectRatio: false, indexAxis: horizontal ? 'y' : 'x',
                 plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => formatter ? formatter(ctx.raw) : numberId.format(ctx.raw) + ' karyawan' } } },
@@ -188,16 +203,20 @@ require __DIR__ . "/partials/atas.php";
         charts.push(new Chart(canvas, { type: 'doughnut', data: { labels: data.label, datasets: [{ data: data.nilai, backgroundColor: colors, borderColor: initialTheme.surface, borderWidth: 3 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom' } } } }));
     };
 
-    bar('chartPosition', datasets.position, true);
-    doughnut('chartStatus', datasets.status, datasets.status.label.map((_, index) => palette[index % palette.length]));
+    <?php if (roleOperasional()): ?>
+    bar('chartPosition', datasets.position, true, null, positionColor);
+    <?php else: ?>
+    bar('chartDepartment', datasets.department, false, null, departmentColor);
+    <?php endif; ?>
+    doughnut('chartStatus', datasets.status, datasets.status.label.map((_, index) => [statusColor, secondary, female, male][index % 4]));
     doughnut('chartGender', datasets.gender, datasets.gender.label.map(label => label === 'Perempuan' ? female : male));
     <?php if (!roleOperasional()): ?>
-    bar('chartSalary', datasets.salary, false, value => currencyId.format(value));
-    bar('chartPerformance', datasets.performance, false, value => Number(value).toFixed(1));
+    bar('chartSalary', datasets.salary, false, value => currencyId.format(value), salaryColor);
+    bar('chartPerformance', datasets.performance, false, value => Number(value).toFixed(1), performanceColor);
     <?php endif; ?>
 
     const hiring = document.getElementById('chartHiring');
-    if (hiring) charts.push(new Chart(hiring, { type: 'line', data: { labels: datasets.hiring.label, datasets: [{ data: datasets.hiring.nilai, borderColor: primary, backgroundColor: hexToRgba(primary, .14), fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: secondary }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: commonScales } }));
+    if (hiring) charts.push(new Chart(hiring, { type: 'line', data: { labels: datasets.hiring.label, datasets: [{ data: datasets.hiring.nilai, borderColor: trendColor, backgroundColor: hexToRgba(trendColor, .14), fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: secondary }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: commonScales } }));
 
     const synchronizeChartTheme = () => {
         const colors = themeColors();

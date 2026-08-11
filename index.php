@@ -15,6 +15,9 @@ $warnaUtama = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($pub["warna_utama"] ??
 $warnaHero = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($pub["warna_hero"] ?? ""))
     ? $pub["warna_hero"]
     : "#0f172a";
+$kolomPublikAktif = json_decode((string) ($pub["kolom_tabel_publik"] ?? ""), true);
+if (!is_array($kolomPublikAktif)) $kolomPublikAktif = ["emp_id", "employee_name", "position", "department", "gender", "date_of_hire", "employment_status", "performance_score"];
+$tampilkanKolom = static fn(string $kolom): bool => in_array($kolom, $kolomPublikAktif, true);
 
 $kataKunci = trim($_GET["cari"] ?? "");
 $departemen = trim($_GET["departemen"] ?? "");
@@ -264,14 +267,14 @@ $jumlahData = mysqli_num_rows($hasil);
             <thead>
             <tr>
                 <th>No.</th>
-                <th>ID Karyawan</th>
-                <th>Nama</th>
-                <th>Posisi</th>
-                <th>Departemen</th>
-                <th>Jenis Kelamin</th>
-                <th>Tanggal Masuk</th>
-                <th>Status Kerja</th>
-                <th>Performa</th>
+                <?php if ($tampilkanKolom("emp_id")): ?><th>ID Karyawan</th><?php endif; ?>
+                <?php if ($tampilkanKolom("employee_name")): ?><th>Nama</th><?php endif; ?>
+                <?php if ($tampilkanKolom("position")): ?><th>Posisi</th><?php endif; ?>
+                <?php if ($tampilkanKolom("department")): ?><th>Departemen</th><?php endif; ?>
+                <?php if ($tampilkanKolom("gender")): ?><th>Jenis Kelamin</th><?php endif; ?>
+                <?php if ($tampilkanKolom("date_of_hire")): ?><th>Tanggal Masuk</th><?php endif; ?>
+                <?php if ($tampilkanKolom("employment_status")): ?><th>Status Kerja</th><?php endif; ?>
+                <?php if ($tampilkanKolom("performance_score")): ?><th>Performa</th><?php endif; ?>
             </tr>
             </thead>
 
@@ -285,33 +288,33 @@ $jumlahData = mysqli_num_rows($hasil);
                     <tr>
                         <td><?= $nomor++; ?></td>
 
-                        <td>
+                        <?php if ($tampilkanKolom("emp_id")): ?><td>
                             <?= htmlspecialchars(
                                 $row["emp_id"] ?? "-"
                             ); ?>
-                        </td>
+                        </td><?php endif; ?>
 
-                        <td>
+                        <?php if ($tampilkanKolom("employee_name")): ?><td>
                             <?= htmlspecialchars(
                                 $row["employee_name"] ?? "-"
                             ); ?>
-                        </td>
+                        </td><?php endif; ?>
 
-                        <td>
+                        <?php if ($tampilkanKolom("position")): ?><td>
                             <?= htmlspecialchars(
                                 $row["position"] ?? "-"
                             ); ?>
-                        </td>
+                        </td><?php endif; ?>
 
-                        <td>
+                        <?php if ($tampilkanKolom("department")): ?><td>
                             <span class="badge">
                                 <?= htmlspecialchars(
                                     $row["department"] ?? "-"
                                 ); ?>
                             </span>
-                        </td>
+                        </td><?php endif; ?>
 
-                        <td>
+                        <?php if ($tampilkanKolom("gender")): ?><td>
                             <?php
                             $gender = trim($row["gender"] ?? "");
 
@@ -331,9 +334,9 @@ $jumlahData = mysqli_num_rows($hasil);
                                 );
                             }
                             ?>
-                        </td>
+                        </td><?php endif; ?>
 
-                        <td>
+                        <?php if ($tampilkanKolom("date_of_hire")): ?><td>
                             <?php
                             $tanggalMasuk = $row["date_of_hire"] ?? "";
 
@@ -350,25 +353,25 @@ $jumlahData = mysqli_num_rows($hasil);
                                 echo "-";
                             }
                             ?>
-                        </td>
+                        </td><?php endif; ?>
 
-                        <td>
+                        <?php if ($tampilkanKolom("employment_status")): ?><td>
                             <?= htmlspecialchars(
                                 $row["employment_status"] ?? "-"
                             ); ?>
-                        </td>
+                        </td><?php endif; ?>
 
-                        <td>
+                        <?php if ($tampilkanKolom("performance_score")): ?><td>
                             <?= htmlspecialchars(
                                 $row["performance_score"] ?? "-"
                             ); ?>
-                        </td>
+                        </td><?php endif; ?>
                     </tr>
                 <?php endwhile; ?>
 
             <?php else: ?>
                 <tr>
-                    <td colspan="9" class="empty-data">
+                    <td colspan="<?= 1 + count($kolomPublikAktif); ?>" class="empty-data">
                         Data karyawan tidak ditemukan.
                     </td>
                 </tr>

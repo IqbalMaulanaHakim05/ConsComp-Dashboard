@@ -9,17 +9,26 @@ require_once __DIR__ . "/fungsi/audit.php";
 wajibRole("superadmin");
 siapkanAudit($conn);
 
+$perHalaman = 50;
+$totalAktivitas = 0;
+$hasilJumlah = mysqli_query($conn, "SELECT COUNT(*) AS total FROM audit_aktivitas");
+if ($hasilJumlah) $totalAktivitas = (int) (mysqli_fetch_assoc($hasilJumlah)["total"] ?? 0);
+$totalHalaman = max(1, (int) ceil($totalAktivitas / $perHalaman));
+$halaman = max(1, (int) ($_GET["hal"] ?? 1));
+if ($halaman > $totalHalaman) $halaman = $totalHalaman;
+$offset = ($halaman - 1) * $perHalaman;
+
 $hasil = mysqli_query(
     $conn,
     "SELECT a.*, u.nama, u.username
      FROM audit_aktivitas a
      LEFT JOIN users u ON u.id = a.user_id
      ORDER BY a.id DESC
-     LIMIT 200"
+     LIMIT " . $perHalaman . " OFFSET " . $offset
 );
 
 $judulHalaman = "Audit Aktivitas";
-$subjudulHalaman = "Riwayat aktivitas penting sistem (200 terbaru).";
+$subjudulHalaman = "Riwayat aktivitas penting sistem (50 baris per halaman).";
 $halamanAktif = "audit";
 
 require __DIR__ . "/partials/atas.php";
@@ -55,6 +64,24 @@ require __DIR__ . "/partials/atas.php";
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+        <div class="pagination">
+            <div class="pagination-info">
+                Halaman <strong><?= $halaman; ?></strong> dari <strong><?= $totalHalaman; ?></strong>
+                · Total <strong><?= number_format($totalAktivitas, 0, ",", "."); ?></strong> aktivitas
+            </div>
+            <div class="pagination-nav">
+                <?php if ($halaman > 1): ?>
+                    <a href="?hal=<?= $halaman - 1; ?>">&larr; Sebelumnya</a>
+                <?php else: ?>
+                    <span class="disabled">&larr; Sebelumnya</span>
+                <?php endif; ?>
+                <?php if ($halaman < $totalHalaman): ?>
+                    <a href="?hal=<?= $halaman + 1; ?>">Berikutnya &rarr;</a>
+                <?php else: ?>
+                    <span class="disabled">Berikutnya &rarr;</span>
+                <?php endif; ?>
+            </div>
         </div>
     </section>
 <?php

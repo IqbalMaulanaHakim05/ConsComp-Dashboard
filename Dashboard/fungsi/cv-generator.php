@@ -69,7 +69,7 @@ function fotoDataUriCv(array $karyawan): ?string
 /**
  * HTML mandiri yang dipakai bersama oleh halaman template tersembunyi dan PDF.
  */
-function buatHtmlCv(array $karyawan): string
+function buatHtmlCv(array $karyawan, array $riwayatPendidikan = [], array $riwayatPekerjaan = []): string
 {
     $nama = nilaiCv($karyawan, "employee_name", "Karyawan");
     $foto = fotoDataUriCv($karyawan);
@@ -114,6 +114,7 @@ function buatHtmlCv(array $karyawan): string
         .timeline-item:before { position: absolute; top: 1mm; left: 0; width: 4mm; height: 4mm; content: ""; border-radius: 50%; background: #b8d2f7; border: 1px solid #31368f; }
         .timeline-date { margin-bottom: 1mm; color: #31368f; font-size: 9px; font-weight: 700; }
         .timeline-text { margin: 0; color: #253047; font-size: 11px; font-weight: 700; white-space: pre-line; }
+        .timeline-description { margin: 1mm 0 0; color: #3d4659; font-size: 9px; white-space: pre-line; }
         @media screen { .cv-page { margin: 20px auto; box-shadow: 0 12px 40px rgba(22, 34, 59, .18); } }
         @media print { html, body { background: #fff; } .cv-page { margin: 0; box-shadow: none; } }
     </style>
@@ -171,18 +172,16 @@ function buatHtmlCv(array $karyawan): string
 
                 <section class="section">
                     <h2 class="section-title">Pendidikan</h2>
-                    <div class="timeline-item">
-                        <div class="timeline-date"><?= escapeCv(tanggalCv($karyawan, "tanggal_riwayat_pendidikan")); ?></div>
-                        <p class="timeline-text"><?= nl2br(escapeCv(nilaiCv($karyawan, "riwayat_pendidikan", "Belum ada data pendidikan."))); ?></p>
-                    </div>
+                    <?php if ($riwayatPendidikan === []): ?><div class="timeline-item"><div class="timeline-date">-</div><p class="timeline-text">Belum ada data pendidikan.</p></div><?php else: ?>
+                        <?php foreach ($riwayatPendidikan as $item): ?><div class="timeline-item"><div class="timeline-date"><?= escapeCv(tanggalCv($item, "tanggal_mulai")); ?> s/d <?= escapeCv(tanggalCv($item, "tanggal_selesai")); ?></div><p class="timeline-text"><?= escapeCv(trim((string) ($item["institusi"] ?? "") . " - " . (string) ($item["jenjang"] ?? "") . " " . (string) ($item["jurusan"] ?? ""))); ?></p><?php if (trim((string) ($item["keterangan"] ?? "")) !== ""): ?><p class="timeline-description"><?= nl2br(escapeCv((string) $item["keterangan"])); ?></p><?php endif; ?></div><?php endforeach; ?>
+                    <?php endif; ?>
                 </section>
 
                 <section class="section">
                     <h2 class="section-title">Pengalaman Kerja</h2>
-                    <div class="timeline-item">
-                        <div class="timeline-date"><?= escapeCv(tanggalCv($karyawan, "tanggal_riwayat_pekerjaan")); ?></div>
-                        <p class="timeline-text"><?= nl2br(escapeCv(nilaiCv($karyawan, "riwayat_pekerjaan", "Belum ada data pengalaman kerja."))); ?></p>
-                    </div>
+                    <?php if ($riwayatPekerjaan === []): ?><div class="timeline-item"><div class="timeline-date">-</div><p class="timeline-text">Belum ada data pengalaman kerja.</p></div><?php else: ?>
+                        <?php foreach ($riwayatPekerjaan as $item): ?><div class="timeline-item"><div class="timeline-date"><?= escapeCv(tanggalCv($item, "tanggal_mulai")); ?> s/d <?= escapeCv(tanggalCv($item, "tanggal_selesai")); ?></div><p class="timeline-text"><?= escapeCv(trim((string) ($item["nama_perusahaan"] ?? "") . " - " . (string) ($item["posisi"] ?? ""))); ?></p><?php if (trim((string) ($item["deskripsi"] ?? "")) !== ""): ?><p class="timeline-description"><?= nl2br(escapeCv((string) $item["deskripsi"])); ?></p><?php endif; ?></div><?php endforeach; ?>
+                    <?php endif; ?>
                 </section>
 
             </td>
@@ -199,7 +198,7 @@ function buatHtmlCv(array $karyawan): string
 /**
  * Menghasilkan byte PDF A4 dari data karyawan.
  */
-function buatPdfCv(array $karyawan): string
+function buatPdfCv(array $karyawan, array $riwayatPendidikan = [], array $riwayatPekerjaan = []): string
 {
     $autoload = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "autoload.php";
     if (!is_file($autoload)) {
@@ -215,7 +214,7 @@ function buatPdfCv(array $karyawan): string
     $options->set("defaultMediaType", "print");
 
     $dompdf = new Dompdf($options);
-    $dompdf->loadHtml(buatHtmlCv($karyawan), "UTF-8");
+    $dompdf->loadHtml(buatHtmlCv($karyawan, $riwayatPendidikan, $riwayatPekerjaan), "UTF-8");
     $dompdf->setPaper("A4", "portrait");
     $dompdf->render();
 
