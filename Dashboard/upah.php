@@ -39,7 +39,9 @@ $filterSql = $filterOperasional ? " AND (? = '' OR k.position = ?)" : " AND (? =
 $sql = "SELECT
             k.id, k.emp_id, k.employee_name, k.position, k.department,
             COALESCE(lembur.total_upah_lembur, 0) AS total_upah_lembur,
-            pg.id AS profil_id, pg.gaji_pokok, pg.uang_makan, pg.berlaku_mulai
+            pg.id AS profil_id, COALESCE(pg.gaji_pokok, k.salary, 0) AS gaji_pokok,
+            COALESCE(pg.uang_makan, 0) AS uang_makan,
+            COALESCE(pg.berlaku_mulai, k.date_of_hire) AS berlaku_mulai
         FROM karyawan k
         LEFT JOIN profil_gaji pg ON pg.karyawan_id = k.id
         LEFT JOIN (
@@ -120,7 +122,7 @@ require __DIR__ . "/partials/atas.php";
                     <?php $hasilPendapatanManual = mysqli_query($conn, "SELECT nama, nilai FROM pendapatan_tambahan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiManual = []; if ($hasilPendapatanManual) while ($itemManual = mysqli_fetch_assoc($hasilPendapatanManual)) $nilaiManual[$itemManual["nama"]] = (float) $itemManual["nilai"]; foreach ($daftarPendapatanManual as $namaManual): ?><td><?= isset($nilaiManual[$namaManual]) && $nilaiManual[$namaManual] > 0 ? "Rp " . number_format($nilaiManual[$namaManual], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
                     <?php $hasilPotongan = mysqli_query($conn, "SELECT nama, nilai FROM potongan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiPotongan = []; if ($hasilPotongan) while ($itemPotongan = mysqli_fetch_assoc($hasilPotongan)) $nilaiPotongan[$itemPotongan["nama"]] = (float) $itemPotongan["nilai"]; foreach ($daftarPotongan as $namaPotonganItem): ?><td><?= isset($nilaiPotongan[$namaPotonganItem]) && $nilaiPotongan[$namaPotonganItem] > 0 ? "Rp " . number_format($nilaiPotongan[$namaPotonganItem], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
                     <td><?= htmlspecialchars((string) ($baris["berlaku_mulai"] ?? "-")); ?></td>
-                    <td><?php if (punyaRole("admin", "superadmin")): ?><a class="btn btn-warning" href="edit-upah.php?id=<?= (int) $baris["id"]; ?>">Edit</a><form method="POST" action="fungsi/generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php else: ?>-<?php endif; ?></td>
+                    <td><?php if (punyaRole("admin", "superadmin")): ?><a class="btn btn-warning" href="edit-upah.php?id=<?= (int) $baris["id"]; ?>">Edit</a><?php endif; ?><?php if (punyaRole("admin", "superadmin", "pic", "koordinator", "manager")): ?><form method="POST" action="fungsi/generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php elseif (!punyaRole("admin", "superadmin")): ?>-<?php endif; ?></td>
                 </tr>
             <?php endwhile; ?>
             </tbody>

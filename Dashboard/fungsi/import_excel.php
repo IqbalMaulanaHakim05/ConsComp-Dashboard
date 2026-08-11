@@ -352,6 +352,18 @@ function gantiDataSql(mysqli $conn, array $data): void
             throw new RuntimeException('Sinkronisasi departemen hasil import gagal: ' . mysqli_error($conn));
         }
 
+        // Buat profil upah awal dari kolom salary untuk karyawan yang belum
+        // memiliki profil. Profil yang pernah diedit tidak ditimpa.
+        $buatProfilGaji = "INSERT INTO profil_gaji (karyawan_id, gaji_pokok, uang_makan, berlaku_mulai)
+            SELECT k.id, COALESCE(k.salary, 0), 0, COALESCE(k.date_of_hire, CURRENT_DATE)
+            FROM karyawan k
+            WHERE NOT EXISTS (
+                SELECT 1 FROM profil_gaji pg WHERE pg.karyawan_id = k.id
+            )";
+        if (!mysqli_query($conn, $buatProfilGaji)) {
+            throw new RuntimeException('Profil upah hasil import gagal dibuat: ' . mysqli_error($conn));
+        }
+
         // Hapus data lama yang tidak ada di file hanya bila tidak memiliki
         // histori slip gaji maupun laporan lembur yang mengunci penghapusan.
         foreach ($idsLama as $empIdLama => $idLama) {

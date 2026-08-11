@@ -3,6 +3,12 @@
 require __DIR__ . "/Dashboard/koneksi.php";
 require_once __DIR__ . "/Dashboard/fungsi/pengaturan-publik.php";
 
+// Halaman publik harus selalu mencerminkan data SQL terbaru setelah proses
+// tambah, edit, hapus, atau import Excel.
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+
 // Pengaturan tampilan halaman publik yang dapat diubah superadmin.
 $pub = ambilPengaturanPublik($conn);
 $namaSitus = $pub["nama_situs"] ?? "Profil Karyawan";
@@ -90,6 +96,9 @@ if ($departemen !== "") {
 
 $sql .= " ORDER BY employee_name ASC";
 
+$perHalaman = 25;
+$halaman = max(1, (int) ($_GET["hal"] ?? 1));
+
 $stmt = mysqli_prepare($conn, $sql);
 
 if (!$stmt) {
@@ -106,8 +115,25 @@ if (!empty($parameter)) {
 
 mysqli_stmt_execute($stmt);
 
+$hasilSemua = mysqli_stmt_get_result($stmt);
+$totalData = mysqli_num_rows($hasilSemua);
+mysqli_stmt_close($stmt);
+$totalHalaman = max(1, (int) ceil($totalData / $perHalaman));
+$halaman = min($halaman, $totalHalaman);
+$offset = ($halaman - 1) * $perHalaman;
+
+$sql .= " LIMIT " . $offset . "," . $perHalaman;
+$stmt = mysqli_prepare($conn, $sql);
+if (!$stmt) {
+    die("Query halaman gagal disiapkan: " . mysqli_error($conn));
+}
+if (!empty($parameter)) {
+    mysqli_stmt_bind_param($stmt, $tipeParameter, ...$parameter);
+}
+mysqli_stmt_execute($stmt);
 $hasil = mysqli_stmt_get_result($stmt);
 $jumlahData = mysqli_num_rows($hasil);
+$parameterHalaman = ["cari" => $kataKunci, "departemen" => $departemen];
 
 ?>
 
@@ -124,7 +150,7 @@ $jumlahData = mysqli_num_rows($hasil);
     <title><?= htmlspecialchars($namaSitus); ?></title>
     <script>const savedTheme = localStorage.getItem('employee-theme'); document.documentElement.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
 
-    <link rel="stylesheet" href="style/publik.css">
+    <link rel="stylesheet" href="style/publik.css?v=20260811-2">
 
     <style>
         .navbar { background-color: <?= $warnaHero; ?>; }
@@ -249,7 +275,8 @@ $jumlahData = mysqli_num_rows($hasil);
     </div>
 
     <div class="result-info">
-        Menampilkan <strong><?= $jumlahData; ?></strong> data karyawan.
+        Menampilkan <strong><?= $totalData === 0 ? 0 : ($offset + 1); ?>-<?= min($offset + $jumlahData, $totalData); ?></strong>
+        dari <strong><?= $totalData; ?></strong> data karyawan.
 
         <?php if ($kataKunci !== ""): ?>
             Hasil pencarian:
@@ -381,6 +408,22 @@ $jumlahData = mysqli_num_rows($hasil);
         </table>
     </div>
 
+    <?php if ($totalHalaman > 1): ?>
+        <nav class="pagination" aria-label="Navigasi halaman data karyawan">
+            <?php if ($halaman > 1): ?>
+                <a class="button button-reset" href="?<?= http_build_query($parameterHalaman + ["hal" => $halaman - 1]); ?>#data">Sebelumnya</a>
+            <?php else: ?>
+                <span class="button button-disabled">Sebelumnya</span>
+            <?php endif; ?>
+            <span class="pagination-info">Halaman <?= $halaman; ?> dari <?= $totalHalaman; ?></span>
+            <?php if ($halaman < $totalHalaman): ?>
+                <a class="button button-search" href="?<?= http_build_query($parameterHalaman + ["hal" => $halaman + 1]); ?>#data">Selanjutnya</a>
+            <?php else: ?>
+                <span class="button button-disabled">Selanjutnya</span>
+            <?php endif; ?>
+        </nav>
+    <?php endif; ?>
+
 </section>
 
 <section class="section" id="tentang">
@@ -429,7 +472,7 @@ $jumlahData = mysqli_num_rows($hasil);
     document.addEventListener("DOMContentLoaded", () => {
         const animatedElements = document.querySelectorAll(
             ".section-title, .stat-card, .filter-box, .result-info, " +
-            ".table-container, .about-content"
+            ".about-content"
         );
 
         animatedElements.forEach((element) => element.classList.add("reveal"));

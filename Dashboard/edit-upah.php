@@ -9,7 +9,7 @@ require_once __DIR__ . "/fungsi/audit.php";
 wajibRole("admin", "superadmin");
 $id = (int) ($_GET["id"] ?? $_POST["id"] ?? 0);
 
-$stmt = mysqli_prepare($conn, "SELECT k.id, k.emp_id, k.employee_name, pg.id AS profil_id, pg.gaji_pokok, pg.uang_makan FROM karyawan k LEFT JOIN profil_gaji pg ON pg.karyawan_id = k.id WHERE k.id = ? LIMIT 1");
+$stmt = mysqli_prepare($conn, "SELECT k.id, k.emp_id, k.employee_name, pg.id AS profil_id, COALESCE(pg.gaji_pokok, k.salary, 0) AS gaji_pokok, COALESCE(pg.uang_makan, 0) AS uang_makan FROM karyawan k LEFT JOIN profil_gaji pg ON pg.karyawan_id = k.id WHERE k.id = ? LIMIT 1");
 mysqli_stmt_bind_param($stmt, "i", $id);
 mysqli_stmt_execute($stmt);
 $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
