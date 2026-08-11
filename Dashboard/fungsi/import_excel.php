@@ -281,16 +281,39 @@ function gantiDataSql(mysqli $conn, array $data): void
 {
     mysqli_begin_transaction($conn);
     try {
-        if (!mysqli_query($conn, 'DELETE FROM karyawan')) {
-            throw new RuntimeException('Data lama gagal dikosongkan: ' . mysqli_error($conn));
+        // Jangan menghapus seluruh tabel secara langsung. Data karyawan dapat
+        // direferensikan oleh slip gaji dan laporan lembur dengan ON DELETE RESTRICT.
+        // Pertahankan primary key untuk emp_id yang sudah ada agar histori tetap valid.
+        $dataMasuk = [];
+        foreach ($data as $item) {
+            $dataMasuk[$item['emp_id']] = true;
         }
 
-        $sql = "INSERT INTO karyawan (
+        $dataLama = mysqli_query($conn, 'SELECT id, emp_id FROM karyawan');
+        if (!$dataLama) {
+            throw new RuntimeException('Data karyawan lama gagal dibaca: ' . mysqli_error($conn));
+        }
+        $idsLama = [];
+        while ($barisLama = mysqli_fetch_assoc($dataLama)) {
+            $idsLama[(string) $barisLama['emp_id']] = (int) $barisLama['id'];
+        }
+
+        $sqlUpdate = "UPDATE karyawan SET
+                    employee_name = ?, position = ?, department = ?, salary = ?,
+                    gender = ?, marital_status = ?, date_of_hire = ?,
+                    employment_status = ?, performance_score = ?
+                WHERE emp_id = ?";
+        $stmtUpdate = mysqli_prepare($conn, $sqlUpdate);
+        if (!$stmtUpdate) {
+            throw new RuntimeException('Query pembaruan import gagal disiapkan: ' . mysqli_error($conn));
+        }
+
+        $sqlInsert = "INSERT INTO karyawan (
                     employee_name, emp_id, position, department, salary,
                     gender, marital_status, date_of_hire, employment_status, performance_score
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt = mysqli_prepare($conn, $sql);
-        if (!$stmt) {
+        $stmtInsert = mysqli_prepare($conn, $sqlInsert);
+        if (!$stmtInsert) {
             throw new RuntimeException('Query import gagal disiapkan: ' . mysqli_error($conn));
         }
 
@@ -306,25 +329,64 @@ function gantiDataSql(mysqli $conn, array $data): void
             $statusKerja = $item['employment_status'];
             $skor = (string) $item['performance_score'];
 
-            mysqli_stmt_bind_param(
-                $stmt,
-                'ssssdsssss',
-                $nama,
-                $empId,
-                $posisi,
-                $departemen,
-                $gaji,
-                $gender,
-                $statusPernikahan,
-                $tanggalMasuk,
-                $statusKerja,
-                $skor
-            );
-            if (!mysqli_stmt_execute($stmt)) {
-                throw new RuntimeException('Baris ' . $empId . ' gagal disimpan: ' . mysqli_stmt_error($stmt));
+            if (isset($idsLama[$empId])) {
+                mysqli_stmt_bind_param($stmtUpdate, 'sssdssssis', $nama, $posisi, $departemen, $gaji, $gender, $statusPernikahan, $tanggalMasuk, $statusKerja, $skor, $empId);
+                if (!mysqli_stmt_execute($stmtUpdate)) {
+                    throw new RuntimeException('Baris ' . $empId . ' gagal diperbarui: ' . mysqli_stmt_error($stmtUpdate));
+                }
+            } else {
+                mysqli_stmt_bind_param($stmtInsert, 'ssssdsssss', $nama, $empId, $posisi, $departemen, $gaji, $gender, $statusPernikahan, $tanggalMasuk, $statusKerja, $skor);
+                if (!mysqli_stmt_execute($stmtInsert)) {
+                    throw new RuntimeException('Baris ' . $empId . ' gagal disimpan: ' . mysqli_stmt_error($stmtInsert));
+                }
             }
         }
-        mysqli_stmt_close($stmt);
+
+        mysqli_stmt_close($stmtUpdate);
+        mysqli_stmt_close($stmtInsert);
+
+        // Jaga relasi cakupan departemen untuk data hasil import.
+        // Departemen yang belum ada di master tetap boleh tersimpan sebagai teks;
+        // department_id akan terisi otomatis bila master-nya tersedia.
+        if (!mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id")) {
+            throw new RuntimeException('Sinkronisasi departemen hasil import gagal: ' . mysqli_error($conn));
+        }
+
+        // Buat profil upah awal dari kolom salary untuk karyawan yang belum
+        // memiliki profil. Profil yang pernah diedit tidak ditimpa.
+        $buatProfilGaji = "INSERT INTO profil_gaji (karyawan_id, gaji_pokok, uang_makan, berlaku_mulai)
+            SELECT k.id, COALESCE(k.salary, 0), 0, COALESCE(k.date_of_hire, CURRENT_DATE)
+            FROM karyawan k
+            WHERE NOT EXISTS (
+                SELECT 1 FROM profil_gaji pg WHERE pg.karyawan_id = k.id
+            )";
+        if (!mysqli_query($conn, $buatProfilGaji)) {
+            throw new RuntimeException('Profil upah hasil import gagal dibuat: ' . mysqli_error($conn));
+        }
+
+        // Hapus data lama yang tidak ada di file hanya bila tidak memiliki
+        // histori slip gaji maupun laporan lembur yang mengunci penghapusan.
+        foreach ($idsLama as $empIdLama => $idLama) {
+            if (isset($dataMasuk[$empIdLama])) {
+                continue;
+            }
+            $stmtReferensi = mysqli_prepare($conn, "SELECT EXISTS(SELECT 1 FROM slip_gaji WHERE karyawan_id = ?) OR EXISTS(SELECT 1 FROM overtime_reports WHERE karyawan_id = ?)");
+            if (!$stmtReferensi) {
+                throw new RuntimeException('Pemeriksaan relasi data lama gagal: ' . mysqli_error($conn));
+            }
+            mysqli_stmt_bind_param($stmtReferensi, 'ii', $idLama, $idLama);
+            mysqli_stmt_execute($stmtReferensi);
+            $hasilReferensi = mysqli_fetch_row(mysqli_stmt_get_result($stmtReferensi));
+            mysqli_stmt_close($stmtReferensi);
+            if ((int) ($hasilReferensi[0] ?? 0) === 0) {
+                $stmtHapus = mysqli_prepare($conn, 'DELETE FROM karyawan WHERE id = ?');
+                mysqli_stmt_bind_param($stmtHapus, 'i', $idLama);
+                if (!mysqli_stmt_execute($stmtHapus)) {
+                    throw new RuntimeException('Data lama ' . $empIdLama . ' gagal dihapus: ' . mysqli_stmt_error($stmtHapus));
+                }
+                mysqli_stmt_close($stmtHapus);
+            }
+        }
         mysqli_commit($conn);
     } catch (Throwable $error) {
         mysqli_rollback($conn);

@@ -8,15 +8,9 @@ function siapkanMasterData(mysqli $conn): void
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_departemen (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_status_kerja (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    $defaults = [
-        "master_departemen" => ["Teknologi Informasi", "Sumber Daya Manusia", "Keuangan", "Pemasaran", "Operasional"],
-        "master_posisi" => ["Software Engineer", "HR Specialist", "Finance Analyst", "Marketing Executive", "Project Manager"],
-        "master_status_kerja" => ["Aktif", "Kontrak", "Nonaktif"],
-    ];
-    foreach ($defaults as $table => $items) foreach ($items as $item) {
-        $safe = mysqli_real_escape_string($conn, $item);
-        mysqli_query($conn, "INSERT IGNORE INTO `$table` (nama) VALUES ('$safe')");
-    }
+    // Master data dikelola sepenuhnya dari halaman Master Data. Jangan mengisi
+    // ulang nilai bawaan setiap halaman dibuka karena item yang dihapus akan
+    // muncul kembali secara otomatis.
     // Hapus label lama lebih dulu agar tidak melanggar UNIQUE saat normalisasi.
     mysqli_query($conn, "DELETE FROM master_status_kerja WHERE LOWER(nama) = 'active'");
     mysqli_query($conn, "UPDATE master_status_kerja SET nama = 'Aktif' WHERE LOWER(nama) = 'aktif' AND nama <> 'Aktif'");

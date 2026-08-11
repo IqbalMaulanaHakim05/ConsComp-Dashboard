@@ -209,6 +209,7 @@ body {
     background-color: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+    animation: fadeUp 0.7s 0.12s ease-out both;
 }
 
 table {
@@ -255,6 +256,32 @@ tbody tr:hover {
     padding: 35px;
     text-align: center;
     color: #64748b;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.pagination .button {
+    width: auto;
+    min-width: 110px;
+    text-align: center;
+}
+
+.pagination-info {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.button-disabled {
+    color: #94a3b8;
+    background-color: #e2e8f0;
+    cursor: not-allowed;
+    opacity: .8;
 }
 
 .about {

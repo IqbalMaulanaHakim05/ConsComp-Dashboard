@@ -1,22 +1,221 @@
 ﻿Employee_Name,EmpID,Position,Department,Salary,Sex,MaritalDesc,DateofHire,EmploymentStatus,PerformanceScore
-"Andi Pratama",EMP001,"Software Developer",IT,8500000.00,M,Single,2022-01-10,Aktif,88
-"Siti Rahmawati",EMP002,"HR Officer","Human Resources",6500000.00,F,Married,2021-03-15,Aktif,92
-"Budi Santoso",EMP003,Accountant,Finance,7000000.00,M,Married,2020-07-01,Aktif,84
-"Dewi Lestari",EMP004,"Marketing Specialist",Marketing,6800000.00,F,Single,2023-02-20,Aktif,90
-"Rizky Maulana",EMP005,"Network Administrator",IT,7800000.00,M,Single,2021-11-08,Aktif,86
-"Nabila Putri",EMP006,"Customer Service",Operations,5200000.00,F,Single,2024-01-05,Aktif,81
-"Fajar Nugroho",EMP007,"Sales Executive",Sales,6200000.00,M,Married,2022-06-13,Aktif,89
-"Maya Sari",EMP008,"Data Analyst",IT,8200000.00,F,Single,2023-04-17,Aktif,94
-"Arif Hidayat",EMP009,"Warehouse Supervisor",Operations,6400000.00,M,Married,2019-09-23,Aktif,83
-"Rina Kusuma",EMP010,"Procurement Staff",Procurement,6000000.00,F,Married,2020-12-07,Aktif,87
-"Dimas Saputra",EMP011,"UI/UX Designer",IT,7600000.00,M,Single,2023-08-14,Aktif,91
-"Ayu Wulandari",EMP012,"Legal Officer",Legal,7900000.00,F,Single,2021-05-24,Aktif,85
-"Yoga Prasetyo",EMP013,"Quality Control",Production,5900000.00,M,Married,2022-10-03,Aktif,82
-"Intan Permata",EMP014,"Recruitment Specialist","Human Resources",6700000.00,F,Single,2023-06-19,Aktif,93
-"Reza Kurniawan",EMP015,"Production Planner",Production,7100000.00,M,Married,2020-02-11,Aktif,80
-"Putri Amelia",EMP016,"Business Analyst",Strategy,8300000.00,F,Single,2022-09-12,Aktif,95
-"Hendra Wijaya",EMP017,"Maintenance Technician",Engineering,6100000.00,M,Married,2019-04-29,Aktif,78
-"Lina Marlina",EMP018,"Office Administrator","General Affairs",5500000.00,F,Married,2024-03-04,Aktif,86
-"Galih Ramadhan",EMP019,"Security Supervisor",Security,5800000.00,M,Married,2021-08-30,Aktif,79
-"Iqbal Maulana",EMP020,"Content Writer",Marketing,6300000.00,M,Single,2023-11-06,Aktif,90
-adiguna,EMP022,Accountant,Engineering,6000000.00,M,,,Aktif,90
+"Andi Pratama",EMP001,"Direktur Utama",FINANCE,30000000.00,F,Menikah,2018-01-01,Kontrak,72
+"Budi Pratama",EMP002,"Manager Keuangan",FINANCE,15250000.00,M,"Belum Menikah",2019-02-02,Aktif,79
+"Citra Pratama",EMP003,"Staff Keuangan",FINANCE,6500000.00,F,"Belum Menikah",2020-03-03,Aktif,86
+"Dedi Pratama",EMP004,"Staff Keuangan",FINANCE,6750000.00,M,Menikah,2021-04-04,Aktif,93
+"Eka Pratama",EMP005,"Staff Keuangan",FINANCE,6000000.00,F,"Belum Menikah",2022-05-05,Aktif,73
+"Fajar Pratama",EMP006,"Staff Keuangan",FINANCE,6250000.00,M,"Belum Menikah",2023-06-06,Aktif,80
+"Gita Pratama",EMP007,"Staff Keuangan",FINANCE,6500000.00,F,Menikah,2024-07-07,Aktif,87
+"Hendra Pratama",EMP008,Admin,FINANCE,6750000.00,F,"Belum Menikah",2025-08-08,Aktif,94
+"Indah Pratama",EMP009,Admin,FINANCE,6000000.00,F,"Belum Menikah",2026-09-09,Aktif,74
+"Joko Pratama",EMP010,Pengadaan,FINANCE,6250000.00,M,Menikah,2018-10-10,Aktif,81
+"Kartika Pratama",EMP011,Pengadaan,FINANCE,6500000.00,M,"Belum Menikah",2019-11-11,Kontrak,88
+"Lukman Pratama",EMP012,"Senior Advisor",FINANCE,15750000.00,M,"Belum Menikah",2020-12-12,Aktif,95
+"Maya Pratama",EMP013,Direktur,PROJECT,25000000.00,M,Menikah,2021-01-13,Aktif,75
+"Naufal Pratama",EMP014,"Site Manager PJBS",PROJECT,15250000.00,M,"Belum Menikah",2022-02-14,Aktif,82
+"Oktavia Pratama",EMP015,"Business Advisor",PROJECT,15500000.00,F,"Belum Menikah",2023-03-15,Aktif,89
+"Putra Pratama",EMP016,"Manager Contract Liaison",PROJECT,15750000.00,M,Menikah,2024-04-16,Aktif,96
+"Qori Pratama",EMP017,"Staff Project",PROJECT,6000000.00,M,"Belum Menikah",2025-05-17,Aktif,76
+"Rizky Pratama",EMP018,"Staff Project",PROJECT,6250000.00,M,"Belum Menikah",2026-06-18,Aktif,83
+"Sari Pratama",EMP019,"Staff Project",PROJECT,6500000.00,M,Menikah,2018-07-19,Aktif,90
+"Taufik Pratama",EMP020,"Staff Project",PROJECT,6750000.00,M,"Belum Menikah",2019-08-20,Aktif,97
+"Utami Pratama",EMP021,"Staff Project",PROJECT,6000000.00,M,"Belum Menikah",2020-09-21,Kontrak,77
+"Vina Pratama",EMP022,"Staff Project",PROJECT,6250000.00,F,Menikah,2021-10-22,Aktif,84
+"Wahyu Pratama",EMP023,PIC,PROJECT,8500000.00,M,"Belum Menikah",2022-11-23,Aktif,91
+"Yuni Pratama",EMP024,PIC,PROJECT,8750000.00,M,"Belum Menikah",2023-12-24,Aktif,98
+"Zaki Pratama",EMP025,"Site Manager",PROJECT,15000000.00,M,Menikah,2024-01-25,Aktif,78
+"Andi Santoso",EMP026,"Site Manager",PROJECT,15250000.00,M,"Belum Menikah",2025-02-26,Aktif,85
+"Budi Santoso",EMP027,"Leader Project",PROJECT,8500000.00,M,"Belum Menikah",2026-03-27,Aktif,92
+"Citra Santoso",EMP028,"Leader Project",PROJECT,8750000.00,M,Menikah,2018-04-01,Aktif,72
+"Dedi Santoso",EMP029,"Leader Project",PROJECT,8000000.00,F,"Belum Menikah",2019-05-02,Aktif,79
+"Eka Santoso",EMP030,Surveyor,PROJECT,6250000.00,M,"Belum Menikah",2020-06-03,Aktif,86
+"Fajar Santoso",EMP031,Surveyor,PROJECT,6500000.00,M,Menikah,2021-07-04,Kontrak,93
+"Gita Santoso",EMP032,Surveyor,PROJECT,6750000.00,M,"Belum Menikah",2022-08-05,Aktif,73
+"Hendra Santoso",EMP033,Surveyor,PROJECT,6000000.00,M,"Belum Menikah",2023-09-06,Aktif,80
+"Indah Santoso",EMP034,"Admin Legal",PROJECT,6250000.00,M,Menikah,2024-10-07,Aktif,87
+"Joko Santoso",EMP035,"Admin Legal",PROJECT,6500000.00,F,"Belum Menikah",2025-11-08,Aktif,94
+"Kartika Santoso",EMP036,HSSE,PROJECT,8750000.00,F,"Belum Menikah",2026-12-09,Aktif,74
+"Lukman Santoso",EMP037,HSSE,PROJECT,8000000.00,M,Menikah,2018-01-10,Aktif,81
+"Maya Santoso",EMP038,"Admin HSSE",PROJECT,8250000.00,M,"Belum Menikah",2019-02-11,Aktif,88
+"Naufal Santoso",EMP039,"Admin HSSE",PROJECT,8500000.00,F,"Belum Menikah",2020-03-12,Aktif,95
+"Oktavia Santoso",EMP040,Driver,PROJECT,6250000.00,M,Menikah,2021-04-13,Aktif,75
+"Putra Santoso",EMP041,Driver,PROJECT,5500000.00,M,"Belum Menikah",2022-05-14,Kontrak,82
+"Qori Santoso",EMP042,Driver,PROJECT,5750000.00,M,"Belum Menikah",2023-06-15,Aktif,89
+"Rizky Santoso",EMP043,"Manager HRD",HRGA,15500000.00,F,Menikah,2024-07-16,Aktif,96
+"Sari Santoso",EMP044,"Admin HR GA",HRGA,6750000.00,M,"Belum Menikah",2025-08-17,Aktif,76
+"Taufik Santoso",EMP045,"Admin HR GA",HRGA,6000000.00,F,"Belum Menikah",2026-09-18,Aktif,83
+"Utami Santoso",EMP046,"Admin HR GA",HRGA,6250000.00,M,Menikah,2018-10-19,Aktif,90
+"Vina Santoso",EMP047,"Admin HR GA",HRGA,6500000.00,F,"Belum Menikah",2019-11-20,Aktif,97
+"Wahyu Santoso",EMP048,"Staff IT",HRGA,7750000.00,M,"Belum Menikah",2020-12-21,Aktif,77
+"Yuni Santoso",EMP049,"Staff IT",HRGA,7000000.00,M,Menikah,2021-01-22,Aktif,84
+"Zaki Santoso",EMP050,"Staff IT",HRGA,7250000.00,F,"Belum Menikah",2022-02-23,Aktif,91
+"Andi Wijaya",EMP051,"Cleaning Office",HRGA,5300000.00,M,"Belum Menikah",2023-03-24,Kontrak,98
+"Budi Wijaya",EMP052,"Cleaning Office",HRGA,5550000.00,M,Menikah,2024-04-25,Aktif,78
+"Citra Wijaya",EMP053,"Cleaning Office",HRGA,4800000.00,M,"Belum Menikah",2025-05-26,Aktif,85
+"Dedi Wijaya",EMP054,"Cleaning Office",HRGA,5050000.00,M,"Belum Menikah",2026-06-27,Aktif,92
+"Eka Wijaya",EMP055,"Cleaning Office",HRGA,5300000.00,M,Menikah,2018-07-01,Aktif,72
+"Fajar Wijaya",EMP056,"Cleaning Office",HRGA,5550000.00,M,"Belum Menikah",2019-08-02,Aktif,79
+"Gita Wijaya",EMP057,"Cleaning Office",HRGA,4800000.00,F,"Belum Menikah",2020-09-03,Aktif,86
+"Hendra Wijaya",EMP058,"Cleaning Office",HRGA,5050000.00,M,Menikah,2021-10-04,Aktif,93
+"Indah Wijaya",EMP059,Security,HRGA,6000000.00,M,"Belum Menikah",2022-11-05,Aktif,73
+"Joko Wijaya",EMP060,Security,HRGA,6250000.00,M,"Belum Menikah",2023-12-06,Aktif,80
+"Kartika Wijaya",EMP061,Security,HRGA,5500000.00,M,Menikah,2024-01-07,Kontrak,87
+"Lukman Wijaya",EMP062,Security,HRGA,5750000.00,M,"Belum Menikah",2025-02-08,Aktif,94
+"Maya Wijaya",EMP063,Security,HRGA,6000000.00,M,"Belum Menikah",2026-03-09,Aktif,74
+"Naufal Wijaya",EMP064,Security,HRGA,6250000.00,F,Menikah,2018-04-10,Aktif,81
+"Oktavia Wijaya",EMP065,Security,HRGA,5500000.00,M,"Belum Menikah",2019-05-11,Aktif,88
+"Putra Wijaya",EMP066,Security,HRGA,5750000.00,M,"Belum Menikah",2020-06-12,Aktif,95
+"Qori Wijaya",EMP067,Security,HRGA,6000000.00,M,Menikah,2021-07-13,Aktif,75
+"Rizky Wijaya",EMP068,Security,HRGA,6250000.00,M,"Belum Menikah",2022-08-14,Aktif,82
+"Sari Wijaya",EMP069,"OB NPA",HRGA,4800000.00,M,"Belum Menikah",2023-09-15,Aktif,89
+"Taufik Wijaya",EMP070,"OB NPA",HRGA,5050000.00,M,Menikah,2024-10-16,Aktif,96
+"Utami Wijaya",EMP071,"OB NPA",HRGA,5300000.00,F,"Belum Menikah",2025-11-17,Kontrak,76
+"Vina Wijaya",EMP072,"OB NPA",HRGA,5550000.00,M,"Belum Menikah",2026-12-18,Aktif,83
+"Wahyu Wijaya",EMP073,"OB NPA",HRGA,4800000.00,M,Menikah,2018-01-19,Aktif,90
+"Yuni Wijaya",EMP074,"Leader Housekeeping",HRGA,8250000.00,M,"Belum Menikah",2019-02-20,Aktif,97
+"Zaki Wijaya",EMP075,"Leader Housekeeping",HRGA,8500000.00,M,"Belum Menikah",2020-03-21,Aktif,77
+"Andi Lestari",EMP076,"Helper Housekeeping",HRGA,5550000.00,M,Menikah,2021-04-22,Aktif,84
+"Budi Lestari",EMP077,"Helper Housekeeping",HRGA,4800000.00,M,"Belum Menikah",2022-05-23,Aktif,91
+"Citra Lestari",EMP078,"Helper Housekeeping",HRGA,5050000.00,F,"Belum Menikah",2023-06-24,Aktif,98
+"Dedi Lestari",EMP079,"Helper Housekeeping",HRGA,5300000.00,M,Menikah,2024-07-25,Aktif,78
+"Eka Lestari",EMP080,"Helper Housekeeping",HRGA,5550000.00,M,"Belum Menikah",2025-08-26,Aktif,85
+"Fajar Lestari",EMP081,"Admin Ops","OPERATIONAL & COMMERCIAL",6000000.00,F,"Belum Menikah",2026-09-27,Kontrak,92
+"Gita Lestari",EMP082,"Admin Ops","OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2018-10-01,Aktif,72
+"Hendra Lestari",EMP083,"Admin Ops","OPERATIONAL & COMMERCIAL",6500000.00,F,"Belum Menikah",2019-11-02,Aktif,79
+"Indah Lestari",EMP084,"Admin Ops","OPERATIONAL & COMMERCIAL",6750000.00,M,"Belum Menikah",2020-12-03,Aktif,86
+"Joko Lestari",EMP085,"Koordinator AYM FGD FABA","OPERATIONAL & COMMERCIAL",9500000.00,F,Menikah,2021-01-04,Aktif,93
+"Kartika Lestari",EMP086,"Koordinator AYM FGD FABA","OPERATIONAL & COMMERCIAL",9750000.00,M,"Belum Menikah",2022-02-05,Aktif,73
+"Lukman Lestari",EMP087,"Admin AYM","OPERATIONAL & COMMERCIAL",6500000.00,F,"Belum Menikah",2023-03-06,Aktif,80
+"Maya Lestari",EMP088,"Admin AYM","OPERATIONAL & COMMERCIAL",6750000.00,M,Menikah,2024-04-07,Aktif,87
+"Naufal Lestari",EMP089,"Admin Pemanfaatan FABA","OPERATIONAL & COMMERCIAL",6000000.00,F,"Belum Menikah",2025-05-08,Aktif,94
+"Oktavia Lestari",EMP090,"Admin Pemanfaatan FABA","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2026-06-09,Aktif,74
+"Putra Lestari",EMP091,"PIC MG JT Roadsweeper","OPERATIONAL & COMMERCIAL",8500000.00,M,Menikah,2018-07-10,Kontrak,81
+"Qori Lestari",EMP092,"PIC FGD FABA","OPERATIONAL & COMMERCIAL",8750000.00,F,"Belum Menikah",2019-08-11,Aktif,88
+"Rizky Lestari",EMP093,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2020-09-12,Aktif,95
+"Sari Lestari",EMP094,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",5750000.00,M,Menikah,2021-10-13,Aktif,75
+"Taufik Lestari",EMP095,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2022-11-14,Aktif,82
+"Utami Lestari",EMP096,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2023-12-15,Aktif,89
+"Vina Lestari",EMP097,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",5500000.00,M,Menikah,2024-01-16,Aktif,96
+"Wahyu Lestari",EMP098,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2025-02-17,Aktif,76
+"Yuni Lestari",EMP099,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",6000000.00,F,"Belum Menikah",2026-03-18,Aktif,83
+"Zaki Lestari",EMP100,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2018-04-19,Aktif,90
+"Andi Saputra",EMP101,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2019-05-20,Kontrak,97
+"Budi Saputra",EMP102,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2020-06-21,Aktif,77
+"Citra Saputra",EMP103,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",6000000.00,M,Menikah,2021-07-22,Aktif,84
+"Dedi Saputra",EMP104,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2022-08-23,Aktif,91
+"Eka Saputra",EMP105,"Operator Alat Berat","OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2023-09-24,Aktif,98
+"Fajar Saputra",EMP106,"Shift Leader","OPERATIONAL & COMMERCIAL",8250000.00,F,Menikah,2024-10-25,Aktif,78
+"Gita Saputra",EMP107,"Shift Leader","OPERATIONAL & COMMERCIAL",8500000.00,M,"Belum Menikah",2025-11-26,Aktif,85
+"Hendra Saputra",EMP108,"Shift Leader","OPERATIONAL & COMMERCIAL",8750000.00,M,"Belum Menikah",2026-12-27,Aktif,92
+"Indah Saputra",EMP109,"Shift Leader","OPERATIONAL & COMMERCIAL",8000000.00,M,Menikah,2018-01-01,Aktif,72
+"Joko Saputra",EMP110,"Shift Leader","OPERATIONAL & COMMERCIAL",8250000.00,M,"Belum Menikah",2019-02-02,Aktif,79
+"Kartika Saputra",EMP111,"Main Gate","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2020-03-03,Kontrak,86
+"Lukman Saputra",EMP112,"Main Gate","OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2021-04-04,Aktif,93
+"Maya Saputra",EMP113,"Main Gate","OPERATIONAL & COMMERCIAL",5500000.00,F,"Belum Menikah",2022-05-05,Aktif,73
+"Naufal Saputra",EMP114,"Main Gate","OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2023-06-06,Aktif,80
+"Oktavia Saputra",EMP115,"Main Gate","OPERATIONAL & COMMERCIAL",6000000.00,M,Menikah,2024-07-07,Aktif,87
+"Putra Saputra",EMP116,"Main Gate","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2025-08-08,Aktif,94
+"Qori Saputra",EMP117,"Jembatan Timbang","OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2026-09-09,Aktif,74
+"Rizky Saputra",EMP118,"Jembatan Timbang","OPERATIONAL & COMMERCIAL",5750000.00,M,Menikah,2018-10-10,Aktif,81
+"Sari Saputra",EMP119,"Jembatan Timbang","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2019-11-11,Aktif,88
+"Taufik Saputra",EMP120,"Jembatan Timbang","OPERATIONAL & COMMERCIAL",6250000.00,F,"Belum Menikah",2020-12-12,Aktif,95
+"Utami Saputra",EMP121,Rigger,"OPERATIONAL & COMMERCIAL",5500000.00,M,Menikah,2021-01-13,Kontrak,75
+"Vina Saputra",EMP122,Rigger,"OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2022-02-14,Aktif,82
+"Wahyu Saputra",EMP123,Rigger,"OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2023-03-15,Aktif,89
+"Yuni Saputra",EMP124,Rigger,"OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2024-04-16,Aktif,96
+"Zaki Saputra",EMP125,Rigger,"OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2025-05-17,Aktif,76
+"Andi Hidayat",EMP126,Rigger,"OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2026-06-18,Aktif,83
+"Budi Hidayat",EMP127,"Operator Pompa","OPERATIONAL & COMMERCIAL",6000000.00,F,Menikah,2018-07-19,Aktif,90
+"Citra Hidayat",EMP128,"Operator Pompa","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2019-08-20,Aktif,97
+"Dedi Hidayat",EMP129,"Operator Pompa","OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2020-09-21,Aktif,77
+"Eka Hidayat",EMP130,"Operator Pompa","OPERATIONAL & COMMERCIAL",5750000.00,M,Menikah,2021-10-22,Aktif,84
+"Fajar Hidayat",EMP131,"Operator Pompa","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2022-11-23,Kontrak,91
+"Gita Hidayat",EMP132,"Operator Pompa","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2023-12-24,Aktif,98
+"Hendra Hidayat",EMP133,"Operator Jaringan","OPERATIONAL & COMMERCIAL",5500000.00,M,Menikah,2024-01-25,Aktif,78
+"Indah Hidayat",EMP134,"Operator Jaringan","OPERATIONAL & COMMERCIAL",5750000.00,F,"Belum Menikah",2025-02-26,Aktif,85
+"Joko Hidayat",EMP135,"Operator Jaringan","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2026-03-27,Aktif,92
+"Kartika Hidayat",EMP136,"Operator Jaringan","OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2018-04-01,Aktif,72
+"Lukman Hidayat",EMP137,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",4800000.00,M,"Belum Menikah",2019-05-02,Aktif,79
+"Maya Hidayat",EMP138,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",5050000.00,M,"Belum Menikah",2020-06-03,Aktif,86
+"Naufal Hidayat",EMP139,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",5300000.00,M,Menikah,2021-07-04,Aktif,93
+"Oktavia Hidayat",EMP140,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",5550000.00,M,"Belum Menikah",2022-08-05,Aktif,73
+"Putra Hidayat",EMP141,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",4800000.00,F,"Belum Menikah",2023-09-06,Kontrak,80
+"Qori Hidayat",EMP142,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",5050000.00,M,Menikah,2024-10-07,Aktif,87
+"Rizky Hidayat",EMP143,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",5300000.00,M,"Belum Menikah",2025-11-08,Aktif,94
+"Sari Hidayat",EMP144,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",5550000.00,M,"Belum Menikah",2026-12-09,Aktif,74
+"Taufik Hidayat",EMP145,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",4800000.00,M,Menikah,2018-01-10,Aktif,81
+"Utami Hidayat",EMP146,"Cleaning Ash Yard","OPERATIONAL & COMMERCIAL",5050000.00,M,"Belum Menikah",2019-02-11,Aktif,88
+"Vina Hidayat",EMP147,"Grass Cutting","OPERATIONAL & COMMERCIAL",5300000.00,M,"Belum Menikah",2020-03-12,Aktif,95
+"Wahyu Hidayat",EMP148,"Grass Cutting","OPERATIONAL & COMMERCIAL",5550000.00,F,Menikah,2021-04-13,Aktif,75
+"Yuni Hidayat",EMP149,"Grass Cutting","OPERATIONAL & COMMERCIAL",4800000.00,M,"Belum Menikah",2022-05-14,Aktif,82
+"Zaki Hidayat",EMP150,"Grass Cutting","OPERATIONAL & COMMERCIAL",5050000.00,M,"Belum Menikah",2023-06-15,Aktif,89
+"Andi Permata",EMP151,"Grass Cutting","OPERATIONAL & COMMERCIAL",5300000.00,M,Menikah,2024-07-16,Kontrak,96
+"Budi Permata",EMP152,Mekanik,"OPERATIONAL & COMMERCIAL",7750000.00,M,"Belum Menikah",2025-08-17,Aktif,76
+"Citra Permata",EMP153,Mekanik,"OPERATIONAL & COMMERCIAL",7000000.00,M,"Belum Menikah",2026-09-18,Aktif,83
+"Dedi Permata",EMP154,Mekanik,"OPERATIONAL & COMMERCIAL",7250000.00,M,Menikah,2018-10-19,Aktif,90
+"Eka Permata",EMP155,Mekanik,"OPERATIONAL & COMMERCIAL",7500000.00,F,"Belum Menikah",2019-11-20,Aktif,97
+"Fajar Permata",EMP156,Mekanik,"OPERATIONAL & COMMERCIAL",7750000.00,M,"Belum Menikah",2020-12-21,Aktif,77
+"Gita Permata",EMP157,Mekanik,"OPERATIONAL & COMMERCIAL",7000000.00,M,Menikah,2021-01-22,Aktif,84
+"Hendra Permata",EMP158,Mekanik,"OPERATIONAL & COMMERCIAL",7250000.00,M,"Belum Menikah",2022-02-23,Aktif,91
+"Indah Permata",EMP159,Mekanik,"OPERATIONAL & COMMERCIAL",7500000.00,M,"Belum Menikah",2023-03-24,Aktif,98
+"Joko Permata",EMP160,"Staff Gudang","OPERATIONAL & COMMERCIAL",6750000.00,M,Menikah,2024-04-25,Aktif,78
+"Kartika Permata",EMP161,"Staff Gudang","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2025-05-26,Kontrak,85
+"Lukman Permata",EMP162,"Staff Gudang","OPERATIONAL & COMMERCIAL",6250000.00,F,"Belum Menikah",2026-06-27,Aktif,92
+"Maya Permata",EMP163,"Staff Gudang","OPERATIONAL & COMMERCIAL",6500000.00,M,Menikah,2018-07-01,Aktif,72
+"Naufal Permata",EMP164,OW,"OPERATIONAL & COMMERCIAL",5550000.00,M,"Belum Menikah",2019-08-02,Aktif,79
+"Oktavia Permata",EMP165,OW,"OPERATIONAL & COMMERCIAL",4800000.00,M,"Belum Menikah",2020-09-03,Aktif,86
+"Putra Permata",EMP166,OW,"OPERATIONAL & COMMERCIAL",5050000.00,M,Menikah,2021-10-04,Aktif,93
+"Qori Permata",EMP167,"Operator FGD","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2022-11-05,Aktif,73
+"Rizky Permata",EMP168,"Operator FGD","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2023-12-06,Aktif,80
+"Sari Permata",EMP169,"Operator FGD","OPERATIONAL & COMMERCIAL",5500000.00,F,Menikah,2024-01-07,Aktif,87
+"Taufik Permata",EMP170,"Operator FGD","OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2025-02-08,Aktif,94
+"Utami Permata",EMP171,"Operator FGD","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2026-03-09,Kontrak,74
+"Vina Permata",EMP172,"Operator FGD","OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2018-04-10,Aktif,81
+"Wahyu Permata",EMP173,"Mekanik FABA","OPERATIONAL & COMMERCIAL",7000000.00,M,"Belum Menikah",2019-05-11,Aktif,88
+"Yuni Permata",EMP174,"Mekanik FABA","OPERATIONAL & COMMERCIAL",7250000.00,M,"Belum Menikah",2020-06-12,Aktif,95
+"Zaki Permata",EMP175,"Mekanik FABA","OPERATIONAL & COMMERCIAL",7500000.00,M,Menikah,2021-07-13,Aktif,75
+"Andi Kurniawan",EMP176,"Mekanik FABA","OPERATIONAL & COMMERCIAL",7750000.00,F,"Belum Menikah",2022-08-14,Aktif,82
+"Budi Kurniawan",EMP177,"Operator FABA","OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2023-09-15,Aktif,89
+"Citra Kurniawan",EMP178,"Operator FABA","OPERATIONAL & COMMERCIAL",5750000.00,M,Menikah,2024-10-16,Aktif,96
+"Dedi Kurniawan",EMP179,"Operator FABA","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2025-11-17,Aktif,76
+"Eka Kurniawan",EMP180,"Operator FABA","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2026-12-18,Aktif,83
+"Fajar Kurniawan",EMP181,"Operator FABA","OPERATIONAL & COMMERCIAL",5500000.00,M,Menikah,2018-01-19,Kontrak,90
+"Gita Kurniawan",EMP182,"Operator FABA","OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2019-02-20,Aktif,97
+"Hendra Kurniawan",EMP183,"Operator FABA","OPERATIONAL & COMMERCIAL",6000000.00,F,"Belum Menikah",2020-03-21,Aktif,77
+"Indah Kurniawan",EMP184,"Operator FABA","OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2021-04-22,Aktif,84
+"Joko Kurniawan",EMP185,"Operator FABA","OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2022-05-23,Aktif,91
+"Kartika Kurniawan",EMP186,"Supervisor Conveyor","OPERATIONAL & COMMERCIAL",9750000.00,M,"Belum Menikah",2023-06-24,Aktif,98
+"Lukman Kurniawan",EMP187,"Supervisor Conveyor","OPERATIONAL & COMMERCIAL",10000000.00,M,Menikah,2024-07-25,Aktif,78
+"Maya Kurniawan",EMP188,"Mekanik Conveyor","OPERATIONAL & COMMERCIAL",7750000.00,M,"Belum Menikah",2025-08-26,Aktif,85
+"Naufal Kurniawan",EMP189,"Mekanik Conveyor","OPERATIONAL & COMMERCIAL",7000000.00,M,"Belum Menikah",2026-09-27,Aktif,92
+"Oktavia Kurniawan",EMP190,"Mekanik Conveyor","OPERATIONAL & COMMERCIAL",7250000.00,F,Menikah,2018-10-01,Aktif,72
+"Putra Kurniawan",EMP191,"Operator Conveyor","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2019-11-02,Kontrak,79
+"Qori Kurniawan",EMP192,"Operator Conveyor","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2020-12-03,Aktif,86
+"Rizky Kurniawan",EMP193,"Operator Conveyor","OPERATIONAL & COMMERCIAL",5500000.00,M,Menikah,2021-01-04,Aktif,93
+"Sari Kurniawan",EMP194,"Operator Conveyor","OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2022-02-05,Aktif,73
+"Taufik Kurniawan",EMP195,"Operator Conveyor","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2023-03-06,Aktif,80
+"Utami Kurniawan",EMP196,"Operator Conveyor","OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2024-04-07,Aktif,87
+"Vina Kurniawan",EMP197,"Operator Conveyor","OPERATIONAL & COMMERCIAL",5500000.00,F,"Belum Menikah",2025-05-08,Aktif,94
+"Wahyu Kurniawan",EMP198,Biopori,"OPERATIONAL & COMMERCIAL",5050000.00,M,"Belum Menikah",2026-06-09,Aktif,74
+"Yuni Kurniawan",EMP199,Biopori,"OPERATIONAL & COMMERCIAL",5300000.00,M,Menikah,2018-07-10,Aktif,81
+"Zaki Kurniawan",EMP200,Biopori,"OPERATIONAL & COMMERCIAL",5550000.00,M,"Belum Menikah",2019-08-11,Aktif,88
+"Andi Ramadhan",EMP201,"Mekanik HEM TJB","OPERATIONAL & COMMERCIAL",7000000.00,M,"Belum Menikah",2020-09-12,Kontrak,95
+"Budi Ramadhan",EMP202,"Mekanik HEM TJB","OPERATIONAL & COMMERCIAL",7250000.00,M,Menikah,2021-10-13,Aktif,75
+"Citra Ramadhan",EMP203,"Mekanik HEM TJB","OPERATIONAL & COMMERCIAL",7500000.00,M,"Belum Menikah",2022-11-14,Aktif,82
+"Dedi Ramadhan",EMP204,"Mekanik HEM TJB","OPERATIONAL & COMMERCIAL",7750000.00,F,"Belum Menikah",2023-12-15,Aktif,89
+"Eka Ramadhan",EMP205,"Operator Roadsweeper","OPERATIONAL & COMMERCIAL",5500000.00,M,Menikah,2024-01-16,Aktif,96
+"Fajar Ramadhan",EMP206,"Operator Roadsweeper","OPERATIONAL & COMMERCIAL",5750000.00,M,"Belum Menikah",2025-02-17,Aktif,76
+"Gita Ramadhan",EMP207,"Operator Roadsweeper","OPERATIONAL & COMMERCIAL",6000000.00,M,"Belum Menikah",2026-03-18,Aktif,83
+"Hendra Ramadhan",EMP208,"Operator Roadsweeper","OPERATIONAL & COMMERCIAL",6250000.00,M,Menikah,2018-04-19,Aktif,90
+"Indah Ramadhan",EMP209,Elektrik,"OPERATIONAL & COMMERCIAL",7000000.00,M,"Belum Menikah",2019-05-20,Aktif,97
+"Joko Ramadhan",EMP210,Elektrik,"OPERATIONAL & COMMERCIAL",7250000.00,M,"Belum Menikah",2020-06-21,Aktif,77
+"Kartika Ramadhan",EMP211,Elektrik,"OPERATIONAL & COMMERCIAL",7500000.00,F,Menikah,2021-07-22,Kontrak,84
+"Lukman Ramadhan",EMP212,"Operator Fuel","OPERATIONAL & COMMERCIAL",6250000.00,M,"Belum Menikah",2022-08-23,Aktif,91
+"Maya Ramadhan",EMP213,"Operator Fuel","OPERATIONAL & COMMERCIAL",5500000.00,M,"Belum Menikah",2023-09-24,Aktif,98
+"Naufal Ramadhan",EMP214,"Operator Fuel","OPERATIONAL & COMMERCIAL",5750000.00,M,Menikah,2024-10-25,Aktif,78
+"Oktavia Ramadhan",EMP215,Environment,"OPERATIONAL & COMMERCIAL",6500000.00,M,"Belum Menikah",2025-11-26,Aktif,85
+"Putra Ramadhan",EMP216,Environment,"OPERATIONAL & COMMERCIAL",6750000.00,M,"Belum Menikah",2026-12-27,Aktif,92
+"Qori Ramadhan",EMP217,"Supervisor Mekanik HEM","OPERATIONAL & COMMERCIAL",9500000.00,M,Menikah,2018-01-01,Aktif,72
+"Rizky Ramadhan",EMP218,"Supervisor Mekanik HEM","OPERATIONAL & COMMERCIAL",9750000.00,F,"Belum Menikah",2019-02-02,Aktif,79
+"Sari Ramadhan",EMP219,"Leader FABA","OPERATIONAL & COMMERCIAL",8500000.00,M,"Belum Menikah",2020-03-03,Aktif,86
+"Taufik Ramadhan",EMP220,"Leader FABA","OPERATIONAL & COMMERCIAL",8750000.00,M,Single,2021-04-04,Aktif,93

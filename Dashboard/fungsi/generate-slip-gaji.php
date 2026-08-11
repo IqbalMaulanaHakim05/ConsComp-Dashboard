@@ -2,12 +2,16 @@
 declare(strict_types=1);
 require dirname(__DIR__) . "/koneksi.php";
 require_once __DIR__ . "/auth.php";
-wajibRole("admin", "superadmin");
+wajibRole("admin", "superadmin", "pic", "koordinator", "manager");
 if ($_SERVER["REQUEST_METHOD"] !== "POST" || !csrfValid($_POST["csrf_token"] ?? null)) { http_response_code(403); exit("Permintaan tidak valid."); }
 $id = (int) ($_POST["id"] ?? 0);
-$stmt = mysqli_prepare($conn, "SELECT k.emp_id, k.employee_name, k.position, k.kontak, pg.gaji_pokok, pg.uang_makan FROM karyawan k LEFT JOIN profil_gaji pg ON pg.karyawan_id = k.id WHERE k.id = ? LIMIT 1");
+$stmt = mysqli_prepare($conn, "SELECT k.id, k.emp_id, k.employee_name, k.position, k.kontak, k.department_id, COALESCE(pg.gaji_pokok, k.salary, 0) AS gaji_pokok, COALESCE(pg.uang_makan, 0) AS uang_makan FROM karyawan k LEFT JOIN profil_gaji pg ON pg.karyawan_id = k.id WHERE k.id = ? LIMIT 1");
 mysqli_stmt_bind_param($stmt, "i", $id); mysqli_stmt_execute($stmt); $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)); mysqli_stmt_close($stmt);
 if (!$data) { http_response_code(404); exit("Data karyawan tidak ditemukan."); }
+if (roleOperasional() && (int) ($data["department_id"] ?? 0) !== (int) (departmentIdPengguna() ?? 0)) {
+    http_response_code(403);
+    exit("Anda tidak memiliki akses ke slip gaji karyawan dari departemen ini.");
+}
 $items = [["Gaji Pokok", (float) ($data["gaji_pokok"] ?? 0)], ["Uang Makan", (float) ($data["uang_makan"] ?? 0)]];
 $tambahan = mysqli_query($conn, "SELECT nama, nilai FROM pendapatan_tambahan_karyawan WHERE karyawan_id = " . $id . " ORDER BY id ASC");
 if ($tambahan) while ($item = mysqli_fetch_assoc($tambahan)) $items[] = [(string) $item["nama"], (float) $item["nilai"]];
