@@ -281,38 +281,65 @@ function gantiDataSql(mysqli $conn, array $data): void
 {
     mysqli_begin_transaction($conn);
     try {
-        // Jangan menghapus seluruh tabel secara langsung. Data karyawan dapat
-        // direferensikan oleh slip gaji dan laporan lembur dengan ON DELETE RESTRICT.
-        // Pertahankan primary key untuk emp_id yang sudah ada agar histori tetap valid.
-        $dataMasuk = [];
+        $departemenExcel = [];
+        $posisiExcel = [];
+        $statusExcel = [];
         foreach ($data as $item) {
-            $dataMasuk[$item['emp_id']] = true;
+            $departemenExcel[$item['department']] = true;
+            $posisiExcel[$item['position']] = true;
+            $statusExcel[$item['employment_status']] = true;
         }
 
-        $dataLama = mysqli_query($conn, 'SELECT id, emp_id FROM karyawan');
-        if (!$dataLama) {
-            throw new RuntimeException('Data karyawan lama gagal dibaca: ' . mysqli_error($conn));
-        }
-        $idsLama = [];
-        while ($barisLama = mysqli_fetch_assoc($dataLama)) {
-            $idsLama[(string) $barisLama['emp_id']] = (int) $barisLama['id'];
+        // Simpan cakupan departemen akun sebelum master departemen dibangun ulang.
+        $cakupanAkun = [];
+        $akunLama = mysqli_query($conn, "SELECT u.username, d.nama AS departemen FROM users u LEFT JOIN master_departemen d ON d.id = u.department_id");
+        while ($akunLama && ($akun = mysqli_fetch_assoc($akunLama))) {
+            $cakupanAkun[(string) $akun['username']] = (string) ($akun['departemen'] ?? '');
         }
 
-        $sqlUpdate = "UPDATE karyawan SET
-                    employee_name = ?, position = ?, department = ?, salary = ?,
-                    gender = ?, marital_status = ?, date_of_hire = ?,
-                    employment_status = ?, performance_score = ?
-                WHERE emp_id = ?";
-        $stmtUpdate = mysqli_prepare($conn, $sqlUpdate);
-        if (!$stmtUpdate) {
-            throw new RuntimeException('Query pembaruan import gagal disiapkan: ' . mysqli_error($conn));
+        // Lepaskan FK akun sebelum master departemen lama dibersihkan.
+        if (!mysqli_query($conn, "UPDATE users SET department_id = NULL")) {
+            throw new RuntimeException('Relasi departemen akun gagal dilepas: ' . mysqli_error($conn));
         }
 
-        $sqlInsert = "INSERT INTO karyawan (
+        // Bersihkan seluruh data yang bergantung pada karyawan lama.
+        foreach ([
+            'slip_gaji_items', 'slip_gaji', 'overtime_approvals',
+            'overtime_compensations', 'overtime_reports',
+            'komponen_gaji_karyawan', 'profil_gaji',
+            'pendapatan_tambahan_karyawan', 'potongan_karyawan',
+            'riwayat_pendidikan', 'riwayat_pekerjaan', 'karyawan'
+        ] as $table) {
+            if (!mysqli_query($conn, "DELETE FROM `$table`")) {
+                throw new RuntimeException("Data lama pada {$table} gagal dihapus: " . mysqli_error($conn));
+            }
+        }
+        mysqli_query($conn, "DELETE FROM periode_gaji");
+
+        // Master departemen, posisi, dan status mengikuti isi file Excel.
+        foreach (["master_departemen", "master_posisi", "master_status_kerja"] as $table) {
+            if (!mysqli_query($conn, "DELETE FROM `$table`")) {
+                throw new RuntimeException("Master data lama pada {$table} gagal dihapus: " . mysqli_error($conn));
+            }
+        }
+        $tambahMaster = function (string $table, array $nilai) use ($conn): void {
+            $stmt = mysqli_prepare($conn, "INSERT INTO `$table` (nama) VALUES (?)");
+            if (!$stmt) throw new RuntimeException("Master {$table} gagal disiapkan: " . mysqli_error($conn));
+            foreach (array_keys($nilai) as $nama) {
+                mysqli_stmt_bind_param($stmt, 's', $nama);
+                if (!mysqli_stmt_execute($stmt)) throw new RuntimeException("Master {$table} gagal disimpan: " . mysqli_stmt_error($stmt));
+            }
+            mysqli_stmt_close($stmt);
+        };
+        $tambahMaster('master_departemen', $departemenExcel);
+        $tambahMaster('master_posisi', $posisiExcel);
+        $tambahMaster('master_status_kerja', $statusExcel);
+
+        $sql = "INSERT INTO karyawan (
                     employee_name, emp_id, position, department, salary,
                     gender, marital_status, date_of_hire, employment_status, performance_score
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmtInsert = mysqli_prepare($conn, $sqlInsert);
+        $stmtInsert = mysqli_prepare($conn, $sql);
         if (!$stmtInsert) {
             throw new RuntimeException('Query import gagal disiapkan: ' . mysqli_error($conn));
         }
@@ -329,20 +356,12 @@ function gantiDataSql(mysqli $conn, array $data): void
             $statusKerja = $item['employment_status'];
             $skor = (string) $item['performance_score'];
 
-            if (isset($idsLama[$empId])) {
-                mysqli_stmt_bind_param($stmtUpdate, 'sssdssssis', $nama, $posisi, $departemen, $gaji, $gender, $statusPernikahan, $tanggalMasuk, $statusKerja, $skor, $empId);
-                if (!mysqli_stmt_execute($stmtUpdate)) {
-                    throw new RuntimeException('Baris ' . $empId . ' gagal diperbarui: ' . mysqli_stmt_error($stmtUpdate));
-                }
-            } else {
-                mysqli_stmt_bind_param($stmtInsert, 'ssssdsssss', $nama, $empId, $posisi, $departemen, $gaji, $gender, $statusPernikahan, $tanggalMasuk, $statusKerja, $skor);
-                if (!mysqli_stmt_execute($stmtInsert)) {
-                    throw new RuntimeException('Baris ' . $empId . ' gagal disimpan: ' . mysqli_stmt_error($stmtInsert));
-                }
+            mysqli_stmt_bind_param($stmtInsert, 'ssssdsssss', $nama, $empId, $posisi, $departemen, $gaji, $gender, $statusPernikahan, $tanggalMasuk, $statusKerja, $skor);
+            if (!mysqli_stmt_execute($stmtInsert)) {
+                throw new RuntimeException('Baris ' . $empId . ' gagal disimpan: ' . mysqli_stmt_error($stmtInsert));
             }
         }
 
-        mysqli_stmt_close($stmtUpdate);
         mysqli_stmt_close($stmtInsert);
 
         // Jaga relasi cakupan departemen untuk data hasil import.
@@ -364,29 +383,14 @@ function gantiDataSql(mysqli $conn, array $data): void
             throw new RuntimeException('Profil upah hasil import gagal dibuat: ' . mysqli_error($conn));
         }
 
-        // Hapus data lama yang tidak ada di file hanya bila tidak memiliki
-        // histori slip gaji maupun laporan lembur yang mengunci penghapusan.
-        foreach ($idsLama as $empIdLama => $idLama) {
-            if (isset($dataMasuk[$empIdLama])) {
-                continue;
-            }
-            $stmtReferensi = mysqli_prepare($conn, "SELECT EXISTS(SELECT 1 FROM slip_gaji WHERE karyawan_id = ?) OR EXISTS(SELECT 1 FROM overtime_reports WHERE karyawan_id = ?)");
-            if (!$stmtReferensi) {
-                throw new RuntimeException('Pemeriksaan relasi data lama gagal: ' . mysqli_error($conn));
-            }
-            mysqli_stmt_bind_param($stmtReferensi, 'ii', $idLama, $idLama);
-            mysqli_stmt_execute($stmtReferensi);
-            $hasilReferensi = mysqli_fetch_row(mysqli_stmt_get_result($stmtReferensi));
-            mysqli_stmt_close($stmtReferensi);
-            if ((int) ($hasilReferensi[0] ?? 0) === 0) {
-                $stmtHapus = mysqli_prepare($conn, 'DELETE FROM karyawan WHERE id = ?');
-                mysqli_stmt_bind_param($stmtHapus, 'i', $idLama);
-                if (!mysqli_stmt_execute($stmtHapus)) {
-                    throw new RuntimeException('Data lama ' . $empIdLama . ' gagal dihapus: ' . mysqli_stmt_error($stmtHapus));
-                }
-                mysqli_stmt_close($stmtHapus);
-            }
+        // Pulihkan cakupan akun hanya bila nama departemennya masih ada di Excel.
+        $stmtAkun = mysqli_prepare($conn, "UPDATE users u INNER JOIN master_departemen d ON d.nama = ? SET u.department_id = d.id WHERE u.username = ?");
+        foreach ($cakupanAkun as $username => $departemenLama) {
+            if ($departemenLama === '' || !isset($departemenExcel[$departemenLama])) continue;
+            mysqli_stmt_bind_param($stmtAkun, 'ss', $departemenLama, $username);
+            mysqli_stmt_execute($stmtAkun);
         }
+        mysqli_stmt_close($stmtAkun);
         mysqli_commit($conn);
     } catch (Throwable $error) {
         mysqli_rollback($conn);
@@ -441,8 +445,9 @@ require __DIR__ . "/../partials/atas.php";
 
         <div class="form-body">
             <div class="form-warning">
-                <strong>Perhatian:</strong> proses ini mengganti seluruh isi
-                tabel karyawan dengan data dari file Excel.
+                <strong>Perhatian:</strong> proses ini mengganti seluruh data
+                karyawan, departemen, posisi, dan status kerja dengan isi file Excel.
+                Data upah, lembur, riwayat, periode, dan slip gaji lama yang terkait juga dibersihkan.
             </div>
 
             <?php if ($pesan !== ""): ?>
@@ -454,7 +459,7 @@ require __DIR__ . "/../partials/atas.php";
             <form
                 method="POST"
                 enctype="multipart/form-data"
-                onsubmit="return confirm('Yakin ingin mengganti seluruh data karyawan dari file Excel ini?');"
+                onsubmit="return confirm('Yakin ingin mengganti seluruh data karyawan dan data terkait dari file Excel ini?');"
             >
                 <div class="form-group full-width">
                     <label for="file_excel">
