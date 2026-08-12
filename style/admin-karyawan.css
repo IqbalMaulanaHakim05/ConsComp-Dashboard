@@ -7,3 +7,22 @@
 .karyawan-page .employee-profile-link {
     font-weight: 700;
 }
+
+/* Untuk PIC, Koordinator, dan Manager kolom terakhir adalah Performa,
+   bukan Aksi. Jangan jadikan kolom Performa sticky karena akan menutupi
+   kolom lain saat tabel digeser. */
+.karyawan-page .table-wrapper.no-actions th:last-child,
+.karyawan-page .table-wrapper.no-actions td:last-child {
+    position: static;
+    right: auto;
+    z-index: auto;
+}
+
+.karyawan-page .table-wrapper.no-actions td:last-child {
+    background-color: inherit;
+}
+
+.karyawan-page .table-wrapper.no-actions tbody tr:nth-child(even) td:last-child,
+.karyawan-page .table-wrapper.no-actions tbody tr:hover td:last-child {
+    background-color: inherit;
+}

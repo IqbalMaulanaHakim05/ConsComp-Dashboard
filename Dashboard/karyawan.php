@@ -32,7 +32,7 @@ $halamanAktif = "karyawan";
 
 // Action bar tambah/import/export hanya tampil pada tab Karyawan,
 // dan hanya untuk peran yang boleh mengubah data.
-if (punyaRole("admin", "superadmin")) {
+if (punyaRole("admin", "superadmin", "manager")) {
     $aksiTopbar = __DIR__ . "/partials/aksi-karyawan.php";
 }
 

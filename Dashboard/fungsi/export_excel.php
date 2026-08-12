@@ -3,7 +3,12 @@
 require __DIR__ . "/../koneksi.php";
 require_once __DIR__ . "/auth.php";
 
-wajibRole("admin", "superadmin");
+wajibRole("admin", "superadmin", "manager");
+
+$departmentIdPengguna = departmentIdPengguna();
+$filterDepartemen = rolePengguna() === "manager"
+    ? " WHERE department_id = " . (int) ($departmentIdPengguna ?? 0)
+    : "";
 
 if (!class_exists("ZipArchive")) {
     http_response_code(500);
@@ -24,6 +29,7 @@ $query = mysqli_query(
         employment_status,
         performance_score
      FROM karyawan
+     $filterDepartemen
      ORDER BY id ASC"
 );
 

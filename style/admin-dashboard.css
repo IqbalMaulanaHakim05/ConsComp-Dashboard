@@ -1,4 +1,23 @@
 /* Komponen khusus dashboard dan analisis. */
+.dashboard-page .table-wrapper:not(.has-actions) th:last-child,
+.dashboard-page .table-wrapper:not(.has-actions) td:last-child {
+    position: static !important;
+    right: auto !important;
+    left: auto !important;
+    z-index: auto !important;
+    min-width: 95px;
+    background-color: inherit !important;
+}
+
+.dashboard-page .table-wrapper:not(.has-actions) table {
+    min-width: 1600px;
+    table-layout: auto;
+}
+
+.dashboard-page .table-wrapper:not(.has-actions) td {
+    white-space: nowrap;
+}
+
 .dashboard-page .statistics,
 .dashboard-page .dashboard-chart,
 .analisis-page .dashboard-chart {
