@@ -965,10 +965,15 @@
         .master-data-grid .chart-card:nth-child(3) { border-top: 4px solid #ec4899; }
         .master-data-grid .search-form { align-items: center; margin: 16px 0 18px; }
         .master-data-grid .search-form input { min-width: 0; flex: 1; }
-        .master-list { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+        .master-list { display: grid; gap: 8px; max-height: 222px; overflow-y: auto; padding: 0 6px 0 0; margin: 0; list-style: none; scrollbar-color: #94a3b8 transparent; scrollbar-width: thin; }
         .master-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 38px; padding: 6px 8px 6px 12px; border: 1px solid #e2e8f0; border-radius: 9px; color: #334155; background: #f8fafc; font-size: 14px; }
         .master-list .btn { flex: 0 0 auto; padding: 7px 12px; font-size: 12px; }
+        .master-list::-webkit-scrollbar { width: 7px; }
+        .master-list::-webkit-scrollbar-track { background: transparent; }
+        .master-list::-webkit-scrollbar-thumb { border-radius: 999px; background: #cbd5e1; }
         :root[data-theme="dark"] .master-list li { border-color: #334155; color: #e2e8f0; background: #172033; }
+        :root[data-theme="dark"] .master-list { scrollbar-color: #64748b transparent; }
+        :root[data-theme="dark"] .master-list::-webkit-scrollbar-thumb { background: #64748b; }
 
         .profile-biography {
             color: #334155;
