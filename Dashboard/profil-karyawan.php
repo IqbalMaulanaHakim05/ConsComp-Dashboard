@@ -9,7 +9,7 @@ require_once __DIR__ . "/fungsi/master-data.php";
 
 wajibLogin();
 siapkanMasterData($conn);
-$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
+$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 
 $id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
 $karyawan = null;
@@ -105,8 +105,8 @@ require __DIR__ . "/partials/atas.php";
                     ?>
                         <div class="form-group">
                             <label for="profile_<?= $field; ?>"><?= $label; ?></label>
-                            <?php if ($field === "position" || $field === "department" || $field === "employment_status"): ?>
-                                <select id="profile_<?= $field; ?>" name="<?= $field; ?>" required><option value="">Pilih</option><?php foreach (($field === "position" ? $masterPosisi : ($field === "department" ? $masterDepartemen : $masterStatus)) as $item): ?><option <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                            <?php if ($field === "position" || $field === "department" || $field === "employment_status" || $field === "agama"): ?>
+                                <select id="profile_<?= $field; ?>" name="<?= $field; ?>" <?= $field === "agama" ? "" : "required"; ?>><option value="">Pilih</option><?php foreach (($field === "position" ? $masterPosisi : ($field === "department" ? $masterDepartemen : ($field === "employment_status" ? $masterStatus : $masterAgama))) as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                             <?php elseif ($field === "alamat" || $field === "biografi" || $field === "keahlian"): ?>
                                 <textarea id="profile_<?= $field; ?>" name="<?= $field; ?>" rows="4"><?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?></textarea>
                             <?php elseif ($field === "gender"): ?>
@@ -121,8 +121,8 @@ require __DIR__ . "/partials/atas.php";
                     <div class="form-group form-group-full"><label for="profile_alamat">Alamat</label><textarea id="profile_alamat" name="alamat" rows="3"><?= htmlspecialchars((string) ($karyawan["alamat"] ?? "")); ?></textarea></div>
                     <div class="form-group form-group-full"><label for="profile_biografi">Biografi Diri</label><textarea id="profile_biografi" name="biografi" rows="5" maxlength="2000"><?= htmlspecialchars((string) ($karyawan["biografi"] ?? "")); ?></textarea></div>
                 </div>
-                <h3>Riwayat Pendidikan</h3><div id="pendidikan-list"><?php foreach ($riwayatPendidikan as $i => $item): ?><div class="form-grid history-row"><input name="pendidikan[<?= $i; ?>][institusi]" placeholder="Institusi" value="<?= htmlspecialchars($item["institusi"]); ?>" required><input name="pendidikan[<?= $i; ?>][jenjang]" placeholder="Jenjang" value="<?= htmlspecialchars($item["jenjang"] ?? ""); ?>"><input name="pendidikan[<?= $i; ?>][jurusan]" placeholder="Jurusan" value="<?= htmlspecialchars($item["jurusan"] ?? ""); ?>"><input name="pendidikan[<?= $i; ?>][tanggal_mulai]" type="date" value="<?= htmlspecialchars($item["tanggal_mulai"] ?? ""); ?>"><input name="pendidikan[<?= $i; ?>][tanggal_selesai]" type="date" value="<?= htmlspecialchars($item["tanggal_selesai"] ?? ""); ?>"><input name="pendidikan[<?= $i; ?>][keterangan]" placeholder="Keterangan" value="<?= htmlspecialchars($item["keterangan"] ?? ""); ?>"><button class="btn btn-danger remove-history" type="button">Hapus</button></div><?php endforeach; ?></div><button class="btn btn-secondary" id="tambah-pendidikan" type="button">+ Tambah Pendidikan</button>
-                <h3>Riwayat Pekerjaan</h3><div id="pekerjaan-list"><?php foreach ($riwayatPekerjaan as $i => $item): ?><div class="form-grid history-row"><input name="pekerjaan[<?= $i; ?>][nama_perusahaan]" placeholder="Nama Perusahaan" value="<?= htmlspecialchars($item["nama_perusahaan"]); ?>" required><input name="pekerjaan[<?= $i; ?>][posisi]" placeholder="Posisi" value="<?= htmlspecialchars($item["posisi"] ?? ""); ?>"><input name="pekerjaan[<?= $i; ?>][departemen]" placeholder="Departemen" value="<?= htmlspecialchars($item["departemen"] ?? ""); ?>"><input name="pekerjaan[<?= $i; ?>][tanggal_mulai]" type="date" value="<?= htmlspecialchars($item["tanggal_mulai"] ?? ""); ?>"><input name="pekerjaan[<?= $i; ?>][tanggal_selesai]" type="date" value="<?= htmlspecialchars($item["tanggal_selesai"] ?? ""); ?>"><input name="pekerjaan[<?= $i; ?>][deskripsi]" placeholder="Deskripsi" value="<?= htmlspecialchars($item["deskripsi"] ?? ""); ?>"><button class="btn btn-danger remove-history" type="button">Hapus</button></div><?php endforeach; ?></div><button class="btn btn-secondary" id="tambah-pekerjaan" type="button">+ Tambah Pekerjaan</button>
+                <h3>Riwayat Pendidikan</h3><div id="pendidikan-list"><?php foreach ($riwayatPendidikan as $i => $item): ?><div class="form-grid history-row" data-history-key="db-pendidikan-<?= (int) $item["id"]; ?>"><input name="pendidikan[<?= $i; ?>][institusi]" placeholder="Institusi" value="<?= htmlspecialchars($item["institusi"]); ?>" required><input name="pendidikan[<?= $i; ?>][jenjang]" placeholder="Jenjang" value="<?= htmlspecialchars($item["jenjang"] ?? ""); ?>"><input name="pendidikan[<?= $i; ?>][jurusan]" placeholder="Jurusan" value="<?= htmlspecialchars($item["jurusan"] ?? ""); ?>"><input name="pendidikan[<?= $i; ?>][tanggal_mulai]" type="date" value="<?= htmlspecialchars($item["tanggal_mulai"] ?? ""); ?>"><input name="pendidikan[<?= $i; ?>][tanggal_selesai]" type="date" value="<?= htmlspecialchars($item["tanggal_selesai"] ?? ""); ?>"><input name="pendidikan[<?= $i; ?>][keterangan]" placeholder="Keterangan" value="<?= htmlspecialchars($item["keterangan"] ?? ""); ?>"><button class="btn btn-danger remove-history" type="button">Hapus</button></div><?php endforeach; ?></div><button class="btn btn-secondary" id="tambah-pendidikan" type="button">+ Tambah Pendidikan</button>
+                <h3>Riwayat Pekerjaan</h3><div id="pekerjaan-list"><?php foreach ($riwayatPekerjaan as $i => $item): ?><div class="form-grid history-row" data-history-key="db-pekerjaan-<?= (int) $item["id"]; ?>"><input name="pekerjaan[<?= $i; ?>][nama_perusahaan]" placeholder="Nama Perusahaan" value="<?= htmlspecialchars($item["nama_perusahaan"]); ?>" required><input name="pekerjaan[<?= $i; ?>][posisi]" placeholder="Posisi" value="<?= htmlspecialchars($item["posisi"] ?? ""); ?>"><input name="pekerjaan[<?= $i; ?>][departemen]" placeholder="Departemen" value="<?= htmlspecialchars($item["departemen"] ?? ""); ?>"><input name="pekerjaan[<?= $i; ?>][tanggal_mulai]" type="date" value="<?= htmlspecialchars($item["tanggal_mulai"] ?? ""); ?>"><input name="pekerjaan[<?= $i; ?>][tanggal_selesai]" type="date" value="<?= htmlspecialchars($item["tanggal_selesai"] ?? ""); ?>"><input name="pekerjaan[<?= $i; ?>][deskripsi]" placeholder="Deskripsi" value="<?= htmlspecialchars($item["deskripsi"] ?? ""); ?>"><button class="btn btn-danger remove-history" type="button">Hapus</button></div><?php endforeach; ?></div><button class="btn btn-secondary" id="tambah-pekerjaan" type="button">+ Tambah Pekerjaan</button>
                 <div class="profile-actions"><button class="btn btn-success" type="submit">Simpan Perubahan</button><a class="btn btn-secondary" href="profil-karyawan.php?id=<?= (int) $karyawan["id"]; ?>">Batal</a></div>
             </form>
         </article>
@@ -182,8 +182,8 @@ require __DIR__ . "/partials/atas.php";
                 <div><dt>Email</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "email")); ?></dd></div>
                 <div class="profile-biography-row"><dt>Biodata</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "biografi"))); ?></dd></div>
                 <div class="profile-biography-row"><dt>Keahlian</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "keahlian"))); ?></dd></div>
-                <div class="profile-history-row"><dt>Riwayat Pekerjaan</dt><dd><?php if ($riwayatPekerjaan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPekerjaan as $item): ?><div class="profile-history-entry"><div><strong><?= htmlspecialchars($item["nama_perusahaan"]); ?></strong><span> - <?= htmlspecialchars($item["posisi"] ?? ""); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if (trim((string) ($item["deskripsi"] ?? "")) !== ""): ?><p class="profile-history-description"><?= nl2br(htmlspecialchars((string) $item["deskripsi"])); ?></p><?php endif; ?><?php if ($modeEdit): ?><form method="POST" action="fungsi/riwayat.php"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>"><input type="hidden" name="jenis" value="pekerjaan"><input type="hidden" name="aksi" value="hapus"><input type="hidden" name="riwayat_id" value="<?= (int) $item["id"]; ?>"><button class="btn btn-danger" type="submit">Hapus</button></form><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pekerjaan">+ Tambah Pekerjaan</button><?php endif; ?></dd></div>
-                <div class="profile-history-row"><dt>Riwayat Pendidikan</dt><dd><?php if ($riwayatPendidikan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPendidikan as $item): ?><div class="profile-history-entry"><div><strong><?= htmlspecialchars($item["institusi"]); ?></strong><span> - <?= htmlspecialchars(trim((string) ($item["jenjang"] ?? "") . " " . (string) ($item["jurusan"] ?? ""))); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if ($modeEdit): ?><form method="POST" action="fungsi/riwayat.php"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>"><input type="hidden" name="jenis" value="pendidikan"><input type="hidden" name="aksi" value="hapus"><input type="hidden" name="riwayat_id" value="<?= (int) $item["id"]; ?>"><button class="btn btn-danger" type="submit">Hapus</button></form><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pendidikan">+ Tambah Pendidikan</button><?php endif; ?></dd></div>
+                <div class="profile-history-row"><dt>Riwayat Pekerjaan</dt><dd><?php if ($riwayatPekerjaan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPekerjaan as $item): ?><div class="profile-history-entry" data-history-key="db-pekerjaan-<?= (int) $item["id"]; ?>"><div><strong><?= htmlspecialchars($item["nama_perusahaan"]); ?></strong><span> - <?= htmlspecialchars($item["posisi"] ?? ""); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if (trim((string) ($item["deskripsi"] ?? "")) !== ""): ?><p class="profile-history-description"><?= nl2br(htmlspecialchars((string) $item["deskripsi"])); ?></p><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-danger" type="button" data-history-delete="pekerjaan" data-history-key="db-pekerjaan-<?= (int) $item["id"]; ?>">Hapus</button><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pekerjaan">+ Tambah Pekerjaan</button><?php endif; ?></dd></div>
+                <div class="profile-history-row"><dt>Riwayat Pendidikan</dt><dd><?php if ($riwayatPendidikan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPendidikan as $item): ?><div class="profile-history-entry" data-history-key="db-pendidikan-<?= (int) $item["id"]; ?>"><div><strong><?= htmlspecialchars($item["institusi"]); ?></strong><span> - <?= htmlspecialchars(trim((string) ($item["jenjang"] ?? "") . " " . (string) ($item["jurusan"] ?? ""))); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if ($modeEdit): ?><button class="btn btn-danger" type="button" data-history-delete="pendidikan" data-history-key="db-pendidikan-<?= (int) $item["id"]; ?>">Hapus</button><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pendidikan">+ Tambah Pendidikan</button><?php endif; ?></dd></div>
             </dl>
         </article>
 
@@ -291,14 +291,71 @@ document.addEventListener('DOMContentLoaded', function () {
     const actions = page?.querySelector(':scope > .profile-actions');
     if (page && hero && actions) page.insertBefore(actions, hero);
 });
-    const tambahRiwayat = (type) => {
+    const fieldConfig = {
+        pendidikan: [['institusi','Institusi'],['jenjang','Jenjang'],['jurusan','Jurusan'],['tanggal_mulai','Tanggal mulai'],['tanggal_selesai','Tanggal selesai'],['keterangan','Keterangan']],
+        pekerjaan: [['nama_perusahaan','Nama Perusahaan'],['posisi','Posisi'],['departemen','Departemen'],['tanggal_mulai','Tanggal mulai'],['tanggal_selesai','Tanggal selesai'],['deskripsi','Deskripsi']]
+    };
+    const riwayatLabel = { pendidikan: 'Riwayat Pendidikan', pekerjaan: 'Riwayat Pekerjaan' };
+    const buatKunciRiwayat = () => 'baru-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    const tambahTampilanRiwayat = (type, values, key) => {
+        const detail = [...document.querySelectorAll('.profile-history-row')].find(row => row.querySelector('dt')?.textContent.trim() === riwayatLabel[type]);
+        const target = detail?.querySelector('dd');
+        if (!target) return;
+        target.querySelector('.profile-history-empty')?.remove();
+        const entry = document.createElement('div');
+        entry.className = 'profile-history-entry';
+        entry.dataset.historyKey = key;
+        const title = document.createElement('div');
+        const strong = document.createElement('strong');
+        strong.textContent = values[fieldConfig[type][0][0]] || '-';
+        title.appendChild(strong);
+        const secondary = document.createElement('span');
+        const secondaryValue = type === 'pendidikan'
+            ? [values.jenjang, values.jurusan].filter(Boolean).join(' ')
+            : values.posisi || '';
+        secondary.textContent = secondaryValue ? ' - ' + secondaryValue : '';
+        title.appendChild(secondary);
+        const dates = document.createElement('small');
+        dates.textContent = (values.tanggal_mulai || '-') + '  s/d  ' + (values.tanggal_selesai || 'Sekarang');
+        entry.append(title, dates);
+        if (values[type === 'pendidikan' ? 'keterangan' : 'deskripsi']) {
+            const description = document.createElement('p');
+            description.className = 'profile-history-description';
+            description.textContent = values[type === 'pendidikan' ? 'keterangan' : 'deskripsi'];
+            entry.appendChild(description);
+        }
+        const remove = document.createElement('button');
+        remove.className = 'btn btn-danger';
+        remove.type = 'button';
+        remove.dataset.historyDelete = type;
+        remove.dataset.historyKey = key;
+        remove.textContent = 'Hapus';
+        entry.appendChild(remove);
+        const addButton = target.querySelector('.open-history');
+        target.insertBefore(entry, addButton || null);
+        bindHistory();
+    };
+    const tambahRiwayat = (type, values = {}) => {
         const list = document.getElementById(type + '-list');
         const index = list.children.length;
-        const row = document.createElement('div'); row.className = 'form-grid history-row';
-        const fields = type === 'pendidikan' ? [['institusi','Institusi'],['jenjang','Jenjang'],['jurusan','Jurusan'],['tanggal_mulai','Tanggal mulai'],['tanggal_selesai','Tanggal selesai'],['keterangan','Keterangan']] : [['nama_perusahaan','Nama Perusahaan'],['posisi','Posisi'],['departemen','Departemen'],['tanggal_mulai','Tanggal mulai'],['tanggal_selesai','Tanggal selesai'],['deskripsi','Deskripsi']];
-        row.innerHTML = fields.map(([name, label]) => `<input name="${type}[${index}][${name}]" placeholder="${label}" ${name.includes('tanggal') ? 'type="date"' : ''} ${name === fields[0][0] ? 'required' : ''}>`).join('') + '<button class="btn btn-danger remove-history" type="button">Hapus</button>'; list.appendChild(row); bindHistory();
+        const key = buatKunciRiwayat();
+        const row = document.createElement('div');
+        row.className = 'form-grid history-row';
+        row.dataset.historyKey = key;
+        row.innerHTML = fieldConfig[type].map(([name, label]) => `<input name="${type}[${index}][${name}]" placeholder="${label}" value="${(values[name] || '').replaceAll('"', '&quot;')}" ${name.includes('tanggal') ? 'type="date"' : ''} ${name === fieldConfig[type][0][0] ? 'required' : ''}>`).join('') + '<button class="btn btn-danger remove-history" type="button">Hapus</button>';
+        list.appendChild(row);
+        tambahTampilanRiwayat(type, values, key);
+        bindHistory();
     };
-    const bindHistory = () => document.querySelectorAll('.remove-history').forEach(button => button.onclick = () => button.closest('.history-row').remove());
+    const bindHistory = () => {
+        document.querySelectorAll('.remove-history').forEach(button => button.onclick = () => button.closest('.history-row')?.remove());
+        document.querySelectorAll('[data-history-delete]').forEach(button => button.onclick = () => {
+            const type = button.dataset.historyDelete;
+            const key = button.dataset.historyKey;
+            document.querySelector(`#${type}-list`)?.querySelector(`[data-history-key="${key}"]`)?.remove();
+            button.closest('.profile-history-entry')?.remove();
+        });
+    };
     bindHistory(); document.getElementById('tambah-pendidikan')?.addEventListener('click', () => tambahRiwayat('pendidikan')); document.getElementById('tambah-pekerjaan')?.addEventListener('click', () => tambahRiwayat('pekerjaan'));
 </script>
 <?php if ($modeEdit): ?><script>document.getElementById('profile-edit-dialog')?.close();</script><?php endif; ?>
@@ -317,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <?php endif; ?>
 <?php if ($modeEdit): ?>
 <dialog id="history-dialog" class="history-dialog">
-    <form method="POST" action="fungsi/riwayat.php">
+    <form id="history-form">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
         <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">
         <input type="hidden" name="aksi" value="tambah">
@@ -343,6 +400,16 @@ document.addEventListener('DOMContentLoaded', function () {
         fields.innerHTML = templates[type];
         dialog.showModal();
     }));
+    document.getElementById('history-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const type = document.getElementById('history-type').value;
+        const values = Object.fromEntries(new FormData(event.currentTarget).entries());
+        const requiredName = fieldConfig[type][0][0];
+        if (!String(values[requiredName] || '').trim()) return;
+        tambahRiwayat(type, values);
+        event.currentTarget.reset();
+        dialog.close();
+    });
     document.getElementById('close-history-dialog').addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
 })();
