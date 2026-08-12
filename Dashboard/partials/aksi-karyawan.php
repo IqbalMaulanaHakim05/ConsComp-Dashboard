@@ -19,7 +19,7 @@
 <?php endif; ?>
 
 <a
-    href="fungsi/export_excel.php"
+    href="fungsi/export_excel.php?<?= htmlspecialchars(http_build_query(["cari" => $_GET["cari"] ?? "", "filter" => $_GET["filter"] ?? "semua", "sort" => $_GET["sort"] ?? "id", "arah" => $_GET["arah"] ?? "DESC"])); ?>"
     class="btn btn-primary"
     title="Export data karyawan sesuai cakupan akses"
 >

@@ -9,6 +9,24 @@ $departmentIdPengguna = departmentIdPengguna();
 $filterDepartemen = rolePengguna() === "manager"
     ? " WHERE department_id = " . (int) ($departmentIdPengguna ?? 0)
     : "";
+$kataKunci = trim((string) ($_GET["cari"] ?? ""));
+$filterKolom = (string) ($_GET["filter"] ?? "semua");
+$kolomExport = [
+    "semua" => "employee_name,emp_id,position,department,salary,date_of_hire,employment_status,performance_score",
+    "id" => "emp_id", "posisi" => "position", "departemen" => "department",
+    "gaji" => "salary", "tanggal_masuk" => "date_of_hire", "status_kerja" => "employment_status", "performa" => "performance_score"
+];
+if (!isset($kolomExport[$filterKolom])) $filterKolom = "semua";
+$kondisiExport = "";
+if ($kataKunci !== "") {
+    $safeKunci = mysqli_real_escape_string($conn, $kataKunci);
+    $nilaiCari = "'%" . $safeKunci . "%'";
+    $kondisiExport = $filterKolom === "semua"
+        ? "(" . implode(" LIKE $nilaiCari OR ", explode(",", $kolomExport[$filterKolom])) . " LIKE $nilaiCari)"
+        : $kolomExport[$filterKolom] . " LIKE $nilaiCari";
+}
+$filterSql = $filterDepartemen === "" ? " WHERE 1=1" : $filterDepartemen;
+if ($kondisiExport !== "") $filterSql .= " AND " . $kondisiExport;
 
 if (!class_exists("ZipArchive")) {
     http_response_code(500);
@@ -29,7 +47,7 @@ $query = mysqli_query(
         employment_status,
         performance_score
      FROM karyawan
-     $filterDepartemen
+     $filterSql
      ORDER BY id ASC"
 );
 
