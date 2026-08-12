@@ -6,7 +6,33 @@ wajibRole("pic", "koordinator", "manager", "admin", "superadmin");
 $departmentId = departmentIdPengguna();
 $halamanAktif = "lembur";
 $where = roleOperasional() ? "o.department_id = " . (int) ($departmentId ?? 0) : "1=1";
-$query = mysqli_query($conn, "SELECT o.id, k.emp_id, k.employee_name, o.mulai_at, o.selesai_at, o.total_menit, o.deskripsi, o.status, oc.jumlah_upah FROM overtime_reports o INNER JOIN karyawan k ON k.id = o.karyawan_id LEFT JOIN overtime_compensations oc ON oc.overtime_id = o.id WHERE $where ORDER BY o.created_at DESC");
+$batasPilihan = [10, 25, 50, 100, 250, "semua"];
+$batasExport = $_GET["batas_export"] ?? "semua";
+if ($batasExport !== "semua") $batasExport = max(1, min(10000, (int) $batasExport));
+if (!in_array($batasExport, $batasPilihan, true) && $batasExport !== "semua") $batasExport = "semua";
+$arahExport = strtoupper((string) ($_GET["arah_export"] ?? "DESC"));
+if (!in_array($arahExport, ["ASC", "DESC"], true)) $arahExport = "DESC";
+$sortExport = (string) ($_GET["sort_export"] ?? "created_at");
+$kolomExportPilihan = [
+    "id" => ["label" => "ID", "sql" => "o.id"],
+    "emp_id" => ["label" => "ID Karyawan", "sql" => "k.emp_id"],
+    "employee_name" => ["label" => "Nama", "sql" => "k.employee_name"],
+    "mulai_at" => ["label" => "Mulai", "sql" => "o.mulai_at"],
+    "selesai_at" => ["label" => "Selesai", "sql" => "o.selesai_at"],
+    "total_menit" => ["label" => "Total Menit", "sql" => "o.total_menit"],
+    "deskripsi" => ["label" => "Deskripsi", "sql" => "o.deskripsi"],
+    "status" => ["label" => "Status", "sql" => "o.status"],
+    "jumlah_upah" => ["label" => "Upah", "sql" => "oc.jumlah_upah"],
+];
+$kolomDipilih = $_GET["kolom"] ?? array_keys($kolomExportPilihan);
+if (!is_array($kolomDipilih)) $kolomDipilih = [$kolomDipilih];
+$kolomDipilih = array_values(array_intersect(array_keys($kolomExportPilihan), $kolomDipilih));
+if ($kolomDipilih === []) $kolomDipilih = array_keys($kolomExportPilihan);
+if (!isset($kolomExportPilihan[$sortExport])) $sortExport = "id";
+$orderSql = $sortExport === "created_at" ? "o.created_at" : $kolomExportPilihan[$sortExport]["sql"];
+$orderSql .= " " . $arahExport . ", o.id DESC";
+$limitSql = $batasExport === "semua" ? "" : " LIMIT " . (int) $batasExport;
+$query = mysqli_query($conn, "SELECT o.id, k.emp_id, k.employee_name, o.mulai_at, o.selesai_at, o.total_menit, o.deskripsi, o.status, oc.jumlah_upah FROM overtime_reports o INNER JOIN karyawan k ON k.id = o.karyawan_id LEFT JOIN overtime_compensations oc ON oc.overtime_id = o.id WHERE $where ORDER BY $orderSql$limitSql");
 if (!$query) { http_response_code(500); exit("Data lembur gagal diproses."); }
 $rows = [];
 while ($row = mysqli_fetch_assoc($query)) $rows[] = $row;
@@ -14,11 +40,11 @@ if (isset($_GET["download"])) {
     header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
     header('Content-Disposition: attachment; filename="laporan-lembur-' . date("Y-m-d") . '.xls"');
     echo "\xEF\xBB\xBF";
-    echo "<table border='1'><tr><th>ID</th><th>ID Karyawan</th><th>Nama</th><th>Mulai</th><th>Selesai</th><th>Total Menit</th><th>Deskripsi</th><th>Status</th><th>Upah</th></tr>";
-    foreach ($rows as $row) { echo "<tr>"; foreach ([$row["id"], $row["emp_id"], $row["employee_name"], $row["mulai_at"], $row["selesai_at"], $row["total_menit"], $row["deskripsi"], $row["status"], $row["jumlah_upah"] ?? ""] as $value) echo "<td>" . htmlspecialchars((string) $value, ENT_QUOTES, "UTF-8") . "</td>"; echo "</tr>"; }
+    echo "<table border='1'><tr>"; foreach ($kolomDipilih as $namaKolom) echo "<th>" . htmlspecialchars($kolomExportPilihan[$namaKolom]["label"], ENT_QUOTES, "UTF-8") . "</th>"; echo "</tr>";
+    foreach ($rows as $row) { echo "<tr>"; foreach ($kolomDipilih as $namaKolom) echo "<td>" . htmlspecialchars((string) ($row[$namaKolom] ?? ""), ENT_QUOTES, "UTF-8") . "</td>"; echo "</tr>"; }
     echo "</table>"; exit;
 }
 require __DIR__ . "/../partials/atas.php";
 ?>
-<section class="data-card export-preview-card"><div class="data-card-header"><h2>Pratinjau Export Lembur</h2><p>Periksa data sebelum mengunduh file Excel.</p></div><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Karyawan</th><th>Mulai</th><th>Selesai</th><th>Menit</th><th>Deskripsi</th><th>Status</th><th>Upah</th></tr></thead><tbody><?php foreach ($rows as $row): ?><tr><td><?= (int) $row["id"]; ?></td><td><?= htmlspecialchars($row["emp_id"] . " - " . $row["employee_name"]); ?></td><td><?= htmlspecialchars($row["mulai_at"]); ?></td><td><?= htmlspecialchars($row["selesai_at"]); ?></td><td><?= number_format((int) $row["total_menit"], 0, ",", "."); ?></td><td><?= nl2br(htmlspecialchars($row["deskripsi"] ?? "-")); ?></td><td><?= htmlspecialchars($row["status"]); ?></td><td><?= htmlspecialchars((string) ($row["jumlah_upah"] ?? "-")); ?></td></tr><?php endforeach; ?></tbody></table></div><div class="export-preview-actions"><a class="btn btn-secondary" href="../lembur.php">Kembali</a><a class="btn btn-success" href="export_lembur.php?download=1">Unduh Excel</a></div></section>
+<section class="form-card export-options-card"><div class="form-card-header"><h2>Opsi Export Lembur</h2><p><?= count($rows); ?> data akan diekspor sesuai cakupan akses.</p></div><div class="form-body"><form method="GET" class="export-options-form"><div class="form-group"><label for="batas_export">Jumlah data</label><select id="batas_export" name="batas_export"><?php foreach ($batasPilihan as $pilihan): ?><option value="<?= $pilihan; ?>" <?= (string) $batasExport === (string) $pilihan ? "selected" : ""; ?>><?= $pilihan === "semua" ? "Semua data" : "Maksimal " . $pilihan . " data"; ?></option><?php endforeach; ?></select></div><div class="form-group"><label for="sort_export">Urutkan berdasarkan</label><select id="sort_export" name="sort_export"><?php foreach ($kolomExportPilihan as $kunci => $kolom): ?><option value="<?= $kunci; ?>" <?= $sortExport === $kunci ? "selected" : ""; ?>><?= htmlspecialchars($kolom["label"]); ?></option><?php endforeach; ?></select></div><div class="form-group"><label for="arah_export">Arah urutan</label><select id="arah_export" name="arah_export"><option value="ASC" <?= $arahExport === "ASC" ? "selected" : ""; ?>>Naik</option><option value="DESC" <?= $arahExport === "DESC" ? "selected" : ""; ?>>Turun</option></select></div><fieldset class="export-columns-fieldset"><legend>Kolom yang diekspor</legend><?php foreach ($kolomExportPilihan as $kunci => $kolom): ?><label><input type="checkbox" name="kolom[]" value="<?= $kunci; ?>" <?= in_array($kunci, $kolomDipilih, true) ? "checked" : ""; ?>> <?= htmlspecialchars($kolom["label"]); ?></label><?php endforeach; ?></fieldset><div class="form-actions"><a class="btn btn-secondary" href="../lembur.php">Batal</a><button class="btn btn-success" type="submit">Terapkan Opsi</button><button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button></div></form></div></section><section class="data-card export-preview-card"><div class="data-card-header"><h2>Pratinjau Export Lembur</h2></div><div class="table-wrapper"><table><thead><tr><?php foreach ($kolomDipilih as $namaKolom): ?><th><?= htmlspecialchars($kolomExportPilihan[$namaKolom]["label"]); ?></th><?php endforeach; ?></tr></thead><tbody><?php foreach ($rows as $row): ?><tr><?php foreach ($kolomDipilih as $namaKolom): ?><td><?= htmlspecialchars((string) ($row[$namaKolom] ?? "")); ?></td><?php endforeach; ?></tr><?php endforeach; ?></tbody></table></div><div class="export-preview-actions"><a class="btn btn-secondary" href="../lembur.php">Kembali</a><a class="btn btn-success" href="export_lembur.php?download=1&amp;<?= htmlspecialchars(http_build_query($_GET)); ?>">Unduh Excel</a></div></section>
 <?php require __DIR__ . "/../partials/bawah.php"; ?>
