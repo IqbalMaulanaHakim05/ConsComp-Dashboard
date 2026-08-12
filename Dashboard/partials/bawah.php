@@ -31,7 +31,11 @@
 
             const terlihat = input.type === "text";
             input.type = terlihat ? "password" : "text";
-            button.textContent = terlihat ? "Lihat" : "Sembunyikan";
+            button.classList.toggle("is-visible", !terlihat);
+            button.setAttribute("aria-label", terlihat ? "Tampilkan password" : "Sembunyikan password");
+            if (!button.querySelector(".password-toggle-icon")) {
+                button.textContent = terlihat ? "Lihat" : "Sembunyikan";
+            }
             button.setAttribute("aria-pressed", String(!terlihat));
         });
     });

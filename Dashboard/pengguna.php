@@ -146,7 +146,16 @@ require __DIR__ . "/partials/atas.php";
                         <label for="password">Password</label>
                         <div class="password-input-wrap tambah-akun-password">
                             <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required>
-                            <button class="password-toggle" type="button" data-password-toggle="password" aria-controls="password" aria-pressed="false">Lihat</button>
+                            <button class="password-toggle" type="button" data-password-toggle="password" aria-controls="password" aria-label="Tampilkan password" aria-pressed="false">
+                                <svg class="password-toggle-icon password-eye-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"></path>
+                                    <circle cx="12" cy="12" r="2.5"></circle>
+                                </svg>
+                                <svg class="password-toggle-icon password-eye-off-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="m3 3 18 18"></path>
+                                    <path d="M10.6 6.9A10.4 10.4 0 0 1 12 7c6 0 9.5 5 9.5 5a16.7 16.7 0 0 1-3.1 3.2M6.5 6.6C3.9 8.1 2.5 12 2.5 12s3.5 5 9.5 5c1 0 1.9-.1 2.7-.4"></path>
+                                </svg>
+                            </button>
                         </div>
                         <p class="field-note">Minimal 8 karakter.</p>
                     </div>
@@ -155,7 +164,16 @@ require __DIR__ . "/partials/atas.php";
                         <label for="password_confirmation">Konfirmasi Password</label>
                         <div class="password-input-wrap tambah-akun-password">
                             <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" required>
-                            <button class="password-toggle" type="button" data-password-toggle="password_confirmation" aria-controls="password_confirmation" aria-pressed="false">Lihat</button>
+                            <button class="password-toggle" type="button" data-password-toggle="password_confirmation" aria-controls="password_confirmation" aria-label="Tampilkan password" aria-pressed="false">
+                                <svg class="password-toggle-icon password-eye-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"></path>
+                                    <circle cx="12" cy="12" r="2.5"></circle>
+                                </svg>
+                                <svg class="password-toggle-icon password-eye-off-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="m3 3 18 18"></path>
+                                    <path d="M10.6 6.9A10.4 10.4 0 0 1 12 7c6 0 9.5 5 9.5 5a16.7 16.7 0 0 1-3.1 3.2M6.5 6.6C3.9 8.1 2.5 12 2.5 12s3.5 5 9.5 5c1 0 1.9-.1 2.7-.4"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
 

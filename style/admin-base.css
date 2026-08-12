@@ -756,33 +756,59 @@
         }
 
         .pengguna-page .tambah-akun-password {
-            padding: 6px;
-            border-radius: 22px;
-            background: #e6edff;
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
         }
 
         .pengguna-page .tambah-akun-password input {
-            min-height: 56px;
-            padding-right: 72px;
-            padding-left: 20px;
-            border: 1px solid #2563eb;
-            border-radius: 16px;
+            min-height: 44px;
+            padding: 10px 48px 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             background: #ffffff;
         }
 
         .pengguna-page .tambah-akun-password .password-toggle {
-            right: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            min-height: 32px;
+            right: 8px;
             padding: 0;
             border: 0;
             color: #2563eb;
             background: transparent;
-            font-size: 16px;
-            font-weight: 600;
         }
 
         .pengguna-page .tambah-akun-password .password-toggle:hover {
             color: #1d4ed8;
             background: transparent;
+        }
+
+        .pengguna-page .tambah-akun-password .password-toggle-icon {
+            display: block;
+            width: 21px;
+            height: 21px;
+            fill: none;
+            stroke: currentColor;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-width: 1.8;
+        }
+
+        .pengguna-page .tambah-akun-password .password-eye-off-icon {
+            display: none;
+        }
+
+        .pengguna-page .tambah-akun-password .password-toggle.is-visible .password-eye-icon {
+            display: none;
+        }
+
+        .pengguna-page .tambah-akun-password .password-toggle.is-visible .password-eye-off-icon {
+            display: block;
         }
 
         .field-note {
