@@ -24,6 +24,17 @@
         document.querySelectorAll(".theme-toggle").forEach((button) => button.textContent = next === "dark" ? "☀️ Light" : "🌙 Dark");
     }
     document.querySelectorAll(".theme-toggle").forEach((button) => button.textContent = document.documentElement.dataset.theme === "dark" ? "☀️ Light" : "🌙 Dark");
+    document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const input = document.getElementById(button.dataset.passwordToggle);
+            if (!input) return;
+
+            const terlihat = input.type === "text";
+            input.type = terlihat ? "password" : "text";
+            button.textContent = terlihat ? "Lihat" : "Sembunyikan";
+            button.setAttribute("aria-pressed", String(!terlihat));
+        });
+    });
     function toggleSidebar() {
         const sidebar = document.getElementById("sidebar");
         sidebar.classList.toggle("show");

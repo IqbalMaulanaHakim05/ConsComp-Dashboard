@@ -52,12 +52,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $nama = trim((string) ($_POST["nama"] ?? ""));
         $username = trim((string) ($_POST["username"] ?? ""));
         $password = (string) ($_POST["password"] ?? "");
+        $konfirmasiPassword = (string) ($_POST["password_confirmation"] ?? "");
         $role = (string) ($_POST["role"] ?? "admin");
         $departmentId = (int) ($_POST["department_id"] ?? 0);
         $roleDiizinkan = ["admin", "pic", "koordinator", "manager"];
 
-        if ($nama === "" || $username === "" || strlen($password) < 8 || !in_array($role, $roleDiizinkan, true)) {
+        if (!csrfValid($_POST["csrf_token"] ?? null)) {
+            $pesan = "Sesi formulir tidak valid.";
+            $tipePesan = "error";
+        } elseif ($nama === "" || $username === "" || strlen($password) < 8 || !in_array($role, $roleDiizinkan, true)) {
             $pesan = "Nama, username, dan password minimal 8 karakter wajib diisi.";
+            $tipePesan = "error";
+        } elseif ($password !== $konfirmasiPassword) {
+            $pesan = "Konfirmasi password tidak cocok.";
             $tipePesan = "error";
         } elseif (in_array($role, ["pic", "koordinator", "manager"], true) && $departmentId <= 0) {
             $pesan = "Departemen wajib dipilih untuk role operasional.";
@@ -123,6 +130,8 @@ require __DIR__ . "/partials/atas.php";
                 <?php endif; ?>
 
                 <form method="POST" autocomplete="off">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+
                     <div class="form-group">
                         <label for="nama">Nama</label>
                         <input id="nama" name="nama" required>
@@ -135,8 +144,19 @@ require __DIR__ . "/partials/atas.php";
 
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input id="password" name="password" type="password" minlength="8" required>
+                        <div class="password-input-wrap tambah-akun-password">
+                            <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required>
+                            <button class="password-toggle" type="button" data-password-toggle="password" aria-controls="password" aria-pressed="false">Lihat</button>
+                        </div>
                         <p class="field-note">Minimal 8 karakter.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password_confirmation">Konfirmasi Password</label>
+                        <div class="password-input-wrap tambah-akun-password">
+                            <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" required>
+                            <button class="password-toggle" type="button" data-password-toggle="password_confirmation" aria-controls="password_confirmation" aria-pressed="false">Lihat</button>
+                        </div>
                     </div>
 
                     <div class="form-group">

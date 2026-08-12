@@ -721,6 +721,70 @@
             color: #94a3b8;
         }
 
+        .password-input-wrap {
+            position: relative;
+        }
+
+        .password-input-wrap input {
+            padding-right: 96px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 6px;
+            min-height: 32px;
+            padding: 5px 9px;
+            transform: translateY(-50%);
+            border: 1px solid #dbe2ea;
+            border-radius: 6px;
+            color: #475569;
+            background: #f8fafc;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .password-toggle:hover {
+            background: #f1f5f9;
+        }
+
+        .password-toggle:focus-visible {
+            outline: 3px solid rgba(109, 67, 194, 0.25);
+            outline-offset: 2px;
+        }
+
+        .pengguna-page .tambah-akun-password {
+            padding: 6px;
+            border-radius: 22px;
+            background: #e6edff;
+        }
+
+        .pengguna-page .tambah-akun-password input {
+            min-height: 56px;
+            padding-right: 72px;
+            padding-left: 20px;
+            border: 1px solid #2563eb;
+            border-radius: 16px;
+            background: #ffffff;
+        }
+
+        .pengguna-page .tambah-akun-password .password-toggle {
+            right: 14px;
+            padding: 0;
+            border: 0;
+            color: #2563eb;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .pengguna-page .tambah-akun-password .password-toggle:hover {
+            color: #1d4ed8;
+            background: transparent;
+        }
+
         .field-note {
             margin: 7px 0 0;
             color: #94a3b8;
