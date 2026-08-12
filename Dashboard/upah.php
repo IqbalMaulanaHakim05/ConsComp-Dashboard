@@ -18,15 +18,22 @@ $cakupan = roleOperasional() ? " AND k.department_id = " . (int) (departmentIdPe
 $departemenPilihan = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
 $filterOperasional = roleOperasional();
 $daftarPosisi = mysqli_query($conn, "SELECT DISTINCT position FROM karyawan WHERE position IS NOT NULL AND TRIM(position) <> ''" . ($filterOperasional ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0) : "") . " ORDER BY position ASC");
-$komponenPendapatan = mysqli_query($conn, "SELECT id, kode, nama FROM jenis_komponen_gaji WHERE kategori = 'pendapatan' AND is_active = 1 ORDER BY nama ASC");
+$komponenPendapatan = mysqli_query($conn, "SELECT id, kode, nama FROM jenis_komponen_gaji WHERE kategori = 'pendapatan' ORDER BY nama ASC");
 $daftarKomponenPendapatan = [];
 while ($komponen = mysqli_fetch_assoc($komponenPendapatan)) $daftarKomponenPendapatan[] = $komponen;
+$komponenPotongan = mysqli_query($conn, "SELECT id, kode, nama FROM jenis_komponen_gaji WHERE kategori = 'potongan' ORDER BY nama ASC");
+$daftarKomponenPotongan = [];
+while ($komponen = mysqli_fetch_assoc($komponenPotongan)) $daftarKomponenPotongan[] = $komponen;
 $namaPendapatanManual = mysqli_query($conn, "SELECT DISTINCT nama FROM pendapatan_tambahan_karyawan ORDER BY nama ASC");
 $daftarPendapatanManual = [];
 while ($pendapatan = mysqli_fetch_assoc($namaPendapatanManual)) $daftarPendapatanManual[] = $pendapatan["nama"];
+$namaKomponenPendapatan = array_map(static fn (array $komponen): string => (string) $komponen["nama"], $daftarKomponenPendapatan);
+$daftarPendapatanManual = array_values(array_filter($daftarPendapatanManual, static fn (string $nama): bool => !in_array($nama, $namaKomponenPendapatan, true)));
 $namaPotongan = mysqli_query($conn, "SELECT DISTINCT nama FROM potongan_karyawan ORDER BY nama ASC");
 $daftarPotongan = [];
 while ($potongan = mysqli_fetch_assoc($namaPotongan)) $daftarPotongan[] = $potongan["nama"];
+$namaKomponenPotongan = array_map(static fn (array $komponen): string => (string) $komponen["nama"], $daftarKomponenPotongan);
+$daftarPotongan = array_values(array_filter($daftarPotongan, static fn (string $nama): bool => !in_array($nama, $namaKomponenPotongan, true)));
 $tahunPilihan = [(int) date("Y")];
 $hasilTahun = mysqli_query($conn, "SELECT DISTINCT YEAR(berlaku_mulai) AS tahun FROM profil_gaji WHERE berlaku_mulai IS NOT NULL ORDER BY tahun DESC");
 if ($hasilTahun) while ($itemTahun = mysqli_fetch_assoc($hasilTahun)) {
@@ -108,7 +115,7 @@ require __DIR__ . "/partials/atas.php";
     </div>
     <div class="table-wrapper">
         <table style="min-width:1050px">
-            <thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Posisi</th><th>Departemen</th><th>Gaji Pokok</th><th>Uang Makan</th><th>Upah Lembur</th><?php foreach ($daftarKomponenPendapatan as $komponen): ?><th><?= htmlspecialchars($komponen["nama"]); ?></th><?php endforeach; ?><?php foreach ($daftarPendapatanManual as $namaManual): ?><th><?= htmlspecialchars($namaManual); ?></th><?php endforeach; ?><?php foreach ($daftarPotongan as $namaPotonganItem): ?><th><?= htmlspecialchars($namaPotonganItem); ?></th><?php endforeach; ?><th>Berlaku Mulai</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Posisi</th><th>Departemen</th><th>Gaji Pokok</th><th>Uang Makan</th><th>Upah Lembur</th><?php foreach ($daftarKomponenPendapatan as $komponen): ?><th><?= htmlspecialchars($komponen["nama"]); ?></th><?php endforeach; ?><?php foreach ($daftarPendapatanManual as $namaManual): ?><th><?= htmlspecialchars($namaManual); ?></th><?php endforeach; ?><?php foreach ($daftarKomponenPotongan as $komponen): ?><th><?= htmlspecialchars($komponen["nama"]); ?></th><?php endforeach; ?><?php foreach ($daftarPotongan as $namaPotonganItem): ?><th><?= htmlspecialchars($namaPotonganItem); ?></th><?php endforeach; ?><th>Berlaku Mulai</th><th>Aksi</th></tr></thead>
             <tbody>
             <?php $nomor = 1; while ($baris = mysqli_fetch_assoc($hasil)): ?>
                 <tr>
@@ -125,12 +132,15 @@ require __DIR__ . "/partials/atas.php";
                     $hasilNilaiKomponen = mysqli_query($conn, "SELECT jenis_komponen_id, nilai FROM komponen_gaji_karyawan WHERE profil_gaji_id = " . (int) ($baris["profil_id"] ?? 0));
                     if ($hasilNilaiKomponen) while ($nilai = mysqli_fetch_assoc($hasilNilaiKomponen)) $nilaiKomponen[(int) $nilai["jenis_komponen_id"]] = (float) $nilai["nilai"];
                     foreach ($daftarKomponenPendapatan as $komponen):
-                        $nilai = $nilaiKomponen[(int) $komponen["id"]] ?? null;
+                        $nilai = (float) ($nilaiKomponen[(int) $komponen["id"]] ?? 0);
+                        $hasilManualKomponen = mysqli_query($conn, "SELECT SUM(nilai) AS nilai FROM pendapatan_tambahan_karyawan WHERE karyawan_id = " . (int) $baris["id"] . " AND nama = '" . mysqli_real_escape_string($conn, (string) $komponen["nama"]) . "'");
+                        $nilai += $hasilManualKomponen ? (float) (mysqli_fetch_assoc($hasilManualKomponen)["nilai"] ?? 0) : 0;
+                        if ($nilai <= 0) $nilai = null;
                     ?>
                         <td><?= $nilai === null || $nilai == 0 ? "" : "Rp " . number_format($nilai, 0, ",", "."); ?></td>
                     <?php endforeach; ?>
                     <?php $hasilPendapatanManual = mysqli_query($conn, "SELECT nama, nilai FROM pendapatan_tambahan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiManual = []; if ($hasilPendapatanManual) while ($itemManual = mysqli_fetch_assoc($hasilPendapatanManual)) $nilaiManual[$itemManual["nama"]] = (float) $itemManual["nilai"]; foreach ($daftarPendapatanManual as $namaManual): ?><td><?= isset($nilaiManual[$namaManual]) && $nilaiManual[$namaManual] > 0 ? "Rp " . number_format($nilaiManual[$namaManual], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
-                    <?php $hasilPotongan = mysqli_query($conn, "SELECT nama, nilai FROM potongan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiPotongan = []; if ($hasilPotongan) while ($itemPotongan = mysqli_fetch_assoc($hasilPotongan)) $nilaiPotongan[$itemPotongan["nama"]] = (float) $itemPotongan["nilai"]; foreach ($daftarPotongan as $namaPotonganItem): ?><td><?= isset($nilaiPotongan[$namaPotonganItem]) && $nilaiPotongan[$namaPotonganItem] > 0 ? "Rp " . number_format($nilaiPotongan[$namaPotonganItem], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
+                    <?php $hasilPotongan = mysqli_query($conn, "SELECT nama, nilai FROM potongan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiPotongan = []; if ($hasilPotongan) while ($itemPotongan = mysqli_fetch_assoc($hasilPotongan)) $nilaiPotongan[$itemPotongan["nama"]] = ($nilaiPotongan[$itemPotongan["nama"]] ?? 0) + (float) $itemPotongan["nilai"]; foreach ($daftarKomponenPotongan as $komponen): $nilai = (float) ($nilaiKomponen[(int) $komponen["id"]] ?? 0) + (float) ($nilaiPotongan[$komponen["nama"]] ?? 0); ?><td><?= $nilai > 0 ? "Rp " . number_format($nilai, 0, ",", ".") : ""; ?></td><?php endforeach; ?><?php foreach ($daftarPotongan as $namaPotonganItem): ?><td><?= isset($nilaiPotongan[$namaPotonganItem]) && $nilaiPotongan[$namaPotonganItem] > 0 ? "Rp " . number_format($nilaiPotongan[$namaPotonganItem], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
                     <td><?= htmlspecialchars((string) ($baris["berlaku_mulai"] ?? "-")); ?></td>
                     <td><?php if (punyaRole("admin", "superadmin")): ?><a class="btn btn-warning" href="edit-upah.php?id=<?= (int) $baris["id"]; ?>">Edit</a><?php endif; ?><?php if (punyaRole("admin", "superadmin", "pic", "koordinator", "manager")): ?><form method="POST" action="fungsi/generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php elseif (!punyaRole("admin", "superadmin")): ?>-<?php endif; ?></td>
                 </tr>
