@@ -8,8 +8,6 @@ require_once __DIR__ . "/fungsi/media-karyawan.php";
 require_once __DIR__ . "/fungsi/master-data.php";
 
 wajibLogin();
-siapkanKolomMedia($conn);
-siapkanKolomProfil($conn);
 siapkanMasterData($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
 

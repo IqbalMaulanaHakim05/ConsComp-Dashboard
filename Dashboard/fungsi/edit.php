@@ -8,8 +8,6 @@ require_once __DIR__ . "/sinkronisasi.php";
 require_once __DIR__ . "/master-data.php";
 
 wajibRole("admin", "superadmin");
-siapkanKolomMedia($conn);
-siapkanKolomProfil($conn);
 siapkanMasterData($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
 

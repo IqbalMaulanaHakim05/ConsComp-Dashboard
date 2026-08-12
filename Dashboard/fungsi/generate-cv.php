@@ -27,9 +27,6 @@ if ($id === false || $id === null || $id < 1) {
     exit("ID karyawan tidak valid.");
 }
 
-siapkanKolomMedia($conn);
-siapkanKolomProfil($conn);
-
 $stmt = mysqli_prepare($conn, "SELECT * FROM karyawan WHERE id = ? LIMIT 1");
 if (!$stmt) {
     http_response_code(500);

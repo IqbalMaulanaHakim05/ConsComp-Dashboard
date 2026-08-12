@@ -8,9 +8,6 @@ require_once __DIR__ . "/fungsi/media-karyawan.php";
 require_once __DIR__ . "/fungsi/cv-generator.php";
 
 wajibRole("admin", "superadmin");
-siapkanKolomMedia($conn);
-siapkanKolomProfil($conn);
-
 $id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
 $karyawan = null;
 
