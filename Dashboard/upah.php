@@ -72,30 +72,39 @@ require __DIR__ . "/partials/atas.php";
             <h2>Data Upah Karyawan</h2>
             <p>Profil gaji aktif yang tersimpan pada sistem.</p>
         </div>
+        <form method="GET" class="search-form">
+            <input
+                type="text"
+                name="cari"
+                placeholder="Cari nama atau ID karyawan"
+                value="<?= htmlspecialchars($kataKunci); ?>"
+            >
+
+            <?php if ($filterOperasional): ?><select name="position">
+                <option value="">Semua posisi</option>
+                <?php while ($posisi = mysqli_fetch_assoc($daftarPosisi)): ?><option value="<?= htmlspecialchars($posisi["position"]); ?>" <?= $posisiFilter === $posisi["position"] ? "selected" : ""; ?>><?= htmlspecialchars($posisi["position"]); ?></option><?php endwhile; ?>
+            </select><?php else: ?><select name="department">
+                <option value="">Semua departemen</option>
+                <?php while ($item = mysqli_fetch_assoc($departemenPilihan)): ?>
+                    <option value="<?= (int) $item["id"]; ?>" <?= $departemenId === (int) $item["id"] ? "selected" : ""; ?>><?= htmlspecialchars($item["nama"]); ?></option>
+                <?php endwhile; ?>
+            </select><?php endif; ?>
+
+            <select name="bulan">
+                <option value="0">Semua bulan</option>
+                <?php foreach ([1 => "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"] as $nomorBulan => $namaBulan): ?>
+                    <option value="<?= $nomorBulan; ?>" <?= $bulanFilter === $nomorBulan ? "selected" : ""; ?>><?= $namaBulan; ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <select name="tahun">
+                <option value="0">Semua tahun</option>
+                <?php foreach ($tahunPilihan as $tahun): ?><option value="<?= $tahun; ?>" <?= $tahunFilter === $tahun ? "selected" : ""; ?>><?= $tahun; ?></option><?php endforeach; ?>
+            </select>
+
+            <button class="btn btn-primary" type="submit">Filter</button>
+        </form>
     </div>
-    <form method="GET" class="filter-bar">
-        <input name="cari" value="<?= htmlspecialchars($kataKunci); ?>" placeholder="Cari nama atau ID karyawan">
-        <?php if ($filterOperasional): ?><select name="position">
-            <option value="">Semua posisi</option>
-            <?php while ($posisi = mysqli_fetch_assoc($daftarPosisi)): ?><option value="<?= htmlspecialchars($posisi["position"]); ?>" <?= $posisiFilter === $posisi["position"] ? "selected" : ""; ?>><?= htmlspecialchars($posisi["position"]); ?></option><?php endwhile; ?>
-        </select><?php else: ?><select name="department">
-            <option value="">Semua departemen</option>
-            <?php while ($item = mysqli_fetch_assoc($departemenPilihan)): ?>
-                <option value="<?= (int) $item["id"]; ?>" <?= $departemenId === (int) $item["id"] ? "selected" : ""; ?>><?= htmlspecialchars($item["nama"]); ?></option>
-            <?php endwhile; ?>
-        </select><?php endif; ?>
-        <select name="bulan">
-            <option value="0">Semua bulan</option>
-            <?php foreach ([1 => "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"] as $nomorBulan => $namaBulan): ?>
-                <option value="<?= $nomorBulan; ?>" <?= $bulanFilter === $nomorBulan ? "selected" : ""; ?>><?= $namaBulan; ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="tahun">
-            <option value="0">Semua tahun</option>
-            <?php foreach ($tahunPilihan as $tahun): ?><option value="<?= $tahun; ?>" <?= $tahunFilter === $tahun ? "selected" : ""; ?>><?= $tahun; ?></option><?php endforeach; ?>
-        </select>
-        <button class="btn btn-primary" type="submit">Filter</button>
-    </form>
     <div class="table-wrapper">
         <table style="min-width:1050px">
             <thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Posisi</th><th>Departemen</th><th>Gaji Pokok</th><th>Uang Makan</th><th>Upah Lembur</th><?php foreach ($daftarKomponenPendapatan as $komponen): ?><th><?= htmlspecialchars($komponen["nama"]); ?></th><?php endforeach; ?><?php foreach ($daftarPendapatanManual as $namaManual): ?><th><?= htmlspecialchars($namaManual); ?></th><?php endforeach; ?><?php foreach ($daftarPotongan as $namaPotonganItem): ?><th><?= htmlspecialchars($namaPotonganItem); ?></th><?php endforeach; ?><th>Berlaku Mulai</th><th>Aksi</th></tr></thead>
