@@ -11,6 +11,31 @@ $filterDepartemen = rolePengguna() === "manager"
     : "";
 $kataKunci = trim((string) ($_GET["cari"] ?? ""));
 $filterKolom = (string) ($_GET["filter"] ?? "semua");
+$batasPilihan = [10, 25, 50, 100, 250, "semua"];
+$batasExport = $_GET["batas_export"] ?? "semua";
+if ($batasExport !== "semua") $batasExport = max(1, min(10000, (int) $batasExport));
+if (!in_array($batasExport, $batasPilihan, true) && $batasExport !== "semua") $batasExport = "semua";
+$arahExport = strtoupper((string) ($_GET["arah_export"] ?? "ASC"));
+if (!in_array($arahExport, ["ASC", "DESC"], true)) $arahExport = "ASC";
+$sortExport = (string) ($_GET["sort_export"] ?? "id");
+$kolomExportPilihan = [
+    "emp_id" => ["label" => "ID Karyawan", "sql" => "emp_id"],
+    "employee_name" => ["label" => "Nama", "sql" => "employee_name"],
+    "position" => ["label" => "Posisi", "sql" => "position"],
+    "department" => ["label" => "Departemen", "sql" => "department"],
+    "salary" => ["label" => "Gaji", "sql" => "salary"],
+    "gender" => ["label" => "Jenis Kelamin", "sql" => "gender"],
+    "marital_status" => ["label" => "Status Pernikahan", "sql" => "marital_status"],
+    "date_of_hire" => ["label" => "Tanggal Masuk", "sql" => "date_of_hire"],
+    "employment_status" => ["label" => "Status Kerja", "sql" => "employment_status"],
+    "performance_score" => ["label" => "Skor Performa", "sql" => "performance_score"],
+];
+$kolomDipilih = $_GET["kolom"] ?? array_keys($kolomExportPilihan);
+if (!is_array($kolomDipilih)) $kolomDipilih = [$kolomDipilih];
+$kolomDipilih = array_values(array_intersect(array_keys($kolomExportPilihan), $kolomDipilih));
+if ($kolomDipilih === []) $kolomDipilih = array_keys($kolomExportPilihan);
+$sortSql = ["id" => "id"] + array_combine(array_keys($kolomExportPilihan), array_map(static fn($item) => $item["sql"], $kolomExportPilihan));
+if (!isset($sortSql[$sortExport])) $sortExport = "id";
 $kolomExport = [
     "semua" => "employee_name,emp_id,position,department,salary,date_of_hire,employment_status,performance_score",
     "id" => "emp_id", "posisi" => "position", "departemen" => "department",
@@ -28,7 +53,7 @@ if ($kataKunci !== "") {
 $filterSql = $filterDepartemen === "" ? " WHERE 1=1" : $filterDepartemen;
 if ($kondisiExport !== "") $filterSql .= " AND " . $kondisiExport;
 
-if (!class_exists("ZipArchive")) {
+if (isset($_GET["download"]) && !class_exists("ZipArchive")) {
     http_response_code(500);
     die("Ekstensi PHP ZipArchive diperlukan untuk membuat file .xlsx.");
 }
@@ -48,12 +73,37 @@ $query = mysqli_query(
         performance_score
      FROM karyawan
      $filterSql
-     ORDER BY id ASC"
-);
+     ORDER BY " . $sortSql[$sortExport] . " " . $arahExport . ", id ASC"
+     . ($batasExport === "semua" ? "" : " LIMIT " . (int) $batasExport)
+ );
 
 if (!$query) {
     http_response_code(500);
     die("Data gagal diekspor: " . mysqli_error($conn));
+}
+
+if (!isset($_GET["download"])) {
+    $judulHalaman = "Opsi Export Karyawan";
+    $subjudulHalaman = "Pilih jumlah data, urutan, dan kolom sebelum mengunduh Excel.";
+    $halamanAktif = "karyawan";
+    require __DIR__ . "/../partials/atas.php";
+    ?>
+    <section class="form-card export-options-card">
+        <div class="form-card-header"><h2>Opsi Export Data Karyawan</h2><p><?= mysqli_num_rows($query); ?> data akan diekspor sesuai cakupan akses.</p></div>
+        <div class="form-body">
+            <form method="GET" class="export-options-form">
+                <div class="form-group"><label for="batas_export">Jumlah data</label><select id="batas_export" name="batas_export"><?php foreach ($batasPilihan as $pilihan): ?><option value="<?= $pilihan; ?>" <?= (string) $batasExport === (string) $pilihan ? "selected" : ""; ?>><?= $pilihan === "semua" ? "Semua data" : "Maksimal " . $pilihan . " data"; ?></option><?php endforeach; ?></select></div>
+                <div class="form-group"><label for="sort_export">Urutkan berdasarkan</label><select id="sort_export" name="sort_export"><option value="id" <?= $sortExport === "id" ? "selected" : ""; ?>>ID database</option><?php foreach ($kolomExportPilihan as $kunci => $kolom): ?><option value="<?= $kunci; ?>" <?= $sortExport === $kunci ? "selected" : ""; ?>><?= htmlspecialchars($kolom["label"]); ?></option><?php endforeach; ?></select></div>
+                <div class="form-group"><label for="arah_export">Arah urutan</label><select id="arah_export" name="arah_export"><option value="ASC" <?= $arahExport === "ASC" ? "selected" : ""; ?>>Naik (A–Z / kecil ke besar)</option><option value="DESC" <?= $arahExport === "DESC" ? "selected" : ""; ?>>Turun (Z–A / besar ke kecil)</option></select></div>
+                <?php foreach (["cari" => $kataKunci, "filter" => $filterKolom] as $nama => $nilai): ?><input type="hidden" name="<?= $nama; ?>" value="<?= htmlspecialchars($nilai); ?>"><?php endforeach; ?>
+                <fieldset class="export-columns-fieldset"><legend>Kolom yang diekspor</legend><?php foreach ($kolomExportPilihan as $kunci => $kolom): ?><label><input type="checkbox" name="kolom[]" value="<?= $kunci; ?>" <?= in_array($kunci, $kolomDipilih, true) ? "checked" : ""; ?>> <?= htmlspecialchars($kolom["label"]); ?></label><?php endforeach; ?></fieldset>
+                <div class="form-actions"><a class="btn btn-secondary" href="../karyawan.php">Batal</a><button class="btn btn-success" type="submit">Terapkan Opsi</button><button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button></div>
+            </form>
+        </div>
+    </section>
+    <?php
+    require __DIR__ . "/../partials/bawah.php";
+    exit;
 }
 
 /*
@@ -102,19 +152,8 @@ function selAngka(string $ref, string $nilai, int $style = 0): string
 
 $kolom = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"];
 
-$judulKolom = [
-    "No.",
-    "ID Karyawan",
-    "Nama",
-    "Posisi",
-    "Departemen",
-    "Gaji",
-    "Jenis Kelamin",
-    "Status Pernikahan",
-    "Tanggal Masuk",
-    "Status Kerja",
-    "Skor Performa",
-];
+$judulKolom = ["No."];
+foreach ($kolomDipilih as $namaKolom) $judulKolom[] = $kolomExportPilihan[$namaKolom]["label"];
 
 // Style: 1 = header, 2 = angka gaji (#,##0.00).
 $barisXml = "<row r=\"1\">";
@@ -146,16 +185,14 @@ while ($row = mysqli_fetch_assoc($query)) {
 
     $barisXml .= "<row r=\"{$nomorBaris}\">";
     $barisXml .= selAngka($kolom[0] . $nomorBaris, (string) $nomor);
-    $barisXml .= selTeks($kolom[1] . $nomorBaris, $row["emp_id"] ?? "");
-    $barisXml .= selTeks($kolom[2] . $nomorBaris, $row["employee_name"] ?? "");
-    $barisXml .= selTeks($kolom[3] . $nomorBaris, $row["position"] ?? "");
-    $barisXml .= selTeks($kolom[4] . $nomorBaris, $row["department"] ?? "");
-    $barisXml .= selAngka($kolom[5] . $nomorBaris, $gaji, 2);
-    $barisXml .= selTeks($kolom[6] . $nomorBaris, $genderTampil);
-    $barisXml .= selTeks($kolom[7] . $nomorBaris, $row["marital_status"] ?? "");
-    $barisXml .= selTeks($kolom[8] . $nomorBaris, $tanggalMasuk);
-    $barisXml .= selTeks($kolom[9] . $nomorBaris, $row["employment_status"] ?? "");
-    $barisXml .= selAngka($kolom[10] . $nomorBaris, $skor);
+    foreach ($kolomDipilih as $index => $namaKolom) {
+        $nilai = $row[$namaKolom] ?? "";
+        if ($namaKolom === "gender") $nilai = $genderTampil;
+        if ($namaKolom === "date_of_hire") $nilai = $tanggalMasuk;
+        if ($namaKolom === "salary") $barisXml .= selAngka($kolom[$index + 1] . $nomorBaris, $gaji, 2);
+        elseif ($namaKolom === "performance_score") $barisXml .= selAngka($kolom[$index + 1] . $nomorBaris, $skor);
+        else $barisXml .= selTeks($kolom[$index + 1] . $nomorBaris, $nilai);
+    }
     $barisXml .= "</row>";
 
     $nomor++;
@@ -223,7 +260,7 @@ $styles = $xmlDeklarasi
 $sheet = $xmlDeklarasi
     . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
     . ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-    . '<dimension ref="A1:K' . $barisTerakhir . '"/>'
+     . '<dimension ref="A1:' . $kolom[count($judulKolom) - 1] . $barisTerakhir . '"/>'
     . '<sheetViews><sheetView workbookViewId="0">'
     . '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>'
     . '</sheetView></sheetViews>'

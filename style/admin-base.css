@@ -975,6 +975,72 @@
         :root[data-theme="dark"] .master-list { scrollbar-color: #64748b transparent; }
         :root[data-theme="dark"] .master-list::-webkit-scrollbar-thumb { background: #64748b; }
 
+        .export-options-card {
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto 20px;
+        }
+
+        .export-options-form {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .export-columns-fieldset {
+            display: grid;
+            grid-column: 1 / -1;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px 18px;
+            margin: 0;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .export-columns-fieldset legend {
+            padding: 0 6px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .export-columns-fieldset label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .export-columns-fieldset input[type="checkbox"] {
+            width: 16px;
+            min-height: 16px;
+            accent-color: #2563eb;
+        }
+
+        .export-options-form .form-actions {
+            grid-column: 1 / -1;
+        }
+
+        :root[data-theme="dark"] .export-columns-fieldset {
+            border-color: #334155;
+        }
+
+        :root[data-theme="dark"] .export-columns-fieldset legend,
+        :root[data-theme="dark"] .export-columns-fieldset label {
+            color: #cbd5e1;
+        }
+
+        @media screen and (max-width: 800px) {
+            .export-options-form,
+            .export-columns-fieldset {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .profile-biography {
             color: #334155;
             font-size: 14px;
