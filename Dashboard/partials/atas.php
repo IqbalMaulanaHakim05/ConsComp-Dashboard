@@ -161,7 +161,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                     <span class="sidebar-icon" aria-hidden="true">⚙</span>Personalisasi Tampilan
                 </a>
                 <?php if (punyaRole("superadmin")): ?>
-                    <a href="<?= htmlspecialchars(URL_DASAR); ?>master-data.php" class="<?= $halamanAktif === "master-data" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">▦</span>Master Departemen, Posisi &amp; Status</a>
+                    <a href="<?= htmlspecialchars(URL_DASAR); ?>master-data.php" class="<?= $halamanAktif === "master-data" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">▦</span>Master Data</a>
                 <?php endif; ?>
 
                 <a

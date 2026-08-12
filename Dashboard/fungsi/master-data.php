@@ -8,13 +8,14 @@ function siapkanMasterData(mysqli $conn): void
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_departemen (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_status_kerja (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_agama (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     // Master data dikelola sepenuhnya dari halaman Master Data. Jangan mengisi
     // ulang nilai bawaan setiap halaman dibuka karena item yang dihapus akan
     // muncul kembali secara otomatis.
     // Hapus label lama lebih dulu agar tidak melanggar UNIQUE saat normalisasi.
     mysqli_query($conn, "DELETE FROM master_status_kerja WHERE LOWER(nama) = 'active'");
     mysqli_query($conn, "UPDATE master_status_kerja SET nama = 'Aktif' WHERE LOWER(nama) = 'aktif' AND nama <> 'Aktif'");
-    foreach ([["master_departemen", "department"], ["master_posisi", "position"], ["master_status_kerja", "employment_status"]] as [$table, $column]) {
+    foreach ([["master_departemen", "department"], ["master_posisi", "position"], ["master_status_kerja", "employment_status"], ["master_agama", "agama"]] as [$table, $column]) {
         $result = mysqli_query($conn, "SELECT DISTINCT `$column` AS nama FROM karyawan WHERE `$column` IS NOT NULL AND `$column` <> ''");
         while ($result && ($row = mysqli_fetch_assoc($result))) {
             $safe = mysqli_real_escape_string($conn, (string) $row["nama"]);
@@ -26,7 +27,7 @@ function siapkanMasterData(mysqli $conn): void
 function ambilMasterData(mysqli $conn, string $jenis): array
 {
     siapkanMasterData($conn);
-    $tables = ["department" => "master_departemen", "position" => "master_posisi", "employment_status" => "master_status_kerja"];
+    $tables = ["department" => "master_departemen", "position" => "master_posisi", "employment_status" => "master_status_kerja", "agama" => "master_agama"];
     $table = $tables[$jenis] ?? "master_departemen";
     $result = mysqli_query($conn, "SELECT nama FROM `$table` ORDER BY nama ASC");
     $items = [];

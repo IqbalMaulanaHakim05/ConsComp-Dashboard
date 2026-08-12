@@ -10,6 +10,7 @@ $map = [
     "departemen" => "master_departemen",
     "posisi" => "master_posisi",
     "status" => "master_status_kerja",
+    "agama" => "master_agama",
 ];
 $pesan = trim((string) ($_GET["pesan"] ?? ""));
 $error = trim((string) ($_GET["error"] ?? ""));
@@ -57,8 +58,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         mysqli_stmt_bind_param($stmtLepas, "i", $id);
                         mysqli_stmt_execute($stmtLepas);
                         mysqli_stmt_close($stmtLepas);
-                    } elseif ($jenis === "posisi" || $jenis === "status") {
-                        $kolom = $jenis === "posisi" ? "position" : "employment_status";
+                    } elseif ($jenis === "posisi" || $jenis === "status" || $jenis === "agama") {
+                        $kolom = $jenis === "posisi" ? "position" : ($jenis === "status" ? "employment_status" : "agama");
                         $stmtNama = mysqli_prepare($conn, "SELECT nama FROM `$table` WHERE id = ? LIMIT 1");
                         mysqli_stmt_bind_param($stmtNama, "i", $id);
                         mysqli_stmt_execute($stmtNama);
@@ -99,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 $judulHalaman = "Master Data";
-$subjudulHalaman = "Kelola departemen, posisi, dan status kerja.";
+$subjudulHalaman = "Kelola departemen, posisi, status kerja, dan agama.";
 $halamanAktif = "master-data";
 require __DIR__ . "/partials/atas.php";
 ?>

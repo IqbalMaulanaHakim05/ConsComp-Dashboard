@@ -9,7 +9,7 @@ require_once __DIR__ . "/master-data.php";
 
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
-$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status");
+$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 
 $pesan = "";
 $riwayatPendidikanForm = [];
@@ -332,7 +332,7 @@ require __DIR__ . "/../partials/atas.php";
                 <div class="form-group"><label for="nik">NIK</label><input type="text" id="nik" name="nik" value="<?= htmlspecialchars($form["nik"]); ?>" maxlength="50"></div>
                 <div class="form-group"><label for="tanggal_lahir">Tanggal Lahir</label><input type="date" id="tanggal_lahir" name="tanggal_lahir" value="<?= htmlspecialchars($form["tanggal_lahir"]); ?>"></div>
                 <div class="form-group"><label for="tanggal_mcu_terakhir">Tanggal MCU Terakhir</label><input type="date" id="tanggal_mcu_terakhir" name="tanggal_mcu_terakhir" value="<?= htmlspecialchars($form["tanggal_mcu_terakhir"]); ?>"></div>
-                <div class="form-group"><label for="agama">Agama</label><input type="text" id="agama" name="agama" value="<?= htmlspecialchars($form["agama"]); ?>" maxlength="50"></div>
+                <div class="form-group"><label for="agama">Agama</label><select id="agama" name="agama"><option value="">Pilih agama</option><?php foreach ($masterAgama as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= $form["agama"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select></div>
                 <div class="form-group"><label for="marital_status">Status Kawin</label><select id="marital_status" name="marital_status">
                         <option value="">Pilih status</option>
                         <option <?= $form["marital_status"] === "Single" ? "selected" : ""; ?>>Single</option>
