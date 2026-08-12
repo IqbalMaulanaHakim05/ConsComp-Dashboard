@@ -444,7 +444,7 @@
 
         table {
             width: 100%;
-            min-width: 1450px;
+            min-width: 1600px;
             border-collapse: collapse;
         }
 
@@ -469,6 +469,49 @@
 
         tbody tr:hover td:last-child {
             background-color: #eff6ff;
+        }
+
+        .table-wrapper td {
+            white-space: nowrap;
+        }
+
+        /* Lebar minimum kolom data karyawan agar tanggal/status/performa
+           tidak terjepit ketika tabel berada di dalam dashboard. */
+        .table-wrapper th:nth-child(7),
+        .table-wrapper td:nth-child(7) {
+            min-width: 125px;
+        }
+
+        .table-wrapper th:nth-child(8),
+        .table-wrapper td:nth-child(8) {
+            min-width: 115px;
+        }
+
+        .table-wrapper th:nth-child(9),
+        .table-wrapper td:nth-child(9) {
+            min-width: 95px;
+        }
+
+        /* Tabel tanpa kolom Aksi berakhir pada Performa; jangan jadikan
+           kolom tersebut sticky karena dapat menutupi kolom lain. */
+        .table-wrapper.no-actions th:last-child,
+        .table-wrapper.no-actions td:last-child {
+            position: static;
+            right: auto;
+            z-index: auto;
+        }
+
+        .table-wrapper.no-actions td:last-child,
+        .table-wrapper.no-actions tbody tr:nth-child(even) td:last-child,
+        .table-wrapper.no-actions tbody tr:hover td:last-child {
+            background-color: inherit;
+        }
+
+        .profile-history-description {
+            margin: 8px 0 0;
+            color: #64748b;
+            line-height: 1.6;
+            white-space: pre-line;
         }
 
         thead {

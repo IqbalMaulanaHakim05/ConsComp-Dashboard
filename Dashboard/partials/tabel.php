@@ -120,7 +120,7 @@ $paramDasar["arah"] = $arah ?? "DESC";
             <?php endif; ?>
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper <?= $bolehAksi ? "has-actions" : "no-actions"; ?>">
             <table>
                 <thead>
                 <tr>

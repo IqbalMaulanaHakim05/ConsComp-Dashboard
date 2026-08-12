@@ -33,6 +33,7 @@ $cssPerHalaman = [
     "dashboard" => "admin-dashboard.css",
     "analisis" => "admin-dashboard.css",
     "karyawan" => "admin-karyawan.css",
+    "upah" => "admin-upah.css",
     "tambah" => "admin-form.css",
     "import" => "admin-form.css",
     "edit" => "admin-form.css",
@@ -45,6 +46,18 @@ $cssPerHalaman = [
 ];
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
 $kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
+if (function_exists("rolePengguna") && rolePengguna() === "pic" && !in_array($halamanAktif, ["upah", "lembur"], true)) {
+    header("Location: upah.php");
+    exit;
+}
+if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "upah", "lembur"], true)) {
+    header("Location: karyawan.php");
+    exit;
+}
+if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
+    header("Location: karyawan.php");
+    exit;
+}
 if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
     $cssHalamanAktif = "admin-profile.css";
     $kelasHalaman = "profil-karyawan";
@@ -72,9 +85,9 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260806-masterui">
+    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260811-table-columns4">
     <?php if ($cssHalamanAktif !== ""): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=20260811-layout8">
+        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= $halamanAktif === "upah" ? "20260812-upah-preview-top2" : ($halamanAktif === "lembur" ? "20260812-overtime-buttons4" : ($halamanAktif === "karyawan" ? "20260811-karyawan-columns1" : ($halamanAktif === "dashboard" ? "20260811-dashboard-columns5" : "20260811-layout8"))); ?>">
     <?php endif; ?>
 </head>
 
@@ -90,19 +103,19 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
     </div>
 
     <nav class="sidebar-menu">
-        <a
+        <?php if (!(function_exists("punyaRole") && punyaRole("pic", "koordinator"))): ?><a
             href="<?= htmlspecialchars(URL_DASAR); ?>index.php"
             class="<?= $halamanAktif === "dashboard" ? "active" : ""; ?>"
         >
             <span class="sidebar-icon" aria-hidden="true">⌂</span>Dashboard
-        </a>
+        </a><?php endif; ?>
 
-        <a
+        <?php if (!(function_exists("punyaRole") && punyaRole("pic"))): ?><a
             href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php"
             class="<?= in_array($halamanAktif, ["karyawan", "analisis", "upah", "lembur", "periode-gaji"], true) ? "active" : ""; ?>"
         >
             <span class="sidebar-icon" aria-hidden="true">♙</span>Data Karyawan
-        </a>
+        </a><?php endif; ?>
 
         <div class="sidebar-tree-children">
             <?php if (function_exists("punyaRole") && punyaRole("admin", "superadmin")): ?>
@@ -114,12 +127,12 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 </a>
             <?php endif; ?>
 
-            <a
+            <?php if (!(function_exists("punyaRole") && punyaRole("pic", "koordinator"))): ?><a
                 href="<?= htmlspecialchars(URL_DASAR); ?>analisis.php"
                 class="<?= $halamanAktif === "analisis" ? "active" : ""; ?>"
             >
                 <span class="sidebar-icon" aria-hidden="true">◒</span>Analisis
-            </a>
+            </a><?php endif; ?>
 
             <a
                 href="<?= htmlspecialchars(URL_DASAR); ?>upah.php"

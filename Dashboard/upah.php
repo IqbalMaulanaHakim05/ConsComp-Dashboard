@@ -103,6 +103,7 @@ require __DIR__ . "/partials/atas.php";
             </select>
 
             <button class="btn btn-primary" type="submit">Filter</button>
+            <?php if (punyaRole("admin", "superadmin", "pic", "koordinator", "manager")): ?><a class="btn btn-primary export-excel-btn" href="fungsi/export_upah_excel.php?<?= htmlspecialchars(http_build_query(["cari" => $kataKunci, "department" => $departemen, "bulan" => $bulanFilter, "tahun" => $tahunFilter, "position" => $posisiFilter])); ?>">Export Excel</a><?php endif; ?>
         </form>
     </div>
     <div class="table-wrapper">

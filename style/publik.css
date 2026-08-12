@@ -215,6 +215,7 @@ body {
 table {
     width: 100%;
     min-width: 1000px;
+    table-layout: auto;
     border-collapse: collapse;
 }
 
@@ -275,6 +276,12 @@ tbody tr:hover {
 .pagination-info {
     color: #64748b;
     font-size: 14px;
+}
+
+/* Pastikan kolom tabel publik tidak menyusut dan saling menutupi ketika
+   halaman dibuka pada layar yang lebih sempit. */
+td {
+    white-space: nowrap;
 }
 
 .button-disabled {
