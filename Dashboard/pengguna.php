@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $target = mysqli_fetch_assoc(mysqli_query(
             $conn,
-            "SELECT role FROM users WHERE id = " . $hapusId . " LIMIT 1"
+            "SELECT username, nama, role FROM users WHERE id = " . $hapusId . " LIMIT 1"
         ));
 
         if (!csrfValid($_POST["csrf_token"] ?? null)) {
@@ -31,21 +31,48 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $pesan = "Akun yang sedang digunakan tidak dapat dihapus.";
             $tipePesan = "error";
         } else {
-            $hapus = mysqli_prepare($conn, "DELETE FROM users WHERE id = ?");
-            mysqli_stmt_bind_param($hapus, "i", $hapusId);
-            $berhasilHapus = mysqli_stmt_execute($hapus);
-            mysqli_stmt_close($hapus);
+            $referensi = mysqli_prepare(
+                $conn,
+                "SELECT
+                    (SELECT COUNT(*) FROM overtime_reports WHERE dibuat_oleh_pic = ?) AS laporan_lembur,
+                    (SELECT COUNT(*) FROM overtime_compensations WHERE dimasukkan_oleh_pic = ?) AS kompensasi_lembur,
+                    (SELECT COUNT(*) FROM slip_gaji WHERE generated_by = ?) AS slip_gaji"
+            );
+            mysqli_stmt_bind_param($referensi, "iii", $hapusId, $hapusId, $hapusId);
+            mysqli_stmt_execute($referensi);
+            $jumlahReferensi = mysqli_fetch_assoc(mysqli_stmt_get_result($referensi)) ?: [];
+            mysqli_stmt_close($referensi);
 
-            if ($berhasilHapus) {
-                $pesan = "Akun berhasil dihapus.";
-                catatAktivitas(
-                    $conn,
-                    "Menghapus pengguna ID " . $hapusId
-                        . " dengan role " . ($target["role"] ?? "tidak diketahui") . "."
-                );
-            } else {
-                $pesan = "Akun gagal dihapus.";
+            $namaTarget = trim((string) ($target["nama"] ?? $target["username"] ?? "Akun"));
+            $memilikiReferensi = (int) ($jumlahReferensi["laporan_lembur"] ?? 0) > 0
+                || (int) ($jumlahReferensi["kompensasi_lembur"] ?? 0) > 0
+                || (int) ($jumlahReferensi["slip_gaji"] ?? 0) > 0;
+
+            if ($memilikiReferensi) {
+                $pesan = "Akun \"" . $namaTarget . "\" tidak dapat dihapus karena masih memiliki riwayat lembur atau slip gaji.";
                 $tipePesan = "error";
+            } else {
+                try {
+                    $hapus = mysqli_prepare($conn, "DELETE FROM users WHERE id = ?");
+                    mysqli_stmt_bind_param($hapus, "i", $hapusId);
+                    $berhasilHapus = mysqli_stmt_execute($hapus);
+                    mysqli_stmt_close($hapus);
+
+                    if ($berhasilHapus) {
+                        $pesan = "Akun berhasil dihapus.";
+                        catatAktivitas(
+                            $conn,
+                            "Menghapus pengguna ID " . $hapusId
+                                . " dengan role " . ($target["role"] ?? "tidak diketahui") . "."
+                        );
+                    } else {
+                        $pesan = "Akun gagal dihapus.";
+                        $tipePesan = "error";
+                    }
+                } catch (mysqli_sql_exception $exception) {
+                    $pesan = "Akun tidak dapat dihapus karena masih memiliki data terkait.";
+                    $tipePesan = "error";
+                }
             }
         }
     } else {
