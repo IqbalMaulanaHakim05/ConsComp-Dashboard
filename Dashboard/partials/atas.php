@@ -87,7 +87,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260812-export-options1">
     <?php if ($cssHalamanAktif !== ""): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= $halamanAktif === "upah" ? "20260812-upah-preview-top2" : ($halamanAktif === "lembur" ? "20260812-overtime-buttons4" : ($halamanAktif === "karyawan" ? "20260811-karyawan-columns1" : ($halamanAktif === "dashboard" ? "20260811-dashboard-columns5" : "20260811-layout8"))); ?>">
+        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= $halamanAktif === "upah" ? "20260813-upah-preview-table10" : ($halamanAktif === "lembur" ? "20260813-lembur-preview-table2" : ($halamanAktif === "karyawan" ? "20260811-karyawan-columns1" : ($halamanAktif === "dashboard" ? "20260811-dashboard-columns5" : "20260811-layout8"))); ?>">
     <?php endif; ?>
 </head>
 

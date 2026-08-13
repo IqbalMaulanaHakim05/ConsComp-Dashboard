@@ -56,6 +56,13 @@
 .lembur-page .notification-item small { color: #94a3b8; }
 .lembur-page .overtime-detail-item p { margin: 3px 0 0; white-space: pre-line; line-height: 1.5; }
 .lembur-page .notification-empty { padding: 12px 0; color: #64748b; }
+.lembur-page .export-preview-card .table-wrapper th:last-child,
+.lembur-page .export-preview-card .table-wrapper td:last-child { position: static !important; right: auto !important; left: auto !important; z-index: auto !important; background-color: inherit !important; }
+.lembur-page .export-preview-card .table-wrapper td { white-space: nowrap; }
+.lembur-page .export-preview-card .table-wrapper { width: 100% !important; max-width: 100%; overflow-x: auto !important; overflow-y: hidden; }
+.lembur-page .export-preview-card .table-wrapper table { width: max-content !important; min-width: 1500px !important; table-layout: auto !important; }
+.lembur-page .export-preview-card .table-wrapper th,
+.lembur-page .export-preview-card .table-wrapper td { min-width: 120px; white-space: nowrap; }
 .lembur-page .table-wrapper { padding: 0 20px 20px; }
 .lembur-page table { min-width: 1280px; }
 .lembur-page table th { padding: 13px 14px; }

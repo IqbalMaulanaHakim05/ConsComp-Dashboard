@@ -111,4 +111,21 @@ $judulHalaman = "Pratinjau Export Upah"; $subjudulHalaman = "Periksa data upah s
 ?>
 <div class="export-preview-top-actions"><a class="btn btn-secondary" href="../upah.php">Kembali</a><a class="btn btn-success" href="export_upah_excel.php?download=1&amp;<?= htmlspecialchars(http_build_query($_GET)); ?>">Unduh Excel</a></div>
 <section class="form-card export-options-card"><div class="form-card-header"><h2>Opsi Export Data Upah</h2><p><?= count($rows); ?> data sesuai filter.</p></div><div class="form-body"><form method="GET" class="export-options-form"><div class="form-group"><label for="batas_export">Jumlah data</label><select id="batas_export" name="batas_export"><?php foreach ($batasPilihan as $pilihan): ?><option value="<?= $pilihan; ?>" <?= (string) $batasExport === (string) $pilihan ? "selected" : ""; ?>><?= $pilihan === "semua" ? "Semua data" : "Maksimal " . $pilihan . " data"; ?></option><?php endforeach; ?></select></div><div class="form-group"><label for="sort_export">Urutkan berdasarkan</label><select id="sort_export" name="sort_export"><?php foreach ($kolomExportUrutan as $kunci => $kolom): ?><option value="<?= $kunci; ?>" <?= $sortExport === $kunci ? "selected" : ""; ?>><?= htmlspecialchars($kolom["label"]); ?></option><?php endforeach; ?></select></div><div class="form-group"><label for="arah_export">Arah urutan</label><select id="arah_export" name="arah_export"><option value="ASC" <?= $arahExport === "ASC" ? "selected" : ""; ?>>Naik</option><option value="DESC" <?= $arahExport === "DESC" ? "selected" : ""; ?>>Turun</option></select></div><?php foreach (["cari" => $cari, "department" => $department, "bulan" => $bulan, "tahun" => $tahun, "position" => $position] as $nama => $nilai): ?><input type="hidden" name="<?= $nama; ?>" value="<?= htmlspecialchars((string) $nilai); ?>"><?php endforeach; ?><fieldset class="export-columns-fieldset"><legend>Kolom yang diekspor</legend><?php foreach ($kolomExportPilihan as $kunci => $kolom): ?><label><input type="checkbox" name="kolom[]" value="<?= $kunci; ?>" <?= in_array($kunci, $kolomDipilih, true) ? "checked" : ""; ?>> <?= htmlspecialchars($kolom["label"]); ?></label><?php endforeach; ?></fieldset><div class="form-actions"><a class="btn btn-secondary" href="../upah.php">Batal</a><button class="btn btn-success" type="submit">Terapkan Opsi</button><button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button></div></form></div></section><section class="data-card"><div class="data-card-header"><h2>Pratinjau Export Data Upah</h2></div><div class="table-wrapper"><table><thead><tr><?php foreach ($kolomDipilih as $namaKolom): ?><th><?= htmlspecialchars($kolomExportPilihan[$namaKolom]["label"]); ?></th><?php endforeach; ?></tr></thead><tbody><?php foreach ($rows as $row): ?><tr><?php foreach ($kolomDipilih as $namaKolom): ?><td><?= htmlspecialchars((string) ($row[$namaKolom] ?? "")); ?></td><?php endforeach; ?></tr><?php endforeach; ?></tbody></table></div></section>
+<script>
+(() => {
+    const form = document.querySelector('.export-options-form');
+    if (!form) return;
+    const applyButton = [...form.querySelectorAll('button')].find(button => button.textContent.trim() === 'Terapkan Opsi');
+    if (applyButton) applyButton.remove();
+    form.querySelectorAll('select, input[type="checkbox"]').forEach(field => {
+        field.addEventListener('change', () => {
+            if (field.name === 'kolom[]' && !form.querySelectorAll('input[name="kolom[]"]:checked').length) {
+                field.checked = true;
+                return;
+            }
+            form.submit();
+        });
+    });
+})();
+</script>
 <?php require __DIR__ . "/../partials/bawah.php"; ?>
