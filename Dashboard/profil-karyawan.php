@@ -134,7 +134,7 @@ require __DIR__ . "/partials/atas.php";
 
             <div class="profile-photo-wrap">
                 <?php if (!empty($karyawan["foto_profil"] ?? "") && is_file(__DIR__ . "/uploads/foto/" . basename((string) $karyawan["foto_profil"]))): ?>
-                    <img class="profile-photo" src="uploads/foto/<?= rawurlencode(basename((string) $karyawan["foto_profil"])); ?>" alt="Foto <?= htmlspecialchars($nama); ?>">
+                    <img class="profile-photo" src="file.php?jenis=foto&amp;file=<?= rawurlencode(basename((string) $karyawan["foto_profil"])); ?>" alt="Foto <?= htmlspecialchars($nama); ?>">
                 <?php else: ?>
                     <div class="profile-photo profile-photo-empty">Belum ada foto</div>
                 <?php endif; ?>
@@ -230,14 +230,14 @@ require __DIR__ . "/partials/atas.php";
                 <div class="profile-document-row">
                     <span>CV</span>
                     <?php if (!empty($karyawan["file_cv"] ?? "") && is_file(__DIR__ . "/uploads/cv/" . basename((string) $karyawan["file_cv"]))): ?>
-                        <a class="btn btn-primary" target="_blank" rel="noopener" href="uploads/cv/<?= rawurlencode(basename((string) $karyawan["file_cv"])); ?>">Lihat/Unduh CV</a>
+                        <a class="btn btn-primary" target="_blank" rel="noopener" href="file.php?jenis=cv&amp;file=<?= rawurlencode(basename((string) $karyawan["file_cv"])); ?>">Lihat/Unduh CV</a>
                     <?php else: ?><em>Belum diunggah</em><?php endif; ?>
                 </div>
                 <?php foreach (["file_ijazah" => "Ijazah", "file_mcu" => "MCU"] as $kolomDokumen => $labelDokumen): ?>
                     <div class="profile-document-row">
                         <span><?= $labelDokumen; ?></span>
                         <?php if (!empty($karyawan[$kolomDokumen] ?? "") && is_file(__DIR__ . "/uploads/" . ($kolomDokumen === "file_ijazah" ? "ijazah" : "mcu") . "/" . basename((string) $karyawan[$kolomDokumen]))): ?>
-                            <a class="btn btn-primary" target="_blank" rel="noopener" href="uploads/<?= $kolomDokumen === "file_ijazah" ? "ijazah" : "mcu"; ?>/<?= rawurlencode(basename((string) $karyawan[$kolomDokumen])); ?>">Lihat/Unduh <?= $labelDokumen; ?></a>
+                            <a class="btn btn-primary" target="_blank" rel="noopener" href="file.php?jenis=<?= $kolomDokumen === "file_ijazah" ? "ijazah" : "mcu"; ?>&amp;file=<?= rawurlencode(basename((string) $karyawan[$kolomDokumen])); ?>">Lihat/Unduh <?= $labelDokumen; ?></a>
                         <?php else: ?><em>Belum diunggah</em><?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -281,7 +281,7 @@ require __DIR__ . "/partials/atas.php";
         && is_file(__DIR__ . "/uploads/cv/" . $cvUntukDiunduh)
     ):
     ?>
-        <a id="cv-auto-preview" aria-hidden="true" style="display: none;" target="_blank" rel="noopener" href="uploads/cv/<?= rawurlencode($cvUntukDiunduh); ?>">Lihat CV</a>
+        <a id="cv-auto-preview" aria-hidden="true" style="display: none;" target="_blank" rel="noopener" href="file.php?jenis=cv&amp;file=<?= rawurlencode($cvUntukDiunduh); ?>">Lihat CV</a>
     <?php endif; ?>
 </section>
 <script>

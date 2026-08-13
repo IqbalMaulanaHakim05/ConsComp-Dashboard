@@ -97,10 +97,30 @@ if (!isset($_GET["download"])) {
                 <div class="form-group"><label for="arah_export">Arah urutan</label><select id="arah_export" name="arah_export"><option value="ASC" <?= $arahExport === "ASC" ? "selected" : ""; ?>>Naik (A–Z / kecil ke besar)</option><option value="DESC" <?= $arahExport === "DESC" ? "selected" : ""; ?>>Turun (Z–A / besar ke kecil)</option></select></div>
                 <?php foreach (["cari" => $kataKunci, "filter" => $filterKolom] as $nama => $nilai): ?><input type="hidden" name="<?= $nama; ?>" value="<?= htmlspecialchars($nilai); ?>"><?php endforeach; ?>
                 <fieldset class="export-columns-fieldset"><legend>Kolom yang diekspor</legend><?php foreach ($kolomExportPilihan as $kunci => $kolom): ?><label><input type="checkbox" name="kolom[]" value="<?= $kunci; ?>" <?= in_array($kunci, $kolomDipilih, true) ? "checked" : ""; ?>> <?= htmlspecialchars($kolom["label"]); ?></label><?php endforeach; ?></fieldset>
-                <div class="form-actions"><a class="btn btn-secondary" href="../karyawan.php">Batal</a><button class="btn btn-success" type="submit">Terapkan Opsi</button><button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button></div>
+                <div class="form-actions"><a class="btn btn-secondary" href="../karyawan.php">Batal</a><button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button></div>
             </form>
         </div>
     </section>
+    <section class="data-card export-preview-card">
+        <div class="data-card-header"><h2>Pratinjau Data Karyawan</h2><p><?= mysqli_num_rows($query); ?> data siap diekspor.</p></div>
+        <div class="table-wrapper no-actions export-preview-table"><table><thead><tr><?php foreach ($kolomDipilih as $namaKolom): ?><th><?= htmlspecialchars($kolomExportPilihan[$namaKolom]["label"]); ?></th><?php endforeach; ?></tr></thead><tbody><?php while ($barisPreview = mysqli_fetch_assoc($query)): ?><tr><?php foreach ($kolomDipilih as $namaKolom): ?><td><?= htmlspecialchars((string) ($barisPreview[$namaKolom] ?? "-")); ?></td><?php endforeach; ?></tr><?php endwhile; ?></tbody></table></div>
+    </section>
+    <script>
+        (() => {
+            const form = document.querySelector('.export-options-form');
+            if (!form) return;
+            form.querySelectorAll('select, input[type="checkbox"]').forEach(field => {
+                field.addEventListener('change', () => {
+                    if (field.name === 'kolom[]' && !form.querySelectorAll('input[name="kolom[]"]:checked').length) {
+                        field.checked = true;
+                        return;
+                    }
+                    form.querySelectorAll('button[name="download"]').forEach(button => button.removeAttribute('name'));
+                    form.submit();
+                });
+            });
+        })();
+    </script>
     <?php
     require __DIR__ . "/../partials/bawah.php";
     exit;
