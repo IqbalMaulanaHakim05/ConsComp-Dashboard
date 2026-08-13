@@ -148,6 +148,49 @@ $parameterHalaman = ["cari" => $kataKunci, "departemen" => $departemen];
     >
 
     <title><?= htmlspecialchars($namaSitus); ?></title>
+    <script>
+        (() => {
+            const scrollKey = `employee-scroll:${window.location.pathname}`;
+
+            if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+            const saveScrollPosition = () => {
+                try {
+                    sessionStorage.setItem(scrollKey, JSON.stringify({
+                        x: window.scrollX,
+                        y: window.scrollY
+                    }));
+                } catch (error) {
+                    // Penyimpanan sesi yang tidak tersedia tidak boleh mengganggu halaman.
+                }
+            };
+
+            const restoreScrollPosition = () => {
+                if (window.location.hash) return;
+
+                try {
+                    const saved = JSON.parse(sessionStorage.getItem(scrollKey) || "null");
+                    if (!saved || !Number.isFinite(saved.x) || !Number.isFinite(saved.y)) return;
+
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            const previousBehavior = document.documentElement.style.scrollBehavior;
+                            document.documentElement.style.scrollBehavior = "auto";
+                            window.scrollTo(saved.x, saved.y);
+                            document.documentElement.style.scrollBehavior = previousBehavior;
+                        });
+                    });
+                } catch (error) {
+                    // Data sesi yang rusak atau tidak tersedia diabaikan dengan aman.
+                }
+            };
+
+            window.addEventListener("pagehide", saveScrollPosition);
+            window.addEventListener("pageshow", (event) => {
+                if (!event.persisted) restoreScrollPosition();
+            });
+        })();
+    </script>
     <script>const savedTheme = localStorage.getItem('employee-theme'); document.documentElement.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
 
     <link rel="stylesheet" href="style/publik.css?v=20260811-3">
