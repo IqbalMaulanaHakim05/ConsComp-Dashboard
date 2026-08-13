@@ -26,3 +26,17 @@
 .karyawan-page .table-wrapper.no-actions tbody tr:hover td:last-child {
     background-color: inherit;
 }
+
+/* Tabel pratinjau export tidak memiliki kolom Aksi. Kolom terakhir harus
+   mengikuti alur tabel biasa, bukan menempel seperti kolom Aksi. */
+.karyawan-page .export-preview-table th:last-child,
+.karyawan-page .export-preview-table td:last-child {
+    position: static !important;
+    right: auto !important;
+    left: auto !important;
+    z-index: auto !important;
+    background-color: inherit !important;
+}
+.karyawan-page .export-preview-table td {
+    white-space: nowrap;
+}
