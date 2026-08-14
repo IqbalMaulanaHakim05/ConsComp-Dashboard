@@ -56,8 +56,8 @@ $versiCssHalaman = match ($halamanAktif) {
     "dashboard" => "20260811-dashboard-columns5",
     default => "20260811-layout8",
 };
-if (function_exists("rolePengguna") && rolePengguna() === "pic" && !in_array($halamanAktif, ["upah", "lembur", "izin-karyawan", "izin-cuti"], true)) {
-    header("Location: upah.php");
+if (function_exists("rolePengguna") && rolePengguna() === "pic" && $halamanAktif !== "lembur") {
+    header("Location: lembur.php");
     exit;
 }
 if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "upah", "lembur", "izin-karyawan", "izin-cuti"], true)) {
@@ -157,6 +157,14 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
     </div>
 
     <nav class="sidebar-menu">
+        <?php if (function_exists("punyaRole") && punyaRole("pic")): ?>
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>lembur.php"
+                class="<?= $halamanAktif === "lembur" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">↗</span>Lembur
+            </a>
+        <?php else: ?>
         <?php if (!(function_exists("punyaRole") && punyaRole("pic", "koordinator"))): ?><a
             href="<?= htmlspecialchars(URL_DASAR); ?>index.php"
             class="<?= $halamanAktif === "dashboard" ? "active" : ""; ?>"
@@ -255,6 +263,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                     <span class="sidebar-icon" aria-hidden="true">◷</span>Audit Aktivitas
                 </a>
             </div>
+        <?php endif; ?>
         <?php endif; ?>
     </nav>
 

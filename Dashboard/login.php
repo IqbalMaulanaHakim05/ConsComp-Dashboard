@@ -6,7 +6,8 @@ require __DIR__ . '/koneksi.php';
 require_once __DIR__ . '/fungsi/auth.php';
 
 if (sudahLogin()) {
-    header('Location: ' . URL_DASAR . 'index.php');
+    $tujuanPenggunaAktif = rolePengguna() === 'pic' ? 'lembur.php' : 'index.php';
+    header('Location: ' . URL_DASAR . $tujuanPenggunaAktif);
     exit;
 }
 
@@ -35,7 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($username === '' || $password === '') {
         $pesan = 'Username dan password wajib diisi.';
     } elseif (loginPengguna($conn, $username, $password)) {
-        header('Location: ' . URL_DASAR . $next);
+        $tujuanSetelahLogin = rolePengguna() === 'pic' ? 'lembur.php' : $next;
+        header('Location: ' . URL_DASAR . $tujuanSetelahLogin);
         exit;
     } else {
         // Pesan dibuat umum agar tidak membocorkan bagian kredensial yang salah.

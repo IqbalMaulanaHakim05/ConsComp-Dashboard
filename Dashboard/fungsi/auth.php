@@ -118,6 +118,33 @@ function punyaRole(string ...$roles): bool
     return sudahLogin() && in_array(rolePengguna(), $roles, true);
 }
 
+/**
+ * PIC hanya boleh membuka halaman Lembur dan dua halaman pendukungnya.
+ */
+function halamanDiizinkanUntukPic(string $namaFile): bool
+{
+    return in_array(
+        basename($namaFile),
+        ['lembur.php', 'notifikasi.php', 'export_lembur.php', 'logout.php'],
+        true
+    );
+}
+
+function batasiAksesPic(): void
+{
+    if (rolePengguna() !== 'pic') {
+        return;
+    }
+
+    $namaFile = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+    if (halamanDiizinkanUntukPic($namaFile)) {
+        return;
+    }
+
+    header('Location: ' . URL_DASAR . 'lembur.php');
+    exit;
+}
+
 /*
 |--------------------------------------------------------------------------
 | Penjaga akses halaman
@@ -127,6 +154,7 @@ function punyaRole(string ...$roles): bool
 function wajibLogin(): void
 {
     if (sudahLogin()) {
+        batasiAksesPic();
         return;
     }
 
