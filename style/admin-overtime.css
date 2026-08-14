@@ -72,11 +72,11 @@
 .lembur-page table td:last-child input { min-width: 155px; min-height: 38px; padding: 7px 10px; border-radius: 8px; }
 .lembur-page table td:last-child .btn { min-height: 38px; padding: 8px 14px; white-space: nowrap; }
 
-/* Form kompensasi dibuat satu baris agar tarif, total, dan tombol tidak
-   bertumpuk di kolom Aksi. Tabel tetap dapat digeser secara horizontal. */
+/* Ringkasan kompensasi dan tombol dibuat satu baris di kolom Aksi.
+   Tabel tetap dapat digeser secara horizontal. */
 .lembur-page table td:last-child > form.compensation-form {
     display: grid !important;
-    grid-template-columns: minmax(170px, 1fr) minmax(170px, 1fr) auto;
+    grid-template-columns: minmax(390px, 1fr) auto;
     align-items: center;
     flex-wrap: nowrap !important;
     width: max-content;
@@ -85,9 +85,13 @@
     margin: 0 !important;
 }
 
-.lembur-page table td:last-child > form.compensation-form input {
-    width: 180px;
-    min-width: 180px;
+.lembur-page .overtime-compensation-summary {
+    margin: 0;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
 }
 
 .lembur-page table td:last-child > form.compensation-form .btn {
@@ -101,6 +105,7 @@
 :root[data-theme="dark"] .lembur-page .main-content > .form-card,
 :root[data-theme="dark"] .lembur-page .main-content > .data-card { border-color: #334155; }
 :root[data-theme="dark"] .lembur-page .form-card-header { background: linear-gradient(135deg, #1e293b, #172554); border-color: #334155; }
+:root[data-theme="dark"] .lembur-page .overtime-compensation-summary { color: #e2e8f0; }
 
 @media screen and (max-width: 760px) {
     .lembur-page .form-body > form { grid-template-columns: 1fr; }

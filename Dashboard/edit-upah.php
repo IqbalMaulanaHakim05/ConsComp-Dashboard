@@ -8,6 +8,18 @@ require_once __DIR__ . "/fungsi/audit.php";
 
 wajibRole("admin", "superadmin");
 $id = (int) ($_GET["id"] ?? $_POST["id"] ?? 0);
+$filterKembali = [
+    "cari" => trim((string) ($_POST["cari"] ?? $_GET["cari"] ?? "")),
+    "department" => trim((string) ($_POST["department"] ?? $_GET["department"] ?? "")),
+    "position" => trim((string) ($_POST["position"] ?? $_GET["position"] ?? "")),
+    "bulan" => max(0, min(12, (int) ($_POST["bulan"] ?? $_GET["bulan"] ?? 0))),
+    "tahun" => max(0, (int) ($_POST["tahun"] ?? $_GET["tahun"] ?? 0)),
+];
+$parameterKembali = array_filter(
+    $filterKembali,
+    static fn (string|int $nilai): bool => $nilai !== "" && $nilai !== 0
+);
+$urlKembali = "upah.php" . ($parameterKembali === [] ? "" : "?" . http_build_query($parameterKembali));
 
 $stmt = mysqli_prepare($conn, "SELECT k.id, k.emp_id, k.employee_name, pg.id AS profil_id, COALESCE(pg.gaji_pokok, k.salary, 0) AS gaji_pokok, COALESCE(pg.uang_makan, 0) AS uang_makan, pg.berlaku_mulai FROM karyawan k LEFT JOIN profil_gaji pg ON pg.karyawan_id = k.id WHERE k.id = ? LIMIT 1");
 mysqli_stmt_bind_param($stmt, "i", $id);
@@ -189,7 +201,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             mysqli_stmt_close($tambahPotongan);
             mysqli_commit($conn);
             catatAktivitas($conn, "Mengubah profil upah karyawan " . $data["emp_id"] . ".");
-            header("Location: upah.php");
+            header("Location: " . $urlKembali);
             exit;
         } catch (Throwable $exception) {
             mysqli_rollback($conn);
@@ -216,24 +228,28 @@ require __DIR__ . "/partials/atas.php";
 <section class="form-card">
     <div class="form-card-header"><h2>Edit Upah</h2><p><?= htmlspecialchars($data["emp_id"] . " - " . $data["employee_name"]); ?></p></div>
     <div class="form-body">
+        <div class="form-actions" style="justify-content:flex-start; margin:0 0 20px">
+            <a class="btn btn-secondary" href="<?= htmlspecialchars($urlKembali, ENT_QUOTES, "UTF-8"); ?>">Kembali</a>
+        </div>
         <?php if ($pesan !== ""): ?><div class="alert-error" role="alert"><?= htmlspecialchars($pesan); ?></div><?php endif; ?>
         <form method="POST">
             <input type="hidden" name="id" value="<?= $id; ?>">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+            <?php foreach ($filterKembali as $namaFilter => $nilaiFilter): ?><input type="hidden" name="<?= htmlspecialchars($namaFilter, ENT_QUOTES, "UTF-8"); ?>" value="<?= htmlspecialchars((string) $nilaiFilter, ENT_QUOTES, "UTF-8"); ?>"><?php endforeach; ?>
             <div class="form-group"><label for="gaji_pokok">Gaji Pokok</label><input id="gaji_pokok" name="gaji_pokok" type="number" min="0" step="0.01" value="<?= htmlspecialchars((string) ($data["gaji_pokok"] ?? 0)); ?>" required></div>
             <div class="form-group"><label for="uang_makan">Uang Makan</label><input id="uang_makan" name="uang_makan" type="number" min="0" step="0.01" value="<?= htmlspecialchars((string) ($data["uang_makan"] ?? 0)); ?>" required></div>
             <div class="form-group"><label for="berlaku_mulai">Berlaku Mulai</label><input id="berlaku_mulai" name="berlaku_mulai" type="date" value="<?= htmlspecialchars((string) ($data["berlaku_mulai"] ?? date("Y-m-d"))); ?>" required></div>
             <h3>Pendapatan Tambahan</h3>
             <div id="pendapatan-tambahan-list">
-                <?php foreach ($pendapatanTambahan as $indeks => $pendapatan): $namaPendapatan = trim((string) $pendapatan["nama"]); $jenisIdPendapatan = $jenisKomponenByNama["pendapatan"][mb_strtolower($namaPendapatan)] ?? 0; $pilihanPendapatanSaatIni = $jenisIdPendapatan > 0 ? "jenis:" . $jenisIdPendapatan : "manual:" . base64_encode($namaPendapatan); ?><div class="form-grid income-row"><div class="form-group"><label>Nama Pendapatan</label><select name="pendapatan_tambahan[<?= $indeks; ?>][jenis_id]" class="component-choice" data-custom-input="pendapatan-custom-<?= $indeks; ?>" required><?= str_replace('value="' . htmlspecialchars($pilihanPendapatanSaatIni, ENT_QUOTES, "UTF-8") . '"', 'value="' . htmlspecialchars($pilihanPendapatanSaatIni, ENT_QUOTES, "UTF-8") . '" selected', $opsiPendapatan); ?></select><input id="pendapatan-custom-<?= $indeks; ?>" name="pendapatan_tambahan[<?= $indeks; ?>][nama_baru]" value="" placeholder="Nama pendapatan baru" style="display:none"></div><div class="form-group"><label>Nominal</label><input name="pendapatan_tambahan[<?= $indeks; ?>][nilai]" type="number" min="0" step="0.01" value="<?= htmlspecialchars($pendapatan["nilai"]); ?>" required></div><button class="btn btn-danger remove-income" type="button">Hapus</button></div><?php endforeach; ?>
+                <?php foreach ($pendapatanTambahan as $indeks => $pendapatan): $namaPendapatan = trim((string) $pendapatan["nama"]); $jenisIdPendapatan = $jenisKomponenByNama["pendapatan"][mb_strtolower($namaPendapatan)] ?? 0; $pilihanPendapatanSaatIni = $jenisIdPendapatan > 0 ? "jenis:" . $jenisIdPendapatan : "manual:" . base64_encode($namaPendapatan); ?><div class="form-grid income-row"><div class="form-group"><label>Nama Pendapatan</label><select name="pendapatan_tambahan[<?= $indeks; ?>][jenis_id]" class="component-choice" data-custom-input="pendapatan-custom-<?= $indeks; ?>" required><?= str_replace('value="' . htmlspecialchars($pilihanPendapatanSaatIni, ENT_QUOTES, "UTF-8") . '"', 'value="' . htmlspecialchars($pilihanPendapatanSaatIni, ENT_QUOTES, "UTF-8") . '" selected', $opsiPendapatan); ?></select><input id="pendapatan-custom-<?= $indeks; ?>" name="pendapatan_tambahan[<?= $indeks; ?>][nama_baru]" value="" placeholder="Nama pendapatan baru" style="display:none"></div><div class="form-group"><label>Nominal</label><input name="pendapatan_tambahan[<?= $indeks; ?>][nilai]" type="number" min="0" step="0.01" value="<?= htmlspecialchars((string) $pendapatan["nilai"], ENT_QUOTES, "UTF-8"); ?>" required></div><button class="btn btn-danger remove-income" type="button">Hapus</button></div><?php endforeach; ?>
             </div>
             <button class="btn btn-secondary" id="tambah-pendapatan" type="button">+ Tambah Pendapatan</button>
             <h3>Potongan</h3>
             <div id="potongan-list">
-                <?php foreach ($potongan as $indeks => $itemPotongan): $namaPotongan = trim((string) $itemPotongan["nama"]); $jenisIdPotongan = $jenisKomponenByNama["potongan"][mb_strtolower($namaPotongan)] ?? 0; $pilihanPotonganSaatIni = $jenisIdPotongan > 0 ? "jenis:" . $jenisIdPotongan : "manual:" . base64_encode($namaPotongan); ?><div class="form-grid deduction-row"><div class="form-group"><label>Nama Potongan</label><select name="potongan[<?= $indeks; ?>][jenis_id]" class="component-choice" data-custom-input="potongan-custom-<?= $indeks; ?>" required><?= str_replace('value="' . htmlspecialchars($pilihanPotonganSaatIni, ENT_QUOTES, "UTF-8") . '"', 'value="' . htmlspecialchars($pilihanPotonganSaatIni, ENT_QUOTES, "UTF-8") . '" selected', $opsiPotongan); ?></select><input id="potongan-custom-<?= $indeks; ?>" name="potongan[<?= $indeks; ?>][nama_baru]" value="" placeholder="Nama potongan baru" style="display:none"></div><div class="form-group"><label>Nominal</label><input name="potongan[<?= $indeks; ?>][nilai]" type="number" min="0" step="0.01" value="<?= htmlspecialchars($itemPotongan["nilai"]); ?>" required></div><button class="btn btn-danger remove-deduction" type="button">Hapus</button></div><?php endforeach; ?>
+                <?php foreach ($potongan as $indeks => $itemPotongan): $namaPotongan = trim((string) $itemPotongan["nama"]); $jenisIdPotongan = $jenisKomponenByNama["potongan"][mb_strtolower($namaPotongan)] ?? 0; $pilihanPotonganSaatIni = $jenisIdPotongan > 0 ? "jenis:" . $jenisIdPotongan : "manual:" . base64_encode($namaPotongan); ?><div class="form-grid deduction-row"><div class="form-group"><label>Nama Potongan</label><select name="potongan[<?= $indeks; ?>][jenis_id]" class="component-choice" data-custom-input="potongan-custom-<?= $indeks; ?>" required><?= str_replace('value="' . htmlspecialchars($pilihanPotonganSaatIni, ENT_QUOTES, "UTF-8") . '"', 'value="' . htmlspecialchars($pilihanPotonganSaatIni, ENT_QUOTES, "UTF-8") . '" selected', $opsiPotongan); ?></select><input id="potongan-custom-<?= $indeks; ?>" name="potongan[<?= $indeks; ?>][nama_baru]" value="" placeholder="Nama potongan baru" style="display:none"></div><div class="form-group"><label>Nominal</label><input name="potongan[<?= $indeks; ?>][nilai]" type="number" min="0" step="0.01" value="<?= htmlspecialchars((string) $itemPotongan["nilai"], ENT_QUOTES, "UTF-8"); ?>" required></div><button class="btn btn-danger remove-deduction" type="button">Hapus</button></div><?php endforeach; ?>
             </div>
             <button class="btn btn-secondary" id="tambah-potongan" type="button">+ Tambah Potongan</button>
-            <div class="form-actions"><a class="btn btn-secondary" href="upah.php">Batal</a><button class="btn btn-success" type="submit">Simpan</button></div>
+            <div class="form-actions"><a class="btn btn-secondary" href="<?= htmlspecialchars($urlKembali, ENT_QUOTES, "UTF-8"); ?>">Batal</a><button class="btn btn-success" type="submit">Simpan</button></div>
         </form>
     </div>
 </section>

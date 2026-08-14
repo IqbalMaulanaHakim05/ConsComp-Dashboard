@@ -41,6 +41,13 @@ if ($hasilTahun) while ($itemTahun = mysqli_fetch_assoc($hasilTahun)) {
     if ($nilaiTahun > 0 && !in_array($nilaiTahun, $tahunPilihan, true)) $tahunPilihan[] = $nilaiTahun;
 }
 rsort($tahunPilihan);
+$parameterFilterDaftar = array_filter([
+    "cari" => $kataKunci,
+    "department" => $departemen,
+    "position" => $posisiFilter,
+    "bulan" => $bulanFilter,
+    "tahun" => $tahunFilter,
+], static fn (string|int $nilai): bool => $nilai !== "" && $nilai !== 0);
 
 $filterSql = $filterOperasional ? " AND (? = '' OR k.position = ?)" : " AND (? = '' OR k.department_id = ?)";
 $sql = "SELECT
@@ -142,7 +149,7 @@ require __DIR__ . "/partials/atas.php";
                     <?php $hasilPendapatanManual = mysqli_query($conn, "SELECT nama, nilai FROM pendapatan_tambahan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiManual = []; if ($hasilPendapatanManual) while ($itemManual = mysqli_fetch_assoc($hasilPendapatanManual)) $nilaiManual[$itemManual["nama"]] = (float) $itemManual["nilai"]; foreach ($daftarPendapatanManual as $namaManual): ?><td><?= isset($nilaiManual[$namaManual]) && $nilaiManual[$namaManual] > 0 ? "Rp " . number_format($nilaiManual[$namaManual], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
                     <?php $hasilPotongan = mysqli_query($conn, "SELECT nama, nilai FROM potongan_karyawan WHERE karyawan_id = " . (int) $baris["id"]); $nilaiPotongan = []; if ($hasilPotongan) while ($itemPotongan = mysqli_fetch_assoc($hasilPotongan)) $nilaiPotongan[$itemPotongan["nama"]] = ($nilaiPotongan[$itemPotongan["nama"]] ?? 0) + (float) $itemPotongan["nilai"]; foreach ($daftarKomponenPotongan as $komponen): $nilai = (float) ($nilaiKomponen[(int) $komponen["id"]] ?? 0) + (float) ($nilaiPotongan[$komponen["nama"]] ?? 0); ?><td><?= $nilai > 0 ? "Rp " . number_format($nilai, 0, ",", ".") : ""; ?></td><?php endforeach; ?><?php foreach ($daftarPotongan as $namaPotonganItem): ?><td><?= isset($nilaiPotongan[$namaPotonganItem]) && $nilaiPotongan[$namaPotonganItem] > 0 ? "Rp " . number_format($nilaiPotongan[$namaPotonganItem], 0, ",", ".") : ""; ?></td><?php endforeach; ?>
                     <td><?= htmlspecialchars((string) ($baris["berlaku_mulai"] ?? "-")); ?></td>
-                    <td><?php if (punyaRole("admin", "superadmin")): ?><a class="btn btn-warning" href="edit-upah.php?id=<?= (int) $baris["id"]; ?>">Edit</a><?php endif; ?><?php if (punyaRole("admin", "superadmin", "pic", "koordinator", "manager")): ?><form method="POST" action="fungsi/generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php elseif (!punyaRole("admin", "superadmin")): ?>-<?php endif; ?></td>
+                    <td><?php if (punyaRole("admin", "superadmin")): ?><a class="btn btn-warning" href="edit-upah.php?<?= htmlspecialchars(http_build_query(array_merge(["id" => (int) $baris["id"]], $parameterFilterDaftar)), ENT_QUOTES, "UTF-8"); ?>">Edit</a><?php endif; ?><?php if (punyaRole("admin", "superadmin", "pic", "koordinator", "manager")): ?><form method="POST" action="fungsi/generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php elseif (!punyaRole("admin", "superadmin")): ?>-<?php endif; ?></td>
                 </tr>
             <?php endwhile; ?>
             </tbody>
