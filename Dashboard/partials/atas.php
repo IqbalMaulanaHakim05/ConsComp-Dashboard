@@ -43,14 +43,24 @@ $cssPerHalaman = [
     "audit" => "admin-settings.css",
     "pengaturan-publik" => "admin-settings.css",
     "lembur" => "admin-overtime.css",
+    "izin-karyawan" => "admin-izin.css",
+    "izin-cuti" => "admin-izin.css",
 ];
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
 $kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
-if (function_exists("rolePengguna") && rolePengguna() === "pic" && !in_array($halamanAktif, ["upah", "lembur"], true)) {
+$versiCssHalaman = match ($halamanAktif) {
+    "upah" => "20260813-upah-preview-table12",
+    "lembur" => "20260814-lembur-employee-details2",
+    "izin-karyawan", "izin-cuti" => "20260814-izin-pages1",
+    "karyawan" => "20260811-karyawan-columns1",
+    "dashboard" => "20260811-dashboard-columns5",
+    default => "20260811-layout8",
+};
+if (function_exists("rolePengguna") && rolePengguna() === "pic" && !in_array($halamanAktif, ["upah", "lembur", "izin-karyawan", "izin-cuti"], true)) {
     header("Location: upah.php");
     exit;
 }
-if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "upah", "lembur"], true)) {
+if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "upah", "lembur", "izin-karyawan", "izin-cuti"], true)) {
     header("Location: karyawan.php");
     exit;
 }
@@ -131,7 +141,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260812-export-options1">
     <?php if ($cssHalamanAktif !== ""): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= $halamanAktif === "upah" ? "20260813-upah-preview-table12" : ($halamanAktif === "lembur" ? "20260814-lembur-compensation-summary1" : ($halamanAktif === "karyawan" ? "20260811-karyawan-columns1" : ($halamanAktif === "dashboard" ? "20260811-dashboard-columns5" : "20260811-layout8"))); ?>">
+        <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= htmlspecialchars($versiCssHalaman); ?>">
     <?php endif; ?>
 </head>
 
@@ -192,6 +202,29 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 <span class="sidebar-icon" aria-hidden="true">↗</span>Lembur
             </a>
 
+        </div>
+
+        <a
+            href="<?= htmlspecialchars(URL_DASAR); ?>izin-karyawan.php"
+            class="<?= in_array($halamanAktif, ["izin-karyawan", "izin-cuti"], true) ? "active" : ""; ?>"
+        >
+            <span class="sidebar-icon" aria-hidden="true">I</span>Izin
+        </a>
+
+        <div class="sidebar-tree-children">
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>izin-karyawan.php"
+                class="<?= $halamanAktif === "izin-karyawan" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">1</span>Izin Karyawan
+            </a>
+
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>izin-cuti.php"
+                class="<?= $halamanAktif === "izin-cuti" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">2</span>Izin Cuti
+            </a>
         </div>
 
         <?php if (function_exists("punyaRole") && punyaRole("superadmin")): ?>

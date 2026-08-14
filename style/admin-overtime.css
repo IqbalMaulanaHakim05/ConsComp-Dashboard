@@ -22,6 +22,11 @@
 .lembur-page .form-body select,
 .lembur-page .form-body textarea { width: 100%; min-height: 44px; border-radius: 10px; }
 .lembur-page .form-body textarea { min-height: 92px; resize: vertical; }
+.lembur-page .form-body .overtime-employee-detail[readonly] {
+    color: #475569;
+    background: #f8fafc;
+    cursor: default;
+}
 .lembur-page .form-body > form > .btn { grid-column: 1 / -1; justify-self: end; min-width: 150px; min-height: 42px; }
 
 .lembur-page .data-card { padding: 0; }
@@ -64,7 +69,7 @@
 .lembur-page .export-preview-card .table-wrapper th,
 .lembur-page .export-preview-card .table-wrapper td { min-width: 120px; white-space: nowrap; }
 .lembur-page .table-wrapper { padding: 0 20px 20px; }
-.lembur-page table { min-width: 1280px; }
+.lembur-page table { min-width: 1500px; }
 .lembur-page table th { padding: 13px 14px; }
 .lembur-page table td { padding: 14px; vertical-align: middle; }
 .lembur-page table td:last-child { min-width: 300px; }
@@ -105,6 +110,7 @@
 :root[data-theme="dark"] .lembur-page .main-content > .form-card,
 :root[data-theme="dark"] .lembur-page .main-content > .data-card { border-color: #334155; }
 :root[data-theme="dark"] .lembur-page .form-card-header { background: linear-gradient(135deg, #1e293b, #172554); border-color: #334155; }
+:root[data-theme="dark"] .lembur-page .form-body .overtime-employee-detail[readonly] { color: #cbd5e1; background: #0f172a; }
 :root[data-theme="dark"] .lembur-page .overtime-compensation-summary { color: #e2e8f0; }
 
 @media screen and (max-width: 760px) {
