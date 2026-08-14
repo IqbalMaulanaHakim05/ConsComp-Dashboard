@@ -34,8 +34,8 @@ $jumlahPosisi = $grafik["jumlahPosisi"];
 $labelGender = $grafik["labelGender"];
 $jumlahGender = $grafik["jumlahGender"];
 
-// Tabel ringkas: 15 baris, opsi 30 dan 50.
-$data = ambilDataKaryawan($conn, [15, 30, 50], 15, false);
+// Tabel ringkas: 5 baris per halaman.
+$data = ambilDataKaryawan($conn, [5], 5, false);
 $hasil = $data["hasil"];
 $jumlahData = $data["jumlahData"];
 $totalCocok = $data["totalCocok"];
