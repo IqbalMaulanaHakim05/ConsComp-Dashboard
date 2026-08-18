@@ -155,19 +155,19 @@ function ambilDataKaryawan(
     $kataKunci = trim($_GET["cari"] ?? "");
     $filterKolom = (string) ($_GET["filter"] ?? "semua");
     $sortPilihan = [
-        "id" => "id", "emp_id" => "emp_id", "nama" => "employee_name",
+        "emp_id" => "emp_id", "nama" => "employee_name",
         "posisi" => "position", "departemen" => "department", "gaji" => "CAST(salary AS DECIMAL(15,2))",
         "tanggal_masuk" => "date_of_hire", "status_kerja" => "employment_status",
-        "performa" => "performance_score",
+        "performa" => "CAST(NULLIF(performance_score, '') AS DECIMAL(10,2))",
     ];
-    $sort = (string) ($_GET["sort"] ?? "id");
-    if (!isset($sortPilihan[$sort])) $sort = "id";
-    $arah = strtoupper((string) ($_GET["arah"] ?? "DESC"));
-    if (!in_array($arah, ["ASC", "DESC"], true)) $arah = "DESC";
-    $klausaUrut = $sortPilihan[$sort] . " " . $arah . ", id DESC";
+    $sort = (string) ($_GET["sort"] ?? "emp_id");
+    if (!isset($sortPilihan[$sort])) $sort = "emp_id";
+    $arah = strtoupper((string) ($_GET["arah"] ?? "ASC"));
+    if (!in_array($arah, ["ASC", "DESC"], true)) $arah = "ASC";
+    $klausaUrut = $sortPilihan[$sort] . " " . $arah . ", id ASC";
     $kolomFilter = [
         "semua" => "employee_name LIKE ? OR emp_id LIKE ? OR position LIKE ? OR department LIKE ? OR salary LIKE ? OR date_of_hire LIKE ? OR employment_status LIKE ? OR performance_score LIKE ?",
-        "id" => "emp_id LIKE ?", "posisi" => "position LIKE ?", "departemen" => "department LIKE ?",
+        "nama" => "employee_name LIKE ?", "id" => "emp_id LIKE ?", "posisi" => "position LIKE ?", "departemen" => "department LIKE ?",
         "gaji" => "salary LIKE ?", "tanggal_masuk" => "date_of_hire LIKE ?", "status_kerja" => "employment_status LIKE ?", "performa" => "performance_score LIKE ?",
     ];
     if (!isset($kolomFilter[$filterKolom])) $filterKolom = "semua";
