@@ -216,8 +216,7 @@ require __DIR__ . "/../partials/atas.php";
     <div class="form-card-header">
         <h2>Form Data Karyawan</h2>
         <p>
-            Kolom bertanda bintang wajib diisi. Setelah disimpan,
-            data SQL akan disinkronkan ke dataset lokal.
+            Kolom bertanda bintang wajib diisi.
         </p>
     </div>
 
@@ -439,8 +438,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const cards = [
         makeCard('Isi Data Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score','date_of_hire'], 'tambah-main-card'),
-        makeCard('Informasi Pribadi', ['alamat','tanggal_lahir','agama','gender','marital_status','kontak','email'], 'tambah-personal-card'),
-        makeCard('Biodata & Riwayat', ['biografi','keahlian'], 'tambah-history-card'),
+        makeCard('Biodata Karyawan', ['alamat','tanggal_lahir','agama','gender','marital_status','kontak','email'], 'tambah-personal-card'),
+        makeCard('Informasi & Riwayat Pekerjaan', ['biografi','keahlian'], 'tambah-history-card'),
         makeCard('Berkas Pendukung', ['foto_profil','file_cv','file_ijazah','file_mcu','tanggal_mcu_terakhir'], 'tambah-documents-card')
     ];
     const historyCard = cards[2];
