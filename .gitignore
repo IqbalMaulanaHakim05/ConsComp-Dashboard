@@ -2,3 +2,7 @@
 /tmp/
 /node_modules/
 /outputs/
+/storage/
+composer.json
+composer.lock
+build_employee_excel.mjs
