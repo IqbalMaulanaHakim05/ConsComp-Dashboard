@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Menyiapkan penyimpanan izin cuti berbasis hari kalender.
+ * Menyiapkan penyimpanan izin cuti berbasis hari kerja Senin-Jumat.
  */
 function siapkanTabelIzinCuti(mysqli $conn): bool
 {
@@ -53,4 +53,38 @@ function siapkanTabelIzinCuti(mysqli $conn): bool
                 )
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     ) !== false;
+}
+
+/**
+ * Menentukan apakah tanggal berada pada hari kerja Senin-Jumat.
+ * Hari libur nasional belum dikecualikan karena aplikasi belum memiliki
+ * kalender hari libur.
+ */
+function tanggalKerjaCuti(DateTimeImmutable $tanggal): bool
+{
+    return (int) $tanggal->format("N") <= 5;
+}
+
+/**
+ * Menghitung jumlah hari kerja secara inklusif pada suatu rentang tanggal.
+ */
+function hitungHariKerjaCuti(DateTimeImmutable $tanggalMulai, DateTimeImmutable $tanggalSelesai): int
+{
+    if ($tanggalSelesai < $tanggalMulai) {
+        return 0;
+    }
+
+    $jumlahHariKalender = (int) $tanggalMulai->diff($tanggalSelesai)->days + 1;
+    $totalHariKerja = intdiv($jumlahHariKalender, 7) * 5;
+    $sisaHari = $jumlahHariKalender % 7;
+    $hariAwal = (int) $tanggalMulai->format("N");
+
+    for ($offset = 0; $offset < $sisaHari; $offset++) {
+        $hariDalamMinggu = (($hariAwal + $offset - 1) % 7) + 1;
+        if ($hariDalamMinggu <= 5) {
+            $totalHariKerja++;
+        }
+    }
+
+    return $totalHariKerja;
 }

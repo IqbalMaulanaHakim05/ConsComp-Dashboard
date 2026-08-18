@@ -72,6 +72,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $pesan = "Izin sudah diproses atau tidak ditemukan.";
         }
+    } elseif ($aksi === "hapus") {
+        $izinId = (int) ($_POST["izin_id"] ?? 0);
+
+        if (!$bolehMenyetujui) {
+            $pesan = "Hanya admin dan superadmin yang dapat menghapus data izin.";
+        } elseif ($izinId <= 0) {
+            $pesan = "Data izin yang akan dihapus tidak valid.";
+        } else {
+            $berhasilDihapus = false;
+
+            try {
+                $stmt = mysqli_prepare(
+                    $conn,
+                    "DELETE FROM izin_meninggalkan_pekerjaan
+                     WHERE id = ? AND status IN ('disetujui', 'ditolak')"
+                );
+                mysqli_stmt_bind_param($stmt, "i", $izinId);
+                mysqli_stmt_execute($stmt);
+                $berhasilDihapus = mysqli_stmt_affected_rows($stmt) > 0;
+                mysqli_stmt_close($stmt);
+            } catch (mysqli_sql_exception $exception) {
+                $berhasilDihapus = false;
+            }
+
+            if ($berhasilDihapus) {
+                catatAktivitas($conn, "Menghapus izin meninggalkan pekerjaan ID " . $izinId . ".");
+                header("Location: izin-karyawan.php?pesan=" . urlencode("Data izin berhasil dihapus."));
+                exit;
+            }
+
+            $pesan = "Data izin tidak ditemukan atau statusnya belum disetujui/ditolak.";
+        }
     } elseif ($aksi === "simpan") {
         foreach (array_keys($form) as $namaKolom) {
             $form[$namaKolom] = trim((string) ($_POST[$namaKolom] ?? ""));
@@ -230,20 +262,6 @@ if ($parameterDaftar !== null) {
 }
 mysqli_stmt_execute($stmtDaftar);
 $daftarIzin = mysqli_stmt_get_result($stmtDaftar);
-$adaAksiTabel = false;
-
-if ($bolehMenyetujui && $daftarIzin) {
-    while ($itemIzin = mysqli_fetch_assoc($daftarIzin)) {
-        if ($itemIzin["status"] === "menunggu") {
-            $adaAksiTabel = true;
-            break;
-        }
-    }
-
-    if (mysqli_num_rows($daftarIzin) > 0) {
-        mysqli_data_seek($daftarIzin, 0);
-    }
-}
 
 $judulHalaman = "Izin Karyawan";
 $subjudulHalaman = "Pengajuan izin meninggalkan pekerjaan.";
@@ -256,16 +274,17 @@ require __DIR__ . "/partials/atas.php";
     <div class="alert-error" role="alert"><?= htmlspecialchars($pesan); ?></div>
 <?php endif; ?>
 
-<section class="form-card izin-form-card">
-    <div class="form-card-header">
-        <h2>Tambah Izin Meninggalkan Pekerjaan</h2>
-        <p>Pilih departemen terlebih dahulu, kemudian pilih posisi untuk menampilkan karyawan yang sesuai.</p>
-    </div>
+<form method="POST" id="izin-karyawan-form" class="izin-entry-form">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+    <input type="hidden" name="aksi" value="simpan">
 
-    <div class="form-body">
-        <form method="POST" id="izin-karyawan-form">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
-            <input type="hidden" name="aksi" value="simpan">
+    <section class="form-card izin-form-card">
+        <div class="form-card-header">
+            <h2>Tambah Izin Meninggalkan Pekerjaan</h2>
+            <p>Pilih departemen terlebih dahulu, kemudian pilih posisi untuk menampilkan karyawan yang sesuai.</p>
+        </div>
+
+        <div class="form-body izin-form-fields">
 
             <div class="form-group">
                 <label for="izin-department">Departemen</label>
@@ -325,7 +344,17 @@ require __DIR__ . "/partials/atas.php";
                 <textarea id="izin-deskripsi" name="deskripsi" rows="4" required><?= htmlspecialchars($form["deskripsi"]); ?></textarea>
             </div>
 
-            <div class="form-group full-width">
+        </div>
+    </section>
+
+    <section class="form-card replacement-form-card">
+        <div class="form-card-header">
+            <h2>Karyawan Pengganti</h2>
+            <p>Pilih karyawan yang akan menggantikan selama izin berlangsung.</p>
+        </div>
+
+        <div class="form-body replacement-form-body">
+            <div class="form-group">
                 <label for="izin-pengganti">Karyawan Pengganti</label>
                 <select id="izin-pengganti" name="karyawan_pengganti_id" data-selected="<?= (int) $form["karyawan_pengganti_id"]; ?>" required disabled>
                     <option value="">Pilih departemen dan karyawan terlebih dahulu</option>
@@ -335,9 +364,9 @@ require __DIR__ . "/partials/atas.php";
             </div>
 
             <button class="btn btn-success" type="submit">Simpan Izin</button>
-        </form>
-    </div>
-</section>
+        </div>
+    </section>
+</form>
 
 <section class="data-card izin-data-card">
     <div class="data-card-header">
@@ -360,7 +389,7 @@ require __DIR__ . "/partials/atas.php";
                     <th>Karyawan Pengganti</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
-                    <th class="izin-actions-header <?= $adaAksiTabel ? "has-action-buttons" : "no-action-buttons"; ?>">Aksi</th>
+                    <th class="izin-actions-header">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -377,6 +406,8 @@ require __DIR__ . "/partials/atas.php";
                             120 => "2 jam",
                             default => (int) $izin["durasi_menit"] . " menit",
                         };
+                        $bolehMemproses = $bolehMenyetujui && $izin["status"] === "menunggu";
+                        $bolehMenghapus = $bolehMenyetujui && in_array($izin["status"], ["disetujui", "ditolak"], true);
                         ?>
                         <tr>
                             <td><?= (int) $izin["id"]; ?></td>
@@ -391,9 +422,8 @@ require __DIR__ . "/partials/atas.php";
                             <td><?= htmlspecialchars($izin["pengganti_emp_id"] . " - " . $izin["pengganti_nama"]); ?></td>
                             <td><span class="status-badge status-<?= htmlspecialchars((string) $izin["status"]); ?>"><?= htmlspecialchars((string) $izin["status"]); ?></span></td>
                             <td><?= htmlspecialchars((string) $izin["nama_pembuat"]); ?></td>
-                            <?php $aksiTersedia = $bolehMenyetujui && $izin["status"] === "menunggu"; ?>
-                            <td class="izin-actions <?= $aksiTersedia ? "has-action-buttons" : "no-action-buttons"; ?>">
-                                <?php if ($aksiTersedia): ?>
+                            <td class="izin-actions">
+                                <?php if ($bolehMemproses): ?>
                                     <form method="POST">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                                         <input type="hidden" name="aksi" value="keputusan">
@@ -409,8 +439,17 @@ require __DIR__ . "/partials/atas.php";
                                             <span><?= htmlspecialchars((string) $izin["catatan_persetujuan"]); ?></span>
                                         <?php endif; ?>
                                     </div>
-                                <?php else: ?>
+                                <?php elseif (!$bolehMenghapus): ?>
                                     -
+                                <?php endif; ?>
+
+                                <?php if ($bolehMenghapus): ?>
+                                    <form method="POST" class="delete-izin-form" onsubmit="return confirm('Hapus permanen data izin ini?');">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+                                        <input type="hidden" name="aksi" value="hapus">
+                                        <input type="hidden" name="izin_id" value="<?= (int) $izin["id"]; ?>">
+                                        <button class="btn btn-danger" type="submit">Hapus</button>
+                                    </form>
                                 <?php endif; ?>
                             </td>
                         </tr>

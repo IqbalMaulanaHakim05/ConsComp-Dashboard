@@ -89,10 +89,13 @@ $jumlahDiterima = $total - $totalPotongan;
 $autoload = dirname(__DIR__, 2) . "/vendor/autoload.php";
 if (!is_file($autoload)) exit("Dependensi PDF belum terpasang.");
 require_once $autoload;
-$hasilPengaturan = mysqli_query($conn, "SELECT nama_situs FROM pengaturan_publik WHERE id = 1 LIMIT 1");
-$pengaturanSlip = $hasilPengaturan ? (mysqli_fetch_assoc($hasilPengaturan) ?: []) : [];
-$namaPerusahaan = trim((string) ($pengaturanSlip["nama_situs"] ?? "")) ?: "PT. Kalinyamat Perkasa";
-$alamatPerusahaan = "Jl. Alamat";
+$logoPerusahaanPath = dirname(__DIR__) . "/data/ikonlogo_KP_1_S.png";
+$logoPerusahaanBinary = is_file($logoPerusahaanPath) ? file_get_contents($logoPerusahaanPath) : false;
+if ($logoPerusahaanBinary === false) {
+    http_response_code(500);
+    exit("Logo perusahaan tidak ditemukan.");
+}
+$logoPerusahaanSrc = "data:image/png;base64," . base64_encode($logoPerusahaanBinary);
 $namaBulan = [1 => "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 $tanggalPeriode = trim((string) ($data["berlaku_mulai"] ?? ""));
 $periodeDate = $tanggalPeriode !== "" ? DateTimeImmutable::createFromFormat("!Y-m-d", substr($tanggalPeriode, 0, 10)) : false;
@@ -102,8 +105,7 @@ $tanggalCetakIndonesia = $tanggalCetak->format("j") . " " . $namaBulan[(int) $ta
 $periodeIndonesia = $namaBulan[(int) $periodeDate->format("n")];
 $escapeSlip = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, "UTF-8");
 $formatNominal = static fn(?float $value): string => $value === null ? "" : number_format($value, 0, ",", ".");
-$namaPerusahaanHtml = $escapeSlip($namaPerusahaan);
-$alamatPerusahaanHtml = $escapeSlip($alamatPerusahaan);
+$logoPerusahaanSrcHtml = $escapeSlip($logoPerusahaanSrc);
 $periodeHtml = $escapeSlip($periodeIndonesia);
 $tanggalCetakHtml = $escapeSlip($tanggalCetakIndonesia);
 $empIdHtml = $escapeSlip((string) $data["emp_id"]);
@@ -136,11 +138,11 @@ $html = <<<HTML
     .header { border-bottom: 1.6px solid #111; padding-bottom: 10px; }
     .header-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .header-grid > tbody > tr > td { padding: 0; vertical-align: top; }
-    .company-block { width: 33.333%; }
+    .company-block { width: 33.333%; vertical-align: middle !important; }
     .title-block { width: 33.333%; text-align: center; }
     .header-spacer { width: 33.333%; }
-    .company-name { margin: 0; font-size: 14pt; line-height: 1.05; font-weight: bold; white-space: nowrap; }
-    .company-address { margin-top: 3px; font-size: 11pt; }
+    .company-logo { display: block; width: auto; height: 24px; max-width: 100%; }
+    .company-address { margin-top: 3px; font-size: 8pt; }
     .slip-title { margin: 7px 0 4px; font-size: 22pt; line-height: 1; letter-spacing: 2px; font-weight: bold; white-space: nowrap; }
     .period { font-size: 12pt; }
     .meta { width: 100%; border-collapse: collapse; font-size: 8pt; }
@@ -177,10 +179,8 @@ $html = <<<HTML
     <table class="header-grid">
         <tr>
             <td class="company-block">
-                <div class="company-name">Perusahaan</div>
-                <div class="company-address">Alamat</div>
-                <!-- <div class="company-name">{$namaPerusahaanHtml}</div>
-                <div class="company-address">{$alamatPerusahaanHtml}</div> -->
+                <img class="company-logo" src="{$logoPerusahaanSrcHtml}" alt="Kalinyamat Perkasa">
+                <div class="company-address">Jl. Bukit Watu Wila Permata Puri Blok H-IV No 04 RT 001 RW 011 Bringin, Ngalian, Kota Semarang</div>
             </td>
             <td class="title-block">
                 <div class="slip-title">SLIP GAJI</div>
