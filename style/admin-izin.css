@@ -70,6 +70,20 @@
     line-height: 1.4;
 }
 
+:is(.izin-karyawan-page, .izin-cuti-page) .replacement-employee-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+:is(.izin-karyawan-page, .izin-cuti-page) .replacement-employee-info strong {
+    color: #334155;
+    font-weight: 700;
+}
+
 .izin-karyawan-page #izin-durasi-note { color: #9a6700; font-weight: 700; }
 
 :is(.izin-karyawan-page, .izin-cuti-page) .form-body > form > .btn {

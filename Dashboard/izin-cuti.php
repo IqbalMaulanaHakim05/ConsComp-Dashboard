@@ -360,6 +360,7 @@ require __DIR__ . "/partials/atas.php";
                 <select id="cuti-pengganti" name="karyawan_pengganti_id" data-selected="<?= (int) $form["karyawan_pengganti_id"]; ?>" required disabled>
                     <option value="">Pilih departemen dan karyawan terlebih dahulu</option>
                 </select>
+                <div id="cuti-pengganti-info" class="replacement-employee-info" hidden></div>
                 <p class="field-note">Pilihan hanya menampilkan karyawan lain dari departemen yang sama.</p>
             </div>
 
@@ -464,6 +465,7 @@ require __DIR__ . "/partials/atas.php";
     const position = document.getElementById("cuti-position");
     const employee = document.getElementById("cuti-karyawan");
     const replacement = document.getElementById("cuti-pengganti");
+    const replacementInfo = document.getElementById("cuti-pengganti-info");
     const startDate = document.getElementById("cuti-tanggal-mulai");
     const endDate = document.getElementById("cuti-tanggal-selesai");
     const leaveType = document.getElementById("cuti-jenis");
@@ -531,6 +533,8 @@ require __DIR__ . "/partials/atas.php";
     const updateReplacements = (restoreSelection = false) => {
         const selectedId = restoreSelection ? replacement.dataset.selected : "";
         replacement.replaceChildren();
+        replacementInfo.hidden = true;
+        replacementInfo.replaceChildren();
 
         if (!department.value || !employee.value) {
             replacement.append(createOption("", "Pilih departemen dan karyawan terlebih dahulu"));
@@ -548,6 +552,19 @@ require __DIR__ . "/partials/atas.php";
 
         if (matching.some(item => String(item.id) === String(selectedId))) replacement.value = String(selectedId);
         replacement.dataset.selected = "";
+        renderReplacementInfo();
+    };
+
+    const renderReplacementInfo = () => {
+        const selected = employees.find(item => String(item.id) === replacement.value);
+        replacementInfo.replaceChildren();
+        replacementInfo.hidden = !selected;
+        if (!selected) return;
+        const positionInfo = document.createElement("span");
+        positionInfo.textContent = `Posisi: ${selected.posisi || "-"}`;
+        const departmentInfo = document.createElement("span");
+        departmentInfo.textContent = `Departemen: ${selected.departemen || "-"}`;
+        replacementInfo.append(positionInfo, departmentInfo);
     };
 
     const updateDuration = () => {
@@ -596,6 +613,7 @@ require __DIR__ . "/partials/atas.php";
     department.addEventListener("change", () => updatePositions(false));
     position.addEventListener("change", () => updateEmployees(false));
     employee.addEventListener("change", () => updateReplacements(false));
+    replacement.addEventListener("change", renderReplacementInfo);
     startDate.addEventListener("change", updateDuration);
     endDate.addEventListener("change", updateDuration);
     leaveType.addEventListener("change", updateDuration);
