@@ -101,6 +101,7 @@ function pasanganGrafik(mysqli_result $hasil, string $kolomLabel, string $kolomN
  */
 function ambilAnalisisKaryawan(mysqli $conn): array
 {
+    siapkanTanggalKeluarKaryawan($conn);
     $filter = [
         "department" => trim((string) ($_GET["department"] ?? "")),
         "position" => trim((string) ($_GET["position"] ?? "")),
@@ -242,6 +243,19 @@ function ambilAnalisisKaryawan(mysqli $conn): array
         "jumlah"
     );
 
+    $pergerakanPerBulan = [];
+    $hasilMasuk = queryAnalisis($conn, "SELECT DATE_FORMAT(date_of_hire, '%Y-%m') AS periode, COUNT(*) AS jumlah FROM karyawan", array_merge($kondisi, ["date_of_hire IS NOT NULL"]), $tipe, $parameter, " GROUP BY DATE_FORMAT(date_of_hire, '%Y-%m')");
+    while ($baris = mysqli_fetch_assoc($hasilMasuk)) $pergerakanPerBulan[$baris["periode"]]["masuk"] = (int) $baris["jumlah"];
+    $hasilKeluar = queryAnalisis($conn, "SELECT DATE_FORMAT(date_of_exit, '%Y-%m') AS periode, COUNT(*) AS jumlah FROM karyawan", array_merge($kondisi, ["date_of_exit IS NOT NULL"]), $tipe, $parameter, " GROUP BY DATE_FORMAT(date_of_exit, '%Y-%m')");
+    while ($baris = mysqli_fetch_assoc($hasilKeluar)) $pergerakanPerBulan[$baris["periode"]]["keluar"] = (int) $baris["jumlah"];
+    ksort($pergerakanPerBulan);
+    $masukKeluar = ["label" => [], "masuk" => [], "keluar" => []];
+    foreach ($pergerakanPerBulan as $periode => $jumlah) {
+        $masukKeluar["label"][] = $periode;
+        $masukKeluar["masuk"][] = (int) ($jumlah["masuk"] ?? 0);
+        $masukKeluar["keluar"][] = (int) ($jumlah["keluar"] ?? 0);
+    }
+
     $gaji = pasanganGrafik(
         queryAnalisis(
             $conn,
@@ -307,6 +321,7 @@ function ambilAnalisisKaryawan(mysqli $conn): array
         "status" => $status,
         "gender" => $gender,
         "tren" => $tren,
+        "masuk_keluar" => $masukKeluar,
         "gaji" => $gaji,
         "performa" => $performa,
         "ringkasan" => $ringkasan,

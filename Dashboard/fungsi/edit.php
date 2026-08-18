@@ -6,9 +6,11 @@ require_once __DIR__ . "/audit.php";
 require_once __DIR__ . "/media-karyawan.php";
 require_once __DIR__ . "/sinkronisasi.php";
 require_once __DIR__ . "/master-data.php";
+require_once __DIR__ . "/tanggal-keluar-karyawan.php";
 
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
+siapkanTanggalKeluarKaryawan($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
@@ -45,6 +47,7 @@ $form = [
     "gender" => trim((string) ($data["gender"] ?? "")),
     "employment_status" => (string) ($data["employment_status"] ?? ""),
     "performance_score" => (string) ($data["performance_score"] ?? ""),
+    "date_of_exit" => (string) ($data["date_of_exit"] ?? ""),
 ];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -60,6 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $salary = (float) $form["salary"];
     $gender = $form["gender"];
     $employmentStatus = $form["employment_status"];
+    $dateOfExit = $form["date_of_exit"] !== "" ? $form["date_of_exit"] : null;
     $performanceScore = filter_var(
         $form["performance_score"],
         FILTER_VALIDATE_INT
@@ -78,6 +82,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $pesan = "Semua kolom wajib diisi.";
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
+    } elseif ($dateOfExit !== null && (!preg_match("/^\\d{4}-\\d{2}-\\d{2}$/", $dateOfExit) || !checkdate((int) substr($dateOfExit, 5, 2), (int) substr($dateOfExit, 8, 2), (int) substr($dateOfExit, 0, 4)))) {
+        $pesan = "Tanggal keluar tidak valid.";
     } elseif (
         $performanceScore === false
         || $performanceScore < 1
@@ -113,6 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         salary = ?,
                         gender = ?,
                         employment_status = ?,
+                        date_of_exit = ?,
                         performance_score = ?,
                         file_cv = ?,
                         foto_profil = ?,
@@ -127,7 +134,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 mysqli_stmt_bind_param(
                     $stmtUpdate,
-                    str_repeat("s", 18) . "d" . str_repeat("s", 7) . "i",
+                    str_repeat("s", 18) . "d" . str_repeat("s", 8) . "i",
                     $employeeName, $nik, $alamat, $biografi, $keahlian, $riwayatPekerjaan, $tanggalRiwayatPekerjaan, $riwayatPendidikan, $tanggalRiwayatPendidikan, $tanggalLahir, $tanggalMcuTerakhir, $agama, $maritalStatus, $kontak, $email,
                     $empId,
                     $position,
@@ -135,6 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $salary,
                     $gender,
                     $employmentStatus,
+                    $dateOfExit,
                     $performanceScore,
                     $fileCv,
                     $fotoProfil, $fileIjazah, $fileMcu,
@@ -341,6 +349,12 @@ require __DIR__ . "/../partials/atas.php";
                             id="employment_status"
                             name="employment_status"
                             required><option value="">Pilih status kerja</option><?php foreach ($masterStatus as $item): ?><option <?= $form["employment_status"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date_of_exit">Tanggal Keluar</label>
+                        <input type="date" id="date_of_exit" name="date_of_exit" value="<?= htmlspecialchars($form["date_of_exit"]); ?>">
+                        <p class="field-note">Isi saat karyawan berhenti/keluar. Data ini dipakai pada grafik analisis.</p>
                     </div>
 
                     <div class="form-group">

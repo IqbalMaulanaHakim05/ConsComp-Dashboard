@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . "/koneksi.php";
 require __DIR__ . "/fungsi/auth.php";
 require __DIR__ . "/fungsi/analisis-karyawan.php";
+require __DIR__ . "/fungsi/tanggal-keluar-karyawan.php";
 require_once __DIR__ . "/fungsi/pengaturan-publik.php";
 
 wajibLogin();
@@ -99,6 +100,7 @@ require __DIR__ . "/partials/atas.php";
             <article class="analysis-chart-card analysis-chart-wide"><h2>Karyawan per Posisi</h2><p>Jumlah karyawan pada seluruh posisi di departemen Anda.</p><div class="analysis-chart-wrap analysis-chart-dynamic" style="height: <?= max(320, count($analisis["posisi"]["label"]) * 34); ?>px"><canvas id="chartPosition"></canvas></div></article>
         <?php endif; ?>
         <article class="analysis-chart-card"><h2>Tren Penerimaan Karyawan</h2><p>Jumlah karyawan berdasarkan bulan masuk.</p><div class="analysis-chart-wrap"><canvas id="chartHiring"></canvas></div></article>
+        <article class="analysis-chart-card analysis-chart-wide"><h2>Karyawan Masuk dan Keluar</h2><p>Perbandingan jumlah karyawan masuk dan keluar setiap bulan untuk seluruh tahun yang tersedia.</p><div class="analysis-chart-wrap"><canvas id="chartEmployeeMovement"></canvas></div></article>
         <?php if (roleOperasional()): ?>
             <article class="analysis-chart-card"><h2>Jenis Kelamin</h2><p>Komposisi jenis kelamin karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartGender"></canvas></div></article>
         <?php else: ?>
@@ -146,6 +148,7 @@ require __DIR__ . "/partials/atas.php";
         "department" => $analisis["departemen"], "position" => $analisis["posisi"],
         "status" => $analisis["status"], "gender" => $analisis["gender"],
         "hiring" => $analisis["tren"], "salary" => $analisis["gaji"],
+        "movement" => $analisis["masuk_keluar"],
         "performance" => $analisis["performa"],
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
     const root = getComputedStyle(document.querySelector('.analysis-page'));
@@ -217,6 +220,12 @@ require __DIR__ . "/partials/atas.php";
 
     const hiring = document.getElementById('chartHiring');
     if (hiring) charts.push(new Chart(hiring, { type: 'line', data: { labels: datasets.hiring.label, datasets: [{ data: datasets.hiring.nilai, borderColor: trendColor, backgroundColor: hexToRgba(trendColor, .14), fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: secondary }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: commonScales } }));
+
+    const movement = document.getElementById('chartEmployeeMovement');
+    if (movement) charts.push(new Chart(movement, { type: 'line', data: { labels: datasets.movement.label, datasets: [
+        { label: 'Karyawan Masuk', data: datasets.movement.masuk, borderColor: trendColor, backgroundColor: hexToRgba(trendColor, .14), fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: secondary },
+        { label: 'Karyawan Keluar', data: datasets.movement.keluar, borderColor: female, backgroundColor: hexToRgba(female, .12), fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: female }
+    ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: commonScales } }));
 
     const synchronizeChartTheme = () => {
         const colors = themeColors();
