@@ -142,7 +142,7 @@ $html = <<<HTML
     .title-block { width: 33.333%; text-align: center; }
     .header-spacer { width: 33.333%; }
     .company-logo { display: block; width: auto; height: 24px; max-width: 100%; }
-    .company-address { margin-top: 3px; font-size: 8pt; }
+    .company-address { margin-top: 3px; font-size: 10pt; }
     .slip-title { margin: 7px 0 4px; font-size: 22pt; line-height: 1; letter-spacing: 2px; font-weight: bold; white-space: nowrap; }
     .period { font-size: 12pt; }
     .meta { width: 100%; border-collapse: collapse; font-size: 8pt; }
@@ -186,7 +186,8 @@ $html = <<<HTML
         <tr>
             <td class="company-block">
                 <img class="company-logo" src="{$logoPerusahaanSrcHtml}" alt="Kalinyamat Perkasa">
-                <div class="company-address">Jl. Bukit Watu Wila Permata Puri Blok H-IV No 04 RT 001 RW 011 Bringin, Ngalian, Kota Semarang</div>
+                <div class="company-address">{Alamat}</div>
+                <!-- <div class="company-address">Jl. Bukit Watu Wila Permata Puri Blok H-IV No 04 RT 001 RW 011 Bringin, Ngalian, Kota Semarang</div> -->
             </td>
             <td class="title-block">
                 <div class="slip-title">SLIP GAJI</div>
@@ -228,7 +229,7 @@ $html = <<<HTML
     <tr>
         <td class="signature-spacer"></td>
         <td class="signature-block">
-            <div class="signature-place">Jepara, ....................</div>
+            <div class="signature-place">{Tempat}, ....................</div>
             <div class="signature-gap"></div>
             <div class="signature-name">............................</div>
         </td>
