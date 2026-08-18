@@ -174,6 +174,12 @@ $html = <<<HTML
     .received td { padding: 0 0 4px; border-bottom: 1.4px solid #111; font-size: 14pt; vertical-align: bottom; }
     .received-label { width: 76%; text-align: right; padding-right: 12px !important; }
     .received-amount { width: 24%; text-align: right; white-space: nowrap; }
+    .signature-wrap { width: 100%; margin-top: 18px; border-collapse: collapse; table-layout: fixed; page-break-inside: avoid; }
+    .signature-spacer { width: 68%; }
+    .signature-block { width: 32%; padding: 0; text-align: center; font-size: 11pt; }
+    .signature-place { white-space: nowrap; }
+    .signature-gap { height: 58px; }
+    .signature-name { white-space: nowrap; }
 </style>
 <div class="header">
     <table class="header-grid">
@@ -218,6 +224,16 @@ $html = <<<HTML
     </tbody>
 </table>
 <table class="received"><tr><td class="received-label">Total Diterima</td><td class="received-amount"><b>{$jumlahDiterimaHtml}</b></td></tr></table>
+<table class="signature-wrap">
+    <tr>
+        <td class="signature-spacer"></td>
+        <td class="signature-block">
+            <div class="signature-place">Jepara, ....................</div>
+            <div class="signature-gap"></div>
+            <div class="signature-name">............................</div>
+        </td>
+    </tr>
+</table>
 HTML;
 $options = new \Dompdf\Options();
 $options->set("defaultFont", "DejaVu Sans");
