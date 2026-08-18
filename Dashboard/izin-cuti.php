@@ -73,6 +73,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $pesan = "Izin cuti sudah diproses atau tidak ditemukan.";
         }
+    } elseif ($aksi === "hapus") {
+        $cutiId = (int) ($_POST["cuti_id"] ?? 0);
+
+        if (!$bolehMenyetujui) {
+            $pesan = "Hanya admin dan superadmin yang dapat menghapus data izin cuti.";
+        } elseif ($cutiId <= 0) {
+            $pesan = "Data izin cuti yang akan dihapus tidak valid.";
+        } else {
+            $berhasilDihapus = false;
+
+            try {
+                $stmt = mysqli_prepare(
+                    $conn,
+                    "DELETE FROM izin_cuti
+                     WHERE id = ? AND status IN ('disetujui', 'ditolak')"
+                );
+                mysqli_stmt_bind_param($stmt, "i", $cutiId);
+                mysqli_stmt_execute($stmt);
+                $berhasilDihapus = mysqli_stmt_affected_rows($stmt) > 0;
+                mysqli_stmt_close($stmt);
+            } catch (mysqli_sql_exception $exception) {
+                $berhasilDihapus = false;
+            }
+
+            if ($berhasilDihapus) {
+                catatAktivitas($conn, "Menghapus izin cuti ID " . $cutiId . ".");
+                header("Location: izin-cuti.php?pesan=" . urlencode("Data izin cuti berhasil dihapus."));
+                exit;
+            }
+
+            $pesan = "Data izin cuti tidak ditemukan atau statusnya belum disetujui/ditolak.";
+        }
     } elseif ($aksi === "simpan") {
         foreach (array_keys($form) as $namaKolom) {
             $form[$namaKolom] = trim((string) ($_POST[$namaKolom] ?? ""));
@@ -108,6 +140,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             && ($tanggalSelesai != $tanggalMulai || !in_array($periodeSetengahHari, ["pagi", "siang"], true))
         ) {
             $pesan = "Cuti setengah hari harus berada pada satu tanggal dengan pilihan pagi atau siang.";
+        } elseif ($jenisCuti === "setengah_hari" && !tanggalKerjaCuti($tanggalMulai)) {
+            $pesan = "Cuti setengah hari hanya dapat diajukan pada hari kerja (Senin-Jumat).";
+        } elseif ($jenisCuti === "harian" && hitungHariKerjaCuti($tanggalMulai, $tanggalSelesai) === 0) {
+            $pesan = "Rentang cuti tidak memiliki hari kerja. Pilih tanggal yang mencakup Senin-Jumat.";
         } elseif (strlen($form["nomor_kontak"]) > 50) {
             $pesan = "Nomor kontak maksimal 50 karakter.";
         } elseif ($karyawanId === $karyawanPenggantiId) {
@@ -117,7 +153,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } else {
             $totalHari = $jenisCuti === "setengah_hari"
                 ? 0.5
-                : (float) ((int) $tanggalMulai->diff($tanggalSelesai)->days + 1);
+                : (float) hitungHariKerjaCuti($tanggalMulai, $tanggalSelesai);
 
             $stmtKaryawan = mysqli_prepare(
                 $conn,
@@ -249,20 +285,6 @@ if ($parameterDaftar !== null) {
 }
 mysqli_stmt_execute($stmtDaftar);
 $daftarCuti = mysqli_stmt_get_result($stmtDaftar);
-$adaAksiTabel = false;
-
-if ($bolehMenyetujui && $daftarCuti) {
-    while ($itemCuti = mysqli_fetch_assoc($daftarCuti)) {
-        if ($itemCuti["status"] === "menunggu") {
-            $adaAksiTabel = true;
-            break;
-        }
-    }
-
-    if (mysqli_num_rows($daftarCuti) > 0) {
-        mysqli_data_seek($daftarCuti, 0);
-    }
-}
 
 $judulHalaman = "Izin Cuti";
 $subjudulHalaman = "Pengajuan dan pemantauan izin cuti karyawan.";
@@ -275,16 +297,17 @@ require __DIR__ . "/partials/atas.php";
     <div class="alert-error" role="alert"><?= htmlspecialchars($pesan); ?></div>
 <?php endif; ?>
 
-<section class="form-card izin-form-card">
-    <div class="form-card-header">
-        <h2>Tambah Izin Cuti</h2>
-        <p>Pilih departemen terlebih dahulu, kemudian pilih posisi dan karyawan yang sesuai.</p>
-    </div>
+<form method="POST" id="izin-cuti-form" class="izin-entry-form">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+    <input type="hidden" name="aksi" value="simpan">
 
-    <div class="form-body">
-        <form method="POST" id="izin-cuti-form">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
-            <input type="hidden" name="aksi" value="simpan">
+    <section class="form-card izin-form-card">
+        <div class="form-card-header">
+            <h2>Tambah Izin Cuti</h2>
+            <p>Pilih departemen terlebih dahulu, kemudian pilih posisi dan karyawan yang sesuai.</p>
+        </div>
+
+        <div class="form-body izin-form-fields">
 
             <div class="form-group">
                 <label for="cuti-department">Departemen</label>
@@ -328,7 +351,7 @@ require __DIR__ . "/partials/atas.php";
                     <option value="harian" <?= $form["jenis_cuti"] === "harian" ? "selected" : ""; ?>>Harian penuh</option>
                     <option value="setengah_hari" <?= $form["jenis_cuti"] === "setengah_hari" ? "selected" : ""; ?>>Setengah hari</option>
                 </select>
-                <p class="field-note">Durasi dihitung berdasarkan hari kalender.</p>
+                <p class="field-note">Durasi dihitung berdasarkan hari kerja (Senin-Jumat). Hari libur nasional tetap dihitung.</p>
             </div>
 
             <div class="form-group">
@@ -355,7 +378,17 @@ require __DIR__ . "/partials/atas.php";
                 <textarea id="cuti-deskripsi" name="deskripsi" rows="4" required><?= htmlspecialchars($form["deskripsi"]); ?></textarea>
             </div>
 
-            <div class="form-group full-width">
+        </div>
+    </section>
+
+    <section class="form-card replacement-form-card">
+        <div class="form-card-header">
+            <h2>Karyawan Pengganti</h2>
+            <p>Pilih karyawan yang akan menggantikan selama cuti berlangsung.</p>
+        </div>
+
+        <div class="form-body replacement-form-body">
+            <div class="form-group">
                 <label for="cuti-pengganti">Karyawan Pengganti</label>
                 <select id="cuti-pengganti" name="karyawan_pengganti_id" data-selected="<?= (int) $form["karyawan_pengganti_id"]; ?>" required disabled>
                     <option value="">Pilih departemen dan karyawan terlebih dahulu</option>
@@ -365,9 +398,9 @@ require __DIR__ . "/partials/atas.php";
             </div>
 
             <button class="btn btn-success" type="submit">Simpan Izin Cuti</button>
-        </form>
-    </div>
-</section>
+        </div>
+    </section>
+</form>
 
 <section class="data-card izin-data-card">
     <div class="data-card-header">
@@ -392,7 +425,7 @@ require __DIR__ . "/partials/atas.php";
                     <th>Karyawan Pengganti</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
-                    <th class="izin-actions-header <?= $adaAksiTabel ? "has-action-buttons" : "no-action-buttons"; ?>">Aksi</th>
+                    <th class="izin-actions-header">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -406,9 +439,10 @@ require __DIR__ . "/partials/atas.php";
                             default => "-",
                         };
                         $totalHariLabel = (float) $cuti["total_hari"] === 0.5
-                            ? "0,5 hari"
+                            ? "-"
                             : number_format((float) $cuti["total_hari"], 0, ",", ".") . " hari";
-                        $aksiTersedia = $bolehMenyetujui && $cuti["status"] === "menunggu";
+                        $bolehMemproses = $bolehMenyetujui && $cuti["status"] === "menunggu";
+                        $bolehMenghapus = $bolehMenyetujui && in_array($cuti["status"], ["disetujui", "ditolak"], true);
                         ?>
                         <tr>
                             <td><?= (int) $cuti["id"]; ?></td>
@@ -425,8 +459,8 @@ require __DIR__ . "/partials/atas.php";
                             <td><?= htmlspecialchars($cuti["pengganti_emp_id"] . " - " . $cuti["pengganti_nama"]); ?></td>
                             <td><span class="status-badge status-<?= htmlspecialchars((string) $cuti["status"]); ?>"><?= htmlspecialchars((string) $cuti["status"]); ?></span></td>
                             <td><?= htmlspecialchars((string) $cuti["nama_pembuat"]); ?></td>
-                            <td class="izin-actions <?= $aksiTersedia ? "has-action-buttons" : "no-action-buttons"; ?>">
-                                <?php if ($aksiTersedia): ?>
+                            <td class="izin-actions">
+                                <?php if ($bolehMemproses): ?>
                                     <form method="POST">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                                         <input type="hidden" name="aksi" value="keputusan">
@@ -442,8 +476,17 @@ require __DIR__ . "/partials/atas.php";
                                             <span><?= htmlspecialchars((string) $cuti["catatan_persetujuan"]); ?></span>
                                         <?php endif; ?>
                                     </div>
-                                <?php else: ?>
+                                <?php elseif (!$bolehMenghapus): ?>
                                     -
+                                <?php endif; ?>
+
+                                <?php if ($bolehMenghapus): ?>
+                                    <form method="POST" class="delete-izin-form" onsubmit="return confirm('Hapus permanen data izin cuti ini?');">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+                                        <input type="hidden" name="aksi" value="hapus">
+                                        <input type="hidden" name="cuti_id" value="<?= (int) $cuti["id"]; ?>">
+                                        <button class="btn btn-danger" type="submit">Hapus</button>
+                                    </form>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -567,6 +610,32 @@ require __DIR__ . "/partials/atas.php";
         replacementInfo.append(positionInfo, departmentInfo);
     };
 
+    const parseDateUtc = value => {
+        const [year, month, day] = value.split("-").map(Number);
+        return new Date(Date.UTC(year, month - 1, day));
+    };
+
+    const isWorkingDay = date => {
+        const day = date.getUTCDay();
+        return day >= 1 && day <= 5;
+    };
+
+    const countWorkingDays = (startValue, endValue) => {
+        const start = parseDateUtc(startValue);
+        const end = parseDateUtc(endValue);
+        const calendarDays = Math.floor((end - start) / 86400000) + 1;
+        let days = Math.floor(calendarDays / 7) * 5;
+        const remainingDays = calendarDays % 7;
+        const startDay = start.getUTCDay() || 7;
+
+        for (let offset = 0; offset < remainingDays; offset++) {
+            const day = ((startDay + offset - 1) % 7) + 1;
+            if (day <= 5) days++;
+        }
+
+        return days;
+    };
+
     const updateDuration = () => {
         const halfDay = leaveType.value === "setengah_hari";
         halfDayPeriod.disabled = !halfDay;
@@ -586,7 +655,9 @@ require __DIR__ . "/partials/atas.php";
         }
 
         if (halfDay && startDate.value) {
-            totalDays.value = "0,5 hari";
+            totalDays.value = isWorkingDay(parseDateUtc(startDate.value))
+                ? "0,5 hari kerja"
+                : "Bukan hari kerja";
             return;
         }
 
@@ -595,10 +666,8 @@ require __DIR__ . "/partials/atas.php";
             return;
         }
 
-        const start = new Date(`${startDate.value}T00:00:00`);
-        const end = new Date(`${endDate.value}T00:00:00`);
-        const days = Math.round((end - start) / 86400000) + 1;
-        totalDays.value = `${days} hari`;
+        const days = countWorkingDays(startDate.value, endDate.value);
+        totalDays.value = `${days} hari kerja`;
     };
 
     const openDatePicker = input => {
