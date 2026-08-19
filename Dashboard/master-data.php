@@ -176,17 +176,46 @@ require __DIR__ . "/partials/atas.php";
     <?php endforeach; ?>
 </section>
 
+<style>
+    #position-dialog {
+        width: min(760px, calc(100vw - 2rem));
+        max-height: min(650px, calc(100vh - 2rem));
+        padding: 2rem;
+        border: 1px solid #9ca3af;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .28);
+    }
+    #position-dialog::backdrop { background: rgba(0, 0, 0, .38); }
+    #position-dialog h2 { margin: 0 0 1.25rem; text-align: center; color: #111827; }
+    .position-dialog-add { display: flex; gap: .75rem; margin-bottom: 1.25rem; }
+    .position-dialog-add select { flex: 1; min-width: 0; border: 1px solid #667cff; border-radius: 14px; padding: .8rem 1rem; }
+    .position-dialog-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem 1.25rem; max-height: 330px; overflow-y: auto; padding: .1rem .15rem; }
+    .position-dialog-list li { display: flex; align-items: center; justify-content: space-between; gap: .75rem; min-width: 0; padding: .7rem 1rem; border: 1px solid #d1d5db; border-radius: 14px; background: #fafafa; }
+    .position-dialog-list li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .position-dialog-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.25rem; }
+    .position-dialog-pages { display: flex; align-items: center; gap: .75rem; }
+    .position-dialog-pages strong { min-width: 110px; text-align: center; color: #111827; }
+    @media (max-width: 640px) { #position-dialog { padding: 1.25rem; } .position-dialog-add, .position-dialog-list { grid-template-columns: 1fr; } .position-dialog-add { display: grid; } }
+</style>
 <dialog id="position-dialog">
-    <h2>Posisi Departemen: <span id="position-department-name"></span></h2>
-    <form method="POST" class="search-form">
+    <h2>Posisi Departemen <span id="position-department-name"></span></h2>
+    <form method="POST" class="position-dialog-add">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
         <input type="hidden" name="aksi" value="hubungkan_posisi">
         <input type="hidden" id="position-department-id" name="department_id">
-        <select name="posisi_id" required><option value="">Pilih posisi untuk ditambahkan</option><?php foreach ($posisiRelasi as $item): ?><option value="<?= (int) $item["id"]; ?>"><?= htmlspecialchars($item["nama"]); ?></option><?php endforeach; ?></select>
+        <select name="posisi_id" required><option value="">Tambahkan posisi yang ingin ditambahkan</option><?php foreach ($posisiRelasi as $item): ?><option value="<?= (int) $item["id"]; ?>"><?= htmlspecialchars($item["nama"]); ?></option><?php endforeach; ?></select>
         <button class="btn btn-success" type="submit">Tambah Posisi</button>
     </form>
-    <ul id="department-position-list" class="master-list"></ul>
-    <button class="btn btn-secondary" type="button" id="close-position-dialog">Tutup</button>
+    <ul id="department-position-list" class="master-list position-dialog-list"></ul>
+    <div class="position-dialog-footer">
+        <button class="btn btn-secondary" type="button" id="close-position-dialog">Batal</button>
+        <div class="position-dialog-pages">
+            <button class="btn btn-secondary" type="button" id="position-previous-page">Sebelumnya</button>
+            <strong id="position-page-label">Halaman 1 dari 1</strong>
+            <button class="btn btn-secondary" type="button" id="position-next-page">Berikutnya</button>
+        </div>
+    </div>
 </dialog>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -195,30 +224,49 @@ document.addEventListener('DOMContentLoaded', function () {
     const departmentId = document.getElementById('position-department-id');
     const departmentName = document.getElementById('position-department-name');
     const relations = <?= json_encode($relasiPosisi, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const previousPage = document.getElementById('position-previous-page');
+    const nextPage = document.getElementById('position-next-page');
+    const pageLabel = document.getElementById('position-page-label');
+    const pageSize = 8;
+    let currentPage = 1;
+    let currentItems = [];
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const renderPositionPage = function () {
+        const totalPages = Math.max(1, Math.ceil(currentItems.length / pageSize));
+        currentPage = Math.min(currentPage, totalPages);
+        const start = (currentPage - 1) * pageSize;
+        list.replaceChildren();
+        currentItems.slice(start, start + pageSize).forEach(function (item) {
+            const row = document.createElement('li');
+            row.innerHTML = '<span>' + escapeHtml(item.posisi) + '</span>';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = '<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="putuskan_posisi"><input type="hidden" name="department_id" value="' + departmentId.value + '"><input type="hidden" name="posisi_id" value="' + item.posisi_id + '"><button class="btn btn-danger" type="submit">Hapus</button>';
+            row.append(form);
+            list.append(row);
+        });
+        if (!currentItems.length) {
+            const empty = document.createElement('li');
+            empty.textContent = 'Belum ada posisi pada departemen ini.';
+            list.append(empty);
+        }
+        pageLabel.textContent = 'Halaman ' + currentPage + ' dari ' + totalPages;
+        previousPage.disabled = currentPage <= 1;
+        nextPage.disabled = currentPage >= totalPages;
+    };
     document.querySelectorAll('.manage-positions').forEach(function (button) {
         button.addEventListener('click', function () {
             const id = button.dataset.departmentId;
             departmentId.value = id;
             departmentName.textContent = button.dataset.departmentName;
-            list.replaceChildren();
-            const items = relations.filter(item => String(item.department_id) === id);
-            if (!items.length) {
-                const empty = document.createElement('li');
-                empty.textContent = 'Belum ada posisi pada departemen ini.';
-                list.append(empty);
-            }
-            items.forEach(function (item) {
-                const row = document.createElement('li');
-                row.innerHTML = '<span>' + item.posisi.replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char])) + '</span>';
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = '<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="putuskan_posisi"><input type="hidden" name="department_id" value="' + id + '"><input type="hidden" name="posisi_id" value="' + item.posisi_id + '"><button class="btn btn-danger" type="submit">Hapus</button>';
-                row.append(form);
-                list.append(row);
-            });
+            currentItems = relations.filter(item => String(item.department_id) === id);
+            currentPage = 1;
+            renderPositionPage();
             dialog.showModal();
         });
     });
+    previousPage.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderPositionPage(); } });
+    nextPage.addEventListener('click', () => { if (currentPage < Math.ceil(currentItems.length / pageSize)) { currentPage++; renderPositionPage(); } });
     document.getElementById('close-position-dialog').addEventListener('click', () => dialog.close());
 });
 </script>
