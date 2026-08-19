@@ -152,24 +152,33 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 );
 
                 if (mysqli_stmt_execute($stmt)) {
-                    mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id WHERE k.id = " . (int) mysqli_insert_id($conn));
+                    // Simpan ID segera setelah INSERT. Query UPDATE berikutnya dapat
+                    // membuat mysqli_insert_id() tidak lagi mengembalikan ID karyawan.
+                    $karyawanBaruId = (int) mysqli_insert_id($conn);
+                    mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id WHERE k.id = " . $karyawanBaruId);
                     try {
-                        $karyawanBaruId = (int) mysqli_insert_id($conn);
+                        if ($karyawanBaruId <= 0) {
+                            throw new RuntimeException("ID karyawan baru tidak valid.");
+                        }
                         if ($riwayatPendidikanForm !== []) {
                             $stmtPendidikan = mysqli_prepare($conn, "INSERT INTO riwayat_pendidikan (karyawan_id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan) VALUES (?, ?, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''))");
+                            if (!$stmtPendidikan) throw new RuntimeException(mysqli_error($conn));
                             foreach ($riwayatPendidikanForm as $item) {
                                 $institusi = trim((string) ($item["institusi"] ?? "")); $jenjang = trim((string) ($item["jenjang"] ?? "")); $jurusan = trim((string) ($item["jurusan"] ?? ""));
                                 $tanggalMulai = trim((string) ($item["tanggal_mulai"] ?? "")); $tanggalSelesai = trim((string) ($item["tanggal_selesai"] ?? "")); $keterangan = trim((string) ($item["keterangan"] ?? ""));
-                                mysqli_stmt_bind_param($stmtPendidikan, "issssss", $karyawanBaruId, $institusi, $jenjang, $jurusan, $tanggalMulai, $tanggalSelesai, $keterangan); mysqli_stmt_execute($stmtPendidikan);
+                                mysqli_stmt_bind_param($stmtPendidikan, "issssss", $karyawanBaruId, $institusi, $jenjang, $jurusan, $tanggalMulai, $tanggalSelesai, $keterangan);
+                                if (!mysqli_stmt_execute($stmtPendidikan)) throw new RuntimeException(mysqli_stmt_error($stmtPendidikan));
                             }
                             mysqli_stmt_close($stmtPendidikan);
                         }
                         if ($riwayatPekerjaanForm !== []) {
                             $stmtPekerjaan = mysqli_prepare($conn, "INSERT INTO riwayat_pekerjaan (karyawan_id, nama_perusahaan, posisi, departemen, tanggal_mulai, tanggal_selesai, deskripsi) VALUES (?, ?, NULLIF(?, ''), NULL, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''))");
+                            if (!$stmtPekerjaan) throw new RuntimeException(mysqli_error($conn));
                             foreach ($riwayatPekerjaanForm as $item) {
                                 $namaPerusahaan = trim((string) ($item["nama_perusahaan"] ?? "")); $posisiRiwayat = trim((string) ($item["posisi"] ?? ""));
                                 $tanggalMulai = trim((string) ($item["tanggal_mulai"] ?? "")); $tanggalSelesai = trim((string) ($item["tanggal_selesai"] ?? "")); $deskripsiRiwayat = trim((string) ($item["deskripsi"] ?? ""));
-                                mysqli_stmt_bind_param($stmtPekerjaan, "isssss", $karyawanBaruId, $namaPerusahaan, $posisiRiwayat, $tanggalMulai, $tanggalSelesai, $deskripsiRiwayat); mysqli_stmt_execute($stmtPekerjaan);
+                                mysqli_stmt_bind_param($stmtPekerjaan, "isssss", $karyawanBaruId, $namaPerusahaan, $posisiRiwayat, $tanggalMulai, $tanggalSelesai, $deskripsiRiwayat);
+                                if (!mysqli_stmt_execute($stmtPekerjaan)) throw new RuntimeException(mysqli_stmt_error($stmtPekerjaan));
                             }
                             mysqli_stmt_close($stmtPekerjaan);
                         }
