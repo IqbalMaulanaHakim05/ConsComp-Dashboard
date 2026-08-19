@@ -57,7 +57,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $employeeName = $form["employee_name"];
     $nik=$form["nik"]; $alamat=$form["alamat"]; $biografi=$form["biografi"]; $keahlian=$form["keahlian"]; $riwayatPekerjaan=$form["riwayat_pekerjaan"]; $tanggalRiwayatPekerjaan=$form["tanggal_riwayat_pekerjaan"] !== "" ? $form["tanggal_riwayat_pekerjaan"] : null; $riwayatPendidikan=$form["riwayat_pendidikan"]; $tanggalRiwayatPendidikan=$form["tanggal_riwayat_pendidikan"] !== "" ? $form["tanggal_riwayat_pendidikan"] : null; $tanggalLahir=$form["tanggal_lahir"] !== "" ? $form["tanggal_lahir"] : null; $tanggalMcuTerakhir=$form["tanggal_mcu_terakhir"] !== "" ? $form["tanggal_mcu_terakhir"] : null; $agama=$form["agama"]; $maritalStatus=$form["marital_status"]; $kontak=$form["kontak"]; $email=$form["email"];
-    $empId = $form["emp_id"];
+    // ID karyawan berasal dari record yang ditemukan berdasarkan URL dan tidak boleh diubah dari request.
+    $empId = (string) ($data["emp_id"] ?? "");
     $position = $form["position"];
     $department = $form["department"];
     $salary = (float) $form["salary"];
@@ -71,7 +72,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (
         $employeeName === ""
-        || $empId === ""
         || $position === ""
         || $department === ""
         || $form["salary"] === ""
@@ -113,7 +113,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $sql = "UPDATE karyawan SET
                         employee_name = ?,
                         nik = ?, alamat = ?, biografi = ?, keahlian = ?, riwayat_pekerjaan = ?, tanggal_riwayat_pekerjaan = ?, riwayat_pendidikan = ?, tanggal_riwayat_pendidikan = ?, tanggal_lahir = ?, tanggal_mcu_terakhir = ?, agama = ?, marital_status = ?, kontak = ?, email = ?,
-                        emp_id = ?,
                         position = ?,
                         department = ?,
                         salary = ?,
@@ -134,9 +133,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 mysqli_stmt_bind_param(
                     $stmtUpdate,
-                    str_repeat("s", 18) . "d" . str_repeat("s", 8) . "i",
+                    str_repeat("s", 17) . "d" . str_repeat("s", 8) . "i",
                     $employeeName, $nik, $alamat, $biografi, $keahlian, $riwayatPekerjaan, $tanggalRiwayatPekerjaan, $riwayatPendidikan, $tanggalRiwayatPendidikan, $tanggalLahir, $tanggalMcuTerakhir, $agama, $maritalStatus, $kontak, $email,
-                    $empId,
                     $position,
                     $department,
                     $salary,
@@ -150,6 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 );
 
                 if (mysqli_stmt_execute($stmtUpdate)) {
+                    mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id WHERE k.id = " . (int) $id);
                     mysqli_query($conn, "DELETE FROM riwayat_pendidikan WHERE karyawan_id = " . $id);
                     $insertPendidikan = mysqli_prepare($conn, "INSERT INTO riwayat_pendidikan (karyawan_id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)");
                     foreach ((array) ($_POST["pendidikan"] ?? []) as $itemPendidikan) {
@@ -223,13 +222,10 @@ require __DIR__ . "/../partials/atas.php";
                         <label for="emp_id">
                             ID Karyawan <span class="required">*</span>
                         </label>
-                        <select
+                        <input
                             type="text"
                             id="emp_id"
-                            name="emp_id"
                             value="<?= htmlspecialchars($form["emp_id"]); ?>"
-                            placeholder="Contoh: EMP001"
-                            maxlength="50"
                             readonly
                             autofocus
                         >

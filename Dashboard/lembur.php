@@ -3,6 +3,7 @@ declare(strict_types=1);
 require __DIR__ . "/koneksi.php";
 require_once __DIR__ . "/fungsi/auth.php";
 require_once __DIR__ . "/fungsi/audit.php";
+require_once __DIR__ . "/fungsi/master-data.php";
 wajibRole("pic", "koordinator", "manager", "admin", "superadmin");
 $pesan = "";
 $departmentId = departmentIdPengguna();
@@ -210,7 +211,8 @@ $hasilGajiLembur = mysqli_query($conn, "SELECT o.id, COALESCE(pg.gaji_pokok, 0) 
 if ($hasilGajiLembur) while ($itemGaji = mysqli_fetch_assoc($hasilGajiLembur)) $gajiLembur[(string) $itemGaji["id"]] = (float) $itemGaji["gaji_pokok"];
 
 $dataKaryawanLembur = [];
-$departemenPilihanLembur = [];
+$departemenPilihanLembur = ambilDepartemenPilihan($conn, roleOperasional() ? (int) ($departmentId ?? 0) : null);
+$posisiPerDepartemenLembur = ambilPosisiPerDepartemen($conn, roleOperasional() ? (int) ($departmentId ?? 0) : null);
 
 if ($bolehInputLembur) {
     $sqlKaryawanLembur = "SELECT id, emp_id, employee_name, position, department, department_id
@@ -245,10 +247,6 @@ if ($bolehInputLembur) {
     }
     mysqli_stmt_close($stmtKaryawanLembur);
 
-    foreach ($dataKaryawanLembur as $item) {
-        $departemenPilihanLembur[(string) $item["department_id"]] = $item["departemen"];
-    }
-    asort($departemenPilihanLembur, SORT_NATURAL | SORT_FLAG_CASE);
 }
 $judulHalaman = "Lembur"; $subjudulHalaman = "Input dan pemantauan laporan lembur."; $halamanAktif = "lembur";
 require __DIR__ . "/partials/atas.php";
@@ -315,6 +313,7 @@ require __DIR__ . "/partials/atas.php";
 <script>
 (() => {
     const employees = <?= json_encode($dataKaryawanLembur, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const positionsByDepartment = <?= json_encode($posisiPerDepartemenLembur, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
     const department = document.getElementById("lembur-department");
     const position = document.getElementById("lembur-position");
     const employee = document.getElementById("lembur-karyawan");
@@ -344,7 +343,9 @@ require __DIR__ . "/partials/atas.php";
         matching.forEach(item => employee.append(createOption(item.id, `${item.emp_id} - ${item.nama}`)));
         employee.disabled = matching.length === 0;
 
-        if (matching.some(item => String(item.id) === String(selectedId))) {
+        if (matching.length === 1) {
+            employee.value = String(matching[0].id);
+        } else if (matching.some(item => String(item.id) === String(selectedId))) {
             employee.value = String(selectedId);
         }
         employee.dataset.selected = "";
@@ -362,11 +363,7 @@ require __DIR__ . "/partials/atas.php";
             return;
         }
 
-        const positions = [...new Set(
-            employees
-                .filter(item => String(item.department_id) === department.value)
-                .map(item => item.posisi)
-        )].sort((first, second) => first.localeCompare(second, "id", { sensitivity: "base" }));
+        const positions = [...new Set(positionsByDepartment[department.value] || [])].sort((first, second) => first.localeCompare(second, "id", { sensitivity: "base" }));
 
         position.append(createOption("", positions.length ? "Pilih posisi" : "Tidak ada posisi pada departemen ini"));
         positions.forEach(item => position.append(createOption(item, item)));

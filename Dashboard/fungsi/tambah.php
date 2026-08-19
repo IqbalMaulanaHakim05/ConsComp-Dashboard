@@ -152,6 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 );
 
                 if (mysqli_stmt_execute($stmt)) {
+                    mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id WHERE k.id = " . (int) mysqli_insert_id($conn));
                     try {
                         $karyawanBaruId = (int) mysqli_insert_id($conn);
                         if ($riwayatPendidikanForm !== []) {
@@ -437,15 +438,17 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const cards = [
-        makeCard('Isi Data Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score','date_of_hire'], 'tambah-main-card'),
-        makeCard('Biodata Karyawan', ['alamat','tanggal_lahir','agama','gender','marital_status','kontak','email'], 'tambah-personal-card'),
-        makeCard('Informasi & Riwayat Pekerjaan', ['biografi','keahlian'], 'tambah-history-card'),
+        makeCard('Profil Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score','date_of_hire'], 'tambah-main-card'),
+        makeCard('Biodata Karyawan', ['nik','alamat','tanggal_lahir','agama','gender','marital_status','kontak','email'], 'tambah-personal-card'),
+        makeCard('Informasi Karyawan', ['biografi','keahlian'], 'tambah-history-card'),
         makeCard('Berkas Pendukung', ['foto_profil','file_cv','file_ijazah','file_mcu','tanggal_mcu_terakhir'], 'tambah-documents-card')
     ];
+    const biodataCard = cards[1];
     const historyCard = cards[2];
-    historyCard.insertAdjacentHTML('beforeend', '<section class="history-section"><div class="history-heading"><h4>Riwayat Pendidikan</h4><button class="history-add" id="add-education" type="button">Tambah +</button></div><div id="education-list" class="history-list"></div></section><section class="history-section"><div class="history-heading"><h4>Riwayat Pekerjaan</h4><button class="history-add" id="add-work" type="button">Tambah +</button></div><div id="work-list" class="history-list"></div></section>');
+    biodataCard.insertAdjacentHTML('beforeend', '<section class="history-section"><div class="history-heading"><h4>Riwayat Pendidikan</h4><button class="history-add" id="add-education" type="button">Tambah +</button></div><div id="education-list" class="history-list"></div></section>');
+    historyCard.insertAdjacentHTML('beforeend', '<section class="history-section"><div class="history-heading"><h4>Riwayat Pekerjaan</h4><button class="history-add" id="add-work" type="button">Tambah +</button></div><div id="work-list" class="history-list"></div></section>');
 
-    const educationList = historyCard.querySelector('#education-list');
+    const educationList = biodataCard.querySelector('#education-list');
     const workList = historyCard.querySelector('#work-list');
     let educationIndex = 0;
     let workIndex = 0;
@@ -471,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     (educationInitial.length ? educationInitial : [{}]).forEach(addEducation);
     (workInitial.length ? workInitial : [{}]).forEach(addWork);
-    historyCard.querySelector('#add-education').addEventListener('click', () => addEducation());
+    biodataCard.querySelector('#add-education').addEventListener('click', () => addEducation());
     historyCard.querySelector('#add-work').addEventListener('click', () => addWork());
 
     grid.replaceChildren(...cards);
