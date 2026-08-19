@@ -50,11 +50,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($aksi === "putuskan_posisi") {
             $departmentId = (int) ($_POST["department_id"] ?? 0);
             $posisiId = (int) ($_POST["posisi_id"] ?? 0);
-            $stmt = mysqli_prepare($conn, "DELETE FROM master_posisi_departemen WHERE posisi_id = ? AND department_id = ?");
-            mysqli_stmt_bind_param($stmt, "ii", $posisiId, $departmentId);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-            header("Location: master-data.php?pesan=" . rawurlencode("Relasi posisi berhasil dihapus."));
+            $tujuan = "?error=" . rawurlencode("Relasi posisi gagal dihapus karena data tidak valid.");
+
+            if ($departmentId > 0 && $posisiId > 0) {
+                try {
+                    $stmtCek = mysqli_prepare(
+                        $conn,
+                        "SELECT COUNT(*) FROM karyawan k INNER JOIN master_posisi p ON p.id = ? WHERE k.department_id = ? AND k.position = p.nama"
+                    );
+                    mysqli_stmt_bind_param($stmtCek, "ii", $posisiId, $departmentId);
+                    mysqli_stmt_execute($stmtCek);
+                    $hasilCek = mysqli_fetch_row(mysqli_stmt_get_result($stmtCek));
+                    mysqli_stmt_close($stmtCek);
+
+                    if ((int) ($hasilCek[0] ?? 0) > 0) {
+                        throw new RuntimeException("Relasi posisi gagal dihapus karena masih digunakan oleh data karyawan pada departemen tersebut.");
+                    }
+
+                    $stmt = mysqli_prepare($conn, "DELETE FROM master_posisi_departemen WHERE posisi_id = ? AND department_id = ?");
+                    mysqli_stmt_bind_param($stmt, "ii", $posisiId, $departmentId);
+                    if (!mysqli_stmt_execute($stmt)) {
+                        throw new RuntimeException("Relasi posisi gagal dihapus.");
+                    }
+                    $terhapus = mysqli_stmt_affected_rows($stmt);
+                    mysqli_stmt_close($stmt);
+
+                    if ($terhapus < 1) {
+                        throw new RuntimeException("Relasi posisi gagal dihapus karena data tidak ditemukan.");
+                    }
+
+                    $tujuan = "?pesan=" . rawurlencode("Relasi posisi berhasil dihapus.");
+                } catch (Throwable $exception) {
+                    $tujuan = "?error=" . rawurlencode($exception->getMessage());
+                }
+            }
+
+            header("Location: master-data.php" . $tujuan);
             exit;
         }
 
@@ -190,6 +221,13 @@ require __DIR__ . "/partials/atas.php";
 </dialog>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const notificationUrl = new URL(window.location.href);
+    if (notificationUrl.searchParams.has('pesan') || notificationUrl.searchParams.has('error')) {
+        notificationUrl.searchParams.delete('pesan');
+        notificationUrl.searchParams.delete('error');
+        window.history.replaceState({}, document.title, notificationUrl.pathname + notificationUrl.search + notificationUrl.hash);
+    }
+
     const dialog = document.getElementById('position-dialog');
     const list = document.getElementById('department-position-list');
     const departmentId = document.getElementById('position-department-id');
