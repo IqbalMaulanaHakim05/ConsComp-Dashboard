@@ -311,7 +311,7 @@ require __DIR__ . "/partials/atas.php";
             </div>
 
             <div class="form-group">
-                <label for="izin-jam-mulai">Jam Masuk</label>
+                <label for="izin-jam-mulai">Jam Mulai</label>
                 <input id="izin-jam-mulai" type="time" name="jam_mulai" value="<?= htmlspecialchars($form["jam_mulai"]); ?>" required>
             </div>
 

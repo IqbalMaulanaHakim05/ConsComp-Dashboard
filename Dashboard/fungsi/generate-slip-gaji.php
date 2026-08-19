@@ -186,8 +186,7 @@ $html = <<<HTML
         <tr>
             <td class="company-block">
                 <img class="company-logo" src="{$logoPerusahaanSrcHtml}" alt="Kalinyamat Perkasa">
-                <div class="company-address">{Alamat}</div>
-                <!-- <div class="company-address">Jl. Bukit Watu Wila Permata Puri Blok H-IV No 04 RT 001 RW 011 Bringin, Ngalian, Kota Semarang</div> -->
+                <div class="company-address">Jalan Bukit Watu Wila Permata Puri Blok H-IV Nomor 4 Rt. 001 Rw. 011 Bringin, Ngaliyan, Semarang, Jawa Tengah, 50189</div>
             </td>
             <td class="title-block">
                 <div class="slip-title">SLIP GAJI</div>
@@ -229,7 +228,7 @@ $html = <<<HTML
     <tr>
         <td class="signature-spacer"></td>
         <td class="signature-block">
-            <div class="signature-place">{Tempat}, ....................</div>
+            <div class="signature-place">....., .........</div>
             <div class="signature-gap"></div>
             <div class="signature-name">............................</div>
         </td>

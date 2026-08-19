@@ -217,8 +217,7 @@ require __DIR__ . "/../partials/atas.php";
     <div class="form-card-header">
         <h2>Form Data Karyawan</h2>
         <p>
-            Kolom bertanda bintang wajib diisi. Setelah disimpan,
-            data SQL akan disinkronkan ke dataset lokal.
+            Kolom bertanda bintang wajib diisi.
         </p>
     </div>
 

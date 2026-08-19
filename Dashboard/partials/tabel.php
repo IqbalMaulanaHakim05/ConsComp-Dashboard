@@ -19,6 +19,8 @@ $bolehAksi = function_exists("punyaRole") && punyaRole("admin", "superadmin");
 $halaman = $halaman ?? 1;
 $totalHalaman = $totalHalaman ?? 1;
 $offset = $offset ?? 0;
+$sort = $sort ?? ($data["sort"] ?? "emp_id");
+$arah = $arah ?? ($data["arah"] ?? "ASC");
 
 // Rentang baris yang sedang ditampilkan.
 $mulai = $jumlahData > 0 ? ($offset + 1) : 0;
@@ -29,10 +31,17 @@ $paramDasar = [];
 if ($kataKunci !== "") {
     $paramDasar["cari"] = $kataKunci;
 }
-$paramDasar["filter"] = $filterKolom ?? "semua";
+$paramDasar["filter"] = "semua";
 $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
-$paramDasar["sort"] = $sort ?? "id";
-$paramDasar["arah"] = $arah ?? "DESC";
+$paramDasar["sort"] = $sort;
+$paramDasar["arah"] = $arah;
+
+$batasDefaultTampilan = (int) ($batasDiizinkan[0] ?? $batas ?? 0);
+$filterAktif = $kataKunci !== ""
+    || $sort !== "emp_id"
+    || $arah !== "ASC"
+    || $tanpaBatas
+    || (!$tanpaBatas && (int) $batas !== $batasDefaultTampilan);
 
 ?>
     <section class="data-card">
@@ -50,15 +59,15 @@ $paramDasar["arah"] = $arah ?? "DESC";
 
                 <input type="hidden" name="filter" value="semua">
 
-                <select name="sort" title="Urutkan berdasarkan">
-                    <?php foreach (["id"=>"ID", "emp_id"=>"ID Karyawan", "nama"=>"Nama", "posisi"=>"Posisi", "departemen"=>"Departemen", "gaji"=>"Gaji", "tanggal_masuk"=>"Tanggal masuk", "status_kerja"=>"Status kerja", "performa"=>"Performa"] as $nilaiSort=>$labelSort): ?>
-                        <option value="<?= $nilaiSort; ?>" <?= ($sort ?? "id") === $nilaiSort ? "selected" : ""; ?>>Urut: <?= $labelSort; ?></option>
+                <select name="sort" onchange="this.form.submit()" title="Urutkan berdasarkan">
+                    <?php foreach (["emp_id"=>"ID Karyawan", "nama"=>"Nama", "posisi"=>"Posisi", "departemen"=>"Departemen", "gaji"=>"Gaji", "tanggal_masuk"=>"Tanggal masuk", "status_kerja"=>"Status kerja", "performa"=>"Performa"] as $nilaiSort=>$labelSort): ?>
+                        <option value="<?= $nilaiSort; ?>" <?= $sort === $nilaiSort ? "selected" : ""; ?>>Urut: <?= $labelSort; ?></option>
                     <?php endforeach; ?>
                 </select>
 
                 <select name="arah" onchange="this.form.submit()" title="Arah urutan">
-                    <option value="ASC" <?= ($arah ?? "DESC") === "ASC" ? "selected" : ""; ?>>Naik (A–Z)</option>
-                    <option value="DESC" <?= ($arah ?? "DESC") === "DESC" ? "selected" : ""; ?>>Turun (Z–A)</option>
+                    <option value="ASC" <?= $arah === "ASC" ? "selected" : ""; ?>>Naik (A–Z)</option>
+                    <option value="DESC" <?= $arah === "DESC" ? "selected" : ""; ?>>Turun (Z–A)</option>
                 </select>
 
                 <button
@@ -92,7 +101,7 @@ $paramDasar["arah"] = $arah ?? "DESC";
                     <?php endif; ?>
                 </select>
 
-                <?php if ($kataKunci !== ""): ?>
+                <?php if ($filterAktif): ?>
                     <a
                         href="<?= htmlspecialchars($halamanIni); ?>"
                         class="btn btn-secondary"
