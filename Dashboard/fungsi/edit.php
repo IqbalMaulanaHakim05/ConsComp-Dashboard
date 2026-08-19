@@ -7,6 +7,7 @@ require_once __DIR__ . "/media-karyawan.php";
 require_once __DIR__ . "/sinkronisasi.php";
 require_once __DIR__ . "/master-data.php";
 require_once __DIR__ . "/tanggal-keluar-karyawan.php";
+require_once __DIR__ . "/nik-karyawan.php";
 
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
@@ -73,6 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (
         $employeeName === ""
+        || $nik === ""
         || $position === ""
         || $department === ""
         || $form["salary"] === ""
@@ -81,6 +83,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $form["performance_score"] === ""
     ) {
         $pesan = "Semua kolom wajib diisi.";
+    } elseif (nikKaryawanSudahDigunakan($conn, $nik, $id)) {
+        $pesan = "NIK sudah digunakan oleh karyawan lain. Gunakan NIK yang berbeda.";
     } elseif (!posisiValidUntukDepartemen($conn, $department, $position)) {
         $pesan = "Posisi yang dipilih tidak terdaftar pada departemen tersebut.";
     } elseif ($salary < 0) {
@@ -150,7 +154,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $id
                 );
 
-                if (mysqli_stmt_execute($stmtUpdate)) {
+                $berhasilUpdate = false;
+                try {
+                    $berhasilUpdate = mysqli_stmt_execute($stmtUpdate);
+                } catch (mysqli_sql_exception $exception) {
+                    if (pelanggaranIndeksUnikNik((int) $exception->getCode(), $exception->getMessage())) {
+                        $pesan = "NIK sudah digunakan oleh karyawan lain. Gunakan NIK yang berbeda.";
+                    } else {
+                        $pesan = "Data gagal diperbarui.";
+                        error_log("Edit karyawan gagal: " . $exception->getMessage());
+                    }
+                }
+
+                if ($berhasilUpdate) {
                     mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id WHERE k.id = " . (int) $id);
                     mysqli_query($conn, "DELETE FROM riwayat_pendidikan WHERE karyawan_id = " . $id);
                     $insertPendidikan = mysqli_prepare($conn, "INSERT INTO riwayat_pendidikan (karyawan_id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)");
@@ -184,9 +200,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     exit;
                 }
 
-                if (mysqli_stmt_errno($stmtUpdate) === 1062) {
-                    $pesan = "ID karyawan sudah digunakan. Gunakan ID yang berbeda.";
-                } else {
+                if ($pesan === "" && mysqli_stmt_errno($stmtUpdate) === 1062) {
+                    $pesan = pelanggaranIndeksUnikNik(mysqli_stmt_errno($stmtUpdate), mysqli_stmt_error($stmtUpdate))
+                        ? "NIK sudah digunakan oleh karyawan lain. Gunakan NIK yang berbeda."
+                        : "ID karyawan sudah digunakan. Gunakan ID yang berbeda.";
+                } elseif ($pesan === "") {
                     $pesan = "Data gagal diperbarui: " . mysqli_stmt_error($stmtUpdate);
                 }
 
@@ -264,7 +282,7 @@ require __DIR__ . "/../partials/atas.php";
                         >
                     </div>
 
-                    <div class="form-group"><label for="nik">NIK</label><input type="text" id="nik" name="nik" value="<?= htmlspecialchars($form["nik"]); ?>" maxlength="50"></div>
+                    <div class="form-group"><label for="nik">NIK <span class="required">*</span></label><input type="text" id="nik" name="nik" value="<?= htmlspecialchars($form["nik"]); ?>" maxlength="50" required><p class="field-note">Wajib diisi dan tidak boleh sama dengan NIK karyawan lain.</p></div>
                     <div class="form-group"><label for="tanggal_lahir">Tanggal Lahir</label><input type="date" id="tanggal_lahir" name="tanggal_lahir" value="<?= htmlspecialchars($form["tanggal_lahir"]); ?>"></div>
                     <div class="form-group"><label for="tanggal_mcu_terakhir">Tanggal MCU Terakhir</label><input type="date" id="tanggal_mcu_terakhir" name="tanggal_mcu_terakhir" value="<?= htmlspecialchars($form["tanggal_mcu_terakhir"]); ?>"></div>
                     <div class="form-group"><label for="agama">Agama</label><select id="agama" name="agama"><option value="">Pilih agama</option><?php foreach ($masterAgama as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= $form["agama"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select></div>

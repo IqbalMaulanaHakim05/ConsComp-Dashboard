@@ -105,7 +105,7 @@ require __DIR__ . "/partials/atas.php";
                         $type = str_starts_with($field, "tanggal_") ? "date" : ($field === "email" ? "email" : ($field === "salary" || $field === "performance_score" ? "number" : "text"));
                     ?>
                         <div class="form-group">
-                            <label for="profile_<?= $field; ?>"><?= $label; ?></label>
+                            <label for="profile_<?= $field; ?>"><?= $label; ?><?= $field === "nik" ? ' <span class="required">*</span>' : ""; ?></label>
                             <?php if ($field === "position" || $field === "department" || $field === "employment_status" || $field === "agama"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>" <?= $field === "agama" ? "" : "required"; ?>><option value="">Pilih</option><?php foreach (($field === "position" ? $masterPosisi : ($field === "department" ? $masterDepartemen : ($field === "employment_status" ? $masterStatus : $masterAgama))) as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                             <?php elseif ($field === "alamat" || $field === "biografi" || $field === "keahlian"): ?>
@@ -115,7 +115,7 @@ require __DIR__ . "/partials/atas.php";
                             <?php elseif ($field === "marital_status"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>"><option value="">Pilih status</option><option <?= ($karyawan[$field] ?? "") === "Single" ? "selected" : ""; ?>>Single</option><option <?= ($karyawan[$field] ?? "") === "Married" ? "selected" : ""; ?>>Married</option></select>
                             <?php else: ?>
-                                <input id="profile_<?= $field; ?>" type="<?= $type; ?>" name="<?= $field; ?>" value="<?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?>" <?= in_array($field, ["employee_name", "emp_id", "position", "department", "salary", "gender", "employment_status", "performance_score"], true) ? "required" : ""; ?>>
+                                <input id="profile_<?= $field; ?>" type="<?= $type; ?>" name="<?= $field; ?>" value="<?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?>" <?= in_array($field, ["employee_name", "emp_id", "nik", "position", "department", "salary", "gender", "employment_status", "performance_score"], true) ? "required" : ""; ?>>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
@@ -199,7 +199,7 @@ require __DIR__ . "/partials/atas.php";
                 </div>
                 <div>
                     <dt>NIK</dt>
-                    <dd><?= htmlspecialchars(nilaiProfil($karyawan, "nik")); ?></dd>
+                    <dd><?= htmlspecialchars(trim((string) ($karyawan["nik"] ?? "")) !== "" ? (string) $karyawan["nik"] : "Belum diisi"); ?></dd>
                 </div>
                 <div>
                     <dt>Alamat</dt>
