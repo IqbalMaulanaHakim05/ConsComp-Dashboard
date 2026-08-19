@@ -38,6 +38,7 @@ $cssPerHalaman = [
     "import" => "admin-form.css",
     "edit" => "admin-form.css",
     "profil-karyawan" => "admin-profile.css",
+    "penilaian-performa" => "admin-performance.css",
     "master-data" => "admin-settings.css",
     "pengguna" => "admin-settings.css",
     "audit" => "admin-settings.css",
@@ -54,6 +55,7 @@ $versiCssHalaman = match ($halamanAktif) {
     "izin-karyawan", "izin-cuti" => "20260818-izin-delete-actions2",
     "master-data" => "20260819-master-cards1",
     "karyawan" => "20260811-karyawan-columns1",
+    "penilaian-performa" => "20260819-performance-form1",
     "dashboard" => "20260811-dashboard-columns5",
     default => "20260811-layout8",
 };

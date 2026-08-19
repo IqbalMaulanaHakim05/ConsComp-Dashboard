@@ -1,0 +1,124 @@
+.penilaian-performa-page .performance-page-shell {
+    display: grid;
+    gap: 22px;
+}
+
+.penilaian-performa-page .performance-employee-card,
+.penilaian-performa-page .performance-form {
+    padding: 26px 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, .06);
+}
+
+.penilaian-performa-page .performance-employee-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.penilaian-performa-page .performance-kicker {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.penilaian-performa-page .performance-employee-card h2 { margin: 7px 0 5px; font-size: 26px; }
+.penilaian-performa-page .performance-employee-card p { margin: 0; color: #64748b; }
+.penilaian-performa-page .performance-average { min-width: 240px; padding: 17px 20px; border-radius: 13px; background: #eff6ff; text-align: right; }
+.penilaian-performa-page .performance-average span,
+.penilaian-performa-page .performance-average small { display: block; color: #64748b; }
+.penilaian-performa-page .performance-average strong { display: block; margin: 4px 0; color: #1d4ed8; font-size: 25px; }
+
+.penilaian-performa-page .performance-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.penilaian-performa-page .performance-indicator-card {
+    padding: 21px;
+    border: 1px solid #dbe3ef;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.penilaian-performa-page .performance-indicator-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 13px;
+}
+
+.penilaian-performa-page .performance-indicator-heading label { color: #0f172a; font-size: 17px; font-weight: 800; }
+.penilaian-performa-page .performance-indicator-card input { width: 100%; min-height: 52px; padding: 10px 14px; border: 1px solid #94a3b8; border-radius: 10px; font-size: 20px; font-weight: 700; }
+.penilaian-performa-page .performance-indicator-card input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+.penilaian-performa-page .performance-indicator-card p { margin: 11px 0 0; color: #64748b; font-size: 13px; line-height: 1.5; }
+
+.penilaian-performa-page .performance-info {
+    position: relative;
+    display: inline-grid;
+    width: 27px;
+    height: 27px;
+    padding: 0;
+    place-items: center;
+    color: #1d4ed8;
+    background: #dbeafe;
+    border: 0;
+    border-radius: 50%;
+    font-weight: 900;
+    cursor: help;
+}
+
+.penilaian-performa-page .performance-info::after {
+    position: absolute;
+    z-index: 20;
+    right: 0;
+    bottom: calc(100% + 10px);
+    width: min(300px, 70vw);
+    padding: 11px 13px;
+    color: #fff;
+    background: #0f172a;
+    border-radius: 9px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .22);
+    content: attr(data-tooltip);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+}
+
+.penilaian-performa-page .performance-info:hover::after,
+.penilaian-performa-page .performance-info:focus-visible::after { opacity: 1; transform: translateY(0); }
+.penilaian-performa-page .performance-note { margin-top: 20px; padding: 15px 17px; color: #475569; background: #fff7ed; border-left: 4px solid #f59e0b; border-radius: 8px; }
+.penilaian-performa-page .performance-note p { margin: 5px 0 0; }
+.penilaian-performa-page .performance-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
+
+:root[data-theme="dark"] .penilaian-performa-page .performance-employee-card,
+:root[data-theme="dark"] .penilaian-performa-page .performance-form { border-color: #334155; background: #1e293b; }
+:root[data-theme="dark"] .penilaian-performa-page .performance-average { background: #172554; }
+:root[data-theme="dark"] .penilaian-performa-page .performance-average strong { color: #93c5fd; }
+:root[data-theme="dark"] .penilaian-performa-page .performance-indicator-card { border-color: #334155; background: #0f172a; }
+:root[data-theme="dark"] .penilaian-performa-page .performance-indicator-heading label { color: #f8fafc; }
+:root[data-theme="dark"] .penilaian-performa-page .performance-indicator-card input { color: #f8fafc; background: #111827; border-color: #475569; color-scheme: dark; }
+:root[data-theme="dark"] .penilaian-performa-page .performance-note { color: #fed7aa; background: #431407; }
+
+@media screen and (max-width: 760px) {
+    .penilaian-performa-page .performance-employee-card { align-items: stretch; flex-direction: column; }
+    .penilaian-performa-page .performance-average { min-width: 0; text-align: left; }
+    .penilaian-performa-page .performance-grid { grid-template-columns: 1fr; }
+}
+
+@media screen and (max-width: 520px) {
+    .penilaian-performa-page .performance-employee-card,
+    .penilaian-performa-page .performance-form { padding: 20px; }
+    .penilaian-performa-page .performance-actions { flex-direction: column-reverse; }
+    .penilaian-performa-page .performance-actions .btn { width: 100%; }
+}

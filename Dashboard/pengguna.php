@@ -5,8 +5,10 @@ declare(strict_types=1);
 require __DIR__ . "/koneksi.php";
 require_once __DIR__ . "/fungsi/auth.php";
 require_once __DIR__ . "/fungsi/audit.php";
+require_once __DIR__ . "/fungsi/penilaian-performa-karyawan.php";
 
 wajibRole("superadmin");
+siapkanTabelPenilaianPerformaKaryawan($conn);
 
 $pesan = "";
 $tipePesan = "sukses";
@@ -36,9 +38,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 "SELECT
                     (SELECT COUNT(*) FROM overtime_reports WHERE dibuat_oleh_pic = ?) AS laporan_lembur,
                     (SELECT COUNT(*) FROM overtime_compensations WHERE dimasukkan_oleh_pic = ?) AS kompensasi_lembur,
-                    (SELECT COUNT(*) FROM slip_gaji WHERE generated_by = ?) AS slip_gaji"
+                    (SELECT COUNT(*) FROM slip_gaji WHERE generated_by = ?) AS slip_gaji,
+                    (SELECT COUNT(*) FROM penilaian_performa_karyawan WHERE dinilai_oleh = ?) AS penilaian_performa"
             );
-            mysqli_stmt_bind_param($referensi, "iii", $hapusId, $hapusId, $hapusId);
+            mysqli_stmt_bind_param($referensi, "iiii", $hapusId, $hapusId, $hapusId, $hapusId);
             mysqli_stmt_execute($referensi);
             $jumlahReferensi = mysqli_fetch_assoc(mysqli_stmt_get_result($referensi)) ?: [];
             mysqli_stmt_close($referensi);
@@ -46,10 +49,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $namaTarget = trim((string) ($target["nama"] ?? $target["username"] ?? "Akun"));
             $memilikiReferensi = (int) ($jumlahReferensi["laporan_lembur"] ?? 0) > 0
                 || (int) ($jumlahReferensi["kompensasi_lembur"] ?? 0) > 0
-                || (int) ($jumlahReferensi["slip_gaji"] ?? 0) > 0;
+                || (int) ($jumlahReferensi["slip_gaji"] ?? 0) > 0
+                || (int) ($jumlahReferensi["penilaian_performa"] ?? 0) > 0;
 
             if ($memilikiReferensi) {
-                $pesan = "Akun \"" . $namaTarget . "\" tidak dapat dihapus karena masih memiliki riwayat lembur atau slip gaji.";
+                $pesan = "Akun \"" . $namaTarget . "\" tidak dapat dihapus karena masih memiliki riwayat lembur, slip gaji, atau penilaian performa.";
                 $tipePesan = "error";
             } else {
                 try {

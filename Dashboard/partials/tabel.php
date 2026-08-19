@@ -242,6 +242,13 @@ $filterAktif = $kataKunci !== ""
                             <td>
                                 <div class="action-buttons">
                                     <a
+                                        href="penilaian-performa.php?id=<?= (int) $row["id"]; ?>"
+                                        class="btn btn-primary"
+                                    >
+                                        Nilai
+                                    </a>
+
+                                    <a
                                         href="profil-karyawan.php?id=<?= (int) $row["id"]; ?>&edit=1"
                                         class="btn btn-warning"
                                     >
