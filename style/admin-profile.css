@@ -328,6 +328,100 @@
     grid-column: 1 / -1;
 }
 
+.profil-karyawan-page .profile-promotion-card {
+    grid-column: 1 / -1;
+}
+
+.profil-karyawan-page .profile-promotion-heading p {
+    margin: -14px 0 22px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.profil-karyawan-page .profile-promotion-form {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+    gap: 14px;
+    align-items: end;
+    padding: 18px;
+    margin-bottom: 24px;
+    border: 1px solid #dbeafe;
+    border-radius: 14px;
+    background: #eff6ff;
+}
+
+.profil-karyawan-page .profile-promotion-form label {
+    display: grid;
+    gap: 7px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.profil-karyawan-page .profile-promotion-form select,
+.profil-karyawan-page .profile-promotion-form input {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    color: #111827;
+    background: #fff;
+    font: inherit;
+}
+
+.profil-karyawan-page .profile-promotion-form select:focus,
+.profil-karyawan-page .profile-promotion-form input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.profil-karyawan-page .profile-promotion-form .btn {
+    min-height: 42px;
+    white-space: nowrap;
+}
+
+.profil-karyawan-page .profile-promotion-history h4 {
+    margin: 0 0 14px;
+    color: #111827;
+    font-size: 16px;
+}
+
+.profil-karyawan-page .profile-promotion-history ol {
+    display: grid;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.profil-karyawan-page .profile-promotion-history li {
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.profil-karyawan-page .promotion-history-route {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+    color: #334155;
+    font-size: 15px;
+}
+
+.profil-karyawan-page .promotion-history-route b {
+    color: #2563eb;
+}
+
+.profil-karyawan-page .profile-promotion-history small {
+    color: #64748b;
+    font-size: 12px;
+}
+
 .profil-karyawan-page .profile-card-note {
     margin: -14px 0 20px;
     color: #64748b;
@@ -383,6 +477,16 @@
 :root[data-theme="dark"] .profil-karyawan-page .profile-payslip-row span { color: #f8fafc; }
 :root[data-theme="dark"] .profil-karyawan-page .profile-payslip-row small,
 :root[data-theme="dark"] .profil-karyawan-page .profile-card-note { color: #94a3b8; }
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-promotion-heading p,
+:root[data-theme="dark"] .profil-karyawan-page .profile-promotion-history small { color: #94a3b8; }
+:root[data-theme="dark"] .profil-karyawan-page .profile-promotion-form { border-color: #334155; background: #0f172a; }
+:root[data-theme="dark"] .profil-karyawan-page .profile-promotion-form label { color: #e2e8f0; }
+:root[data-theme="dark"] .profil-karyawan-page .profile-promotion-form select,
+:root[data-theme="dark"] .profil-karyawan-page .profile-promotion-form input { color: #e2e8f0; background: #111827; border-color: #475569; color-scheme: dark; }
+:root[data-theme="dark"] .profil-karyawan-page .profile-promotion-history h4,
+:root[data-theme="dark"] .profil-karyawan-page .promotion-history-route { color: #f8fafc; }
+:root[data-theme="dark"] .profil-karyawan-page .profile-promotion-history li { border-color: #334155; background: #0f172a; }
 
 .profil-karyawan-page > .profile-page > .profile-actions,
 .profil-karyawan-page .profile-page > .profile-actions {
@@ -463,10 +567,20 @@
     .profil-karyawan-page .profile-payslip-row .btn {
         width: 100%;
     }
+
+    .profil-karyawan-page .profile-promotion-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .profil-karyawan-page .profile-promotion-form .btn {
+        width: 100%;
+    }
 }
 
 @media screen and (max-width: 560px) {
     .profil-karyawan-page .history-dialog { width: calc(100vw - 20px); padding: 24px 18px 20px; }
     .profil-karyawan-page .history-dialog-fields,
     .profil-karyawan-page .history-dialog-fields-pekerjaan { grid-template-columns: 1fr; }
+    .profil-karyawan-page .profile-promotion-form { grid-template-columns: 1fr; }
+    .profil-karyawan-page .promotion-history-route { align-items: flex-start; flex-direction: column; gap: 4px; }
 }

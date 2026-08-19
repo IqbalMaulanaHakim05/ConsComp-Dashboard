@@ -13,8 +13,7 @@ require_once __DIR__ . "/performa-karyawan.php";
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
 siapkanTanggalKeluarKaryawan($conn);
-$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
-$posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
+$masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -186,15 +185,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     foreach ($form as $namaKolom => $nilaiAwal) {
+        if (in_array($namaKolom, ["position", "department"], true)) {
+            continue;
+        }
         $form[$namaKolom] = trim($_POST[$namaKolom] ?? "");
     }
+
+    $mencobaMengubahJabatan =
+        (array_key_exists("position", $_POST) && trim((string) $_POST["position"]) !== (string) ($data["position"] ?? ""))
+        || (array_key_exists("department", $_POST) && trim((string) $_POST["department"]) !== (string) ($data["department"] ?? ""));
 
     $employeeName = $form["employee_name"];
     $nik=$form["nik"]; $alamat=$form["alamat"]; $biografi=$form["biografi"]; $keahlian=$form["keahlian"]; $riwayatPekerjaan=$form["riwayat_pekerjaan"]; $tanggalRiwayatPekerjaan=$form["tanggal_riwayat_pekerjaan"] !== "" ? $form["tanggal_riwayat_pekerjaan"] : null; $riwayatPendidikan=$form["riwayat_pendidikan"]; $tanggalRiwayatPendidikan=$form["tanggal_riwayat_pendidikan"] !== "" ? $form["tanggal_riwayat_pendidikan"] : null; $tanggalLahir=$form["tanggal_lahir"] !== "" ? $form["tanggal_lahir"] : null; $tanggalMcuTerakhir=$form["tanggal_mcu_terakhir"] !== "" ? $form["tanggal_mcu_terakhir"] : null; $agama=$form["agama"]; $maritalStatus=$form["marital_status"]; $kontak=$form["kontak"]; $email=$form["email"];
     // ID karyawan berasal dari record yang ditemukan berdasarkan URL dan tidak boleh diubah dari request.
     $empId = (string) ($data["emp_id"] ?? "");
-    $position = $form["position"];
-    $department = $form["department"];
     $salary = (float) $form["salary"];
     $gender = $form["gender"];
     $employmentStatus = $form["employment_status"];
@@ -208,10 +212,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (
+        $mencobaMengubahJabatan
+    ) {
+        $pesan = "Departemen dan posisi hanya dapat diubah melalui card Promosi pada profil karyawan.";
+        catatAktivitas($conn, "Percobaan mengubah departemen atau posisi melalui formulir edit umum pada karyawan ID " . $id . ".");
+    } elseif (
         $employeeName === ""
         || $nik === ""
-        || $position === ""
-        || $department === ""
         || $form["salary"] === ""
         || $gender === ""
         || $employmentStatus === ""
@@ -221,8 +228,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $pesan = $pesanPerforma;
     } elseif (nikKaryawanSudahDigunakan($conn, $nik, $id)) {
         $pesan = "NIK sudah digunakan oleh karyawan lain. Gunakan NIK yang berbeda.";
-    } elseif (!posisiValidUntukDepartemen($conn, $department, $position)) {
-        $pesan = "Posisi yang dipilih tidak terdaftar pada departemen tersebut.";
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
     } elseif ($dateOfExit !== null && (!preg_match("/^\\d{4}-\\d{2}-\\d{2}$/", $dateOfExit) || !checkdate((int) substr($dateOfExit, 5, 2), (int) substr($dateOfExit, 8, 2), (int) substr($dateOfExit, 0, 4)))) {
@@ -250,8 +255,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $sql = "UPDATE karyawan SET
                         employee_name = ?,
                         nik = ?, alamat = ?, biografi = ?, keahlian = ?, riwayat_pekerjaan = ?, tanggal_riwayat_pekerjaan = ?, riwayat_pendidikan = ?, tanggal_riwayat_pendidikan = ?, tanggal_lahir = ?, tanggal_mcu_terakhir = ?, agama = ?, marital_status = ?, kontak = ?, email = ?,
-                        position = ?,
-                        department = ?,
                         salary = ?,
                         gender = ?,
                         employment_status = ?,
@@ -270,10 +273,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 mysqli_stmt_bind_param(
                     $stmtUpdate,
-                    str_repeat("s", 17) . "d" . str_repeat("s", 8) . "i",
+                    str_repeat("s", 15) . "d" . str_repeat("s", 8) . "i",
                     $employeeName, $nik, $alamat, $biografi, $keahlian, $riwayatPekerjaan, $tanggalRiwayatPekerjaan, $riwayatPendidikan, $tanggalRiwayatPendidikan, $tanggalLahir, $tanggalMcuTerakhir, $agama, $maritalStatus, $kontak, $email,
-                    $position,
-                    $department,
                     $salary,
                     $gender,
                     $employmentStatus,
@@ -297,7 +298,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
 
                 if ($berhasilUpdate) {
-                    mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id WHERE k.id = " . (int) $id);
                     mysqli_query($conn, "DELETE FROM riwayat_pendidikan WHERE karyawan_id = " . $id);
                     $insertPendidikan = mysqli_prepare($conn, "INSERT INTO riwayat_pendidikan (karyawan_id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)");
                     foreach ((array) ($_POST["pendidikan"] ?? []) as $itemPendidikan) {
@@ -428,27 +428,6 @@ require __DIR__ . "/../partials/atas.php";
                     <div class="form-group"><label for="tanggal_riwayat_pendidikan">Tanggal Riwayat Pendidikan</label><input type="date" id="tanggal_riwayat_pendidikan" name="tanggal_riwayat_pendidikan" value="<?= htmlspecialchars($form["tanggal_riwayat_pendidikan"]); ?>"></div>
 
                     <div class="form-group">
-                        <label for="position">
-                            Posisi <span class="required">*</span>
-                        </label>
-                        <select
-                            id="position"
-                            name="position"
-                            required><option value="">Pilih departemen terlebih dahulu</option></select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="department">
-                            Departemen <span class="required">*</span>
-                        </label>
-                        <select
-                            type="text"
-                            id="department"
-                            name="department"
-                            required><option value="">Pilih departemen</option><?php foreach ($masterDepartemen as $item): ?><option <?= $form["department"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
-                    </div>
-
-                    <div class="form-group">
                         <label for="salary">
                             Gaji <span class="required">*</span>
                         </label>
@@ -531,24 +510,5 @@ require __DIR__ . "/../partials/atas.php";
             </form>
         </div>
 </section>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const positionsByDepartment = <?= json_encode($posisiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
-    const department = document.getElementById('department');
-    const position = document.getElementById('position');
-    const selected = <?= json_encode($form["position"], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
-    if (!department || !position) return;
-    const update = function (restore) {
-        const current = restore ? selected : '';
-        const available = positionsByDepartment[department.value] || [];
-        position.replaceChildren(new Option(department.value ? (available.length ? 'Pilih posisi' : 'Belum ada posisi pada departemen ini') : 'Pilih departemen terlebih dahulu', ''));
-        available.forEach(item => position.append(new Option(item, item)));
-        position.disabled = available.length === 0;
-        if (available.includes(current)) position.value = current;
-    };
-    department.addEventListener('change', () => update(false));
-    update(true);
-});
-</script>
 <?php
 require __DIR__ . "/../partials/bawah.php";

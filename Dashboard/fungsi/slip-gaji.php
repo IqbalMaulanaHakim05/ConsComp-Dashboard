@@ -601,6 +601,30 @@ function prosesSlipGajiKaryawan(
     }
 }
 
+function daftarRiwayatSlipGajiKaryawanTerbatas(mysqli $conn, int $karyawanId): array
+{
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT s.generated_at, p.bulan, p.tahun
+         FROM slip_gaji s
+         INNER JOIN periode_gaji p ON p.id = s.periode_gaji_id
+         WHERE s.karyawan_id = ? AND s.status = 'berhasil'
+         ORDER BY p.tahun DESC, p.bulan DESC, s.versi DESC, s.id DESC"
+    );
+    if (!$stmt) {
+        return [];
+    }
+    mysqli_stmt_bind_param($stmt, 'i', $karyawanId);
+    mysqli_stmt_execute($stmt);
+    $hasil = mysqli_stmt_get_result($stmt);
+    $daftar = [];
+    while ($row = mysqli_fetch_assoc($hasil)) {
+        $daftar[] = $row;
+    }
+    mysqli_stmt_close($stmt);
+    return $daftar;
+}
+
 function daftarSlipGajiKaryawan(mysqli $conn, int $karyawanId): array
 {
     $stmt = mysqli_prepare(
