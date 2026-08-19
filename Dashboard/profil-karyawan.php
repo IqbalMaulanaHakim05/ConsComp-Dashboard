@@ -10,6 +10,7 @@ require_once __DIR__ . "/fungsi/master-data.php";
 wajibLogin();
 siapkanMasterData($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
+$posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
 
 $id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
 $karyawan = null;
@@ -455,6 +456,34 @@ document.addEventListener('DOMContentLoaded', function () {
         input.addEventListener('input', () => { source.value = input.value; });
         input.addEventListener('change', () => { source.value = input.value; });
     });
+    const positionsByDepartment = <?= json_encode($posisiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const department = sourceForm.elements.department;
+    const position = sourceForm.elements.position;
+    const inlineDepartment = document.querySelector('.profile-inline-input[name="department"]');
+    const inlinePosition = document.querySelector('.profile-inline-input[name="position"]');
+    const updatePositions = function (restore) {
+        const current = restore ? position.value : '';
+        const available = positionsByDepartment[department.value] || [];
+        const fill = function (target) {
+            if (!target) return;
+            target.replaceChildren(new Option(available.length ? 'Pilih posisi' : 'Belum ada posisi pada departemen ini', ''));
+            available.forEach(item => target.append(new Option(item, item)));
+            target.disabled = available.length === 0;
+            if (available.includes(current)) target.value = current;
+        };
+        fill(position); fill(inlinePosition);
+    };
+    department.addEventListener('change', () => {
+        if (inlineDepartment) inlineDepartment.value = department.value;
+        updatePositions(false);
+    });
+    inlineDepartment?.addEventListener('change', () => {
+        department.value = inlineDepartment.value;
+        updatePositions(false);
+        if (inlinePosition) inlinePosition.value = position.value;
+    });
+    inlinePosition?.addEventListener('change', () => { position.value = inlinePosition.value; });
+    updatePositions(true);
 });
 </script>
 <?php endif; ?>

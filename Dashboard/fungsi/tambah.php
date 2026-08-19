@@ -10,6 +10,7 @@ require_once __DIR__ . "/master-data.php";
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
+$posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
 
 $pesan = "";
 $riwayatPendidikanForm = [];
@@ -82,6 +83,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $performanceScore === ""
     ) {
         $pesan = "Semua kolom wajib diisi.";
+    } elseif (!posisiValidUntukDepartemen($conn, $department, $position)) {
+        $pesan = "Posisi yang dipilih tidak terdaftar pada departemen tersebut.";
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
     } elseif (
@@ -289,7 +292,7 @@ require __DIR__ . "/../partials/atas.php";
                         type="text"
                         id="position"
                         name="position"
-                        required><option value="">Pilih posisi</option><?php foreach ($masterPosisi as $item): ?><option <?= $form["position"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                        required><option value="">Pilih departemen terlebih dahulu</option></select>
                 </div>
 
                 <div class="form-group">
@@ -424,6 +427,22 @@ require __DIR__ . "/../partials/atas.php";
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const positionsByDepartment = <?= json_encode($posisiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const department = document.getElementById('department');
+    const position = document.getElementById('position');
+    const selectedPosition = <?= json_encode($form["position"], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const updatePositions = function (restore) {
+        const current = restore ? selectedPosition : '';
+        position.replaceChildren();
+        const available = positionsByDepartment[department.value] || [];
+        position.append(new Option(department.value ? (available.length ? 'Pilih posisi' : 'Belum ada posisi pada departemen ini') : 'Pilih departemen terlebih dahulu', ''));
+        available.forEach(item => position.append(new Option(item, item)));
+        position.disabled = available.length === 0;
+        if (available.includes(current)) position.value = current;
+    };
+    department.addEventListener('change', () => updatePositions(false));
+    updatePositions(true);
+
     const grid = document.querySelector('.tambah-page .form-grid');
     if (!grid) return;
 

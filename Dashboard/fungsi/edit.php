@@ -12,6 +12,7 @@ wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
 siapkanTanggalKeluarKaryawan($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
+$posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -80,6 +81,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $form["performance_score"] === ""
     ) {
         $pesan = "Semua kolom wajib diisi.";
+    } elseif (!posisiValidUntukDepartemen($conn, $department, $position)) {
+        $pesan = "Posisi yang dipilih tidak terdaftar pada departemen tersebut.";
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
     } elseif ($dateOfExit !== null && (!preg_match("/^\\d{4}-\\d{2}-\\d{2}$/", $dateOfExit) || !checkdate((int) substr($dateOfExit, 5, 2), (int) substr($dateOfExit, 8, 2), (int) substr($dateOfExit, 0, 4)))) {
@@ -280,11 +283,10 @@ require __DIR__ . "/../partials/atas.php";
                         <label for="position">
                             Posisi <span class="required">*</span>
                         </label>
-                        <input
-                            type="text"
+                        <select
                             id="position"
                             name="position"
-                            required><option value="">Pilih posisi</option><?php foreach ($masterPosisi as $item): ?><option <?= $form["position"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                            required><option value="">Pilih departemen terlebih dahulu</option></select>
                     </div>
 
                     <div class="form-group">
@@ -382,6 +384,25 @@ require __DIR__ . "/../partials/atas.php";
                 </div>
             </form>
         </div>
-    </section>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const positionsByDepartment = <?= json_encode($posisiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const department = document.getElementById('department');
+    const position = document.getElementById('position');
+    const selected = <?= json_encode($form["position"], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    if (!department || !position) return;
+    const update = function (restore) {
+        const current = restore ? selected : '';
+        const available = positionsByDepartment[department.value] || [];
+        position.replaceChildren(new Option(department.value ? (available.length ? 'Pilih posisi' : 'Belum ada posisi pada departemen ini') : 'Pilih departemen terlebih dahulu', ''));
+        available.forEach(item => position.append(new Option(item, item)));
+        position.disabled = available.length === 0;
+        if (available.includes(current)) position.value = current;
+    };
+    department.addEventListener('change', () => update(false));
+    update(true);
+});
+</script>
 <?php
 require __DIR__ . "/../partials/bawah.php";

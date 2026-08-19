@@ -50,17 +50,26 @@ function ambilPosisiPerDepartemen(mysqli $conn, ?int $departmentId = null): arra
     $items = [];
     while ($result && ($row = mysqli_fetch_assoc($result))) $items[(string) $row["department_id"]][] = (string) $row["posisi"];
 
-    // Departemen baru belum memiliki karyawan, sehingga belum punya relasi
-    // posisi. Sediakan seluruh posisi aktif sebagai pilihan awal.
-    $departemenResult = mysqli_query($conn, "SELECT id FROM master_departemen WHERE is_active = 1" . ($departmentId !== null ? " AND id = " . (int) $departmentId : ""));
-    $posisiResult = mysqli_query($conn, "SELECT nama FROM master_posisi ORDER BY nama");
-    $semuaPosisi = [];
-    while ($posisiResult && ($row = mysqli_fetch_assoc($posisiResult))) $semuaPosisi[] = (string) $row["nama"];
-    while ($departemenResult && ($row = mysqli_fetch_assoc($departemenResult))) {
-        $idDepartemen = (string) $row["id"];
-        if (!isset($items[$idDepartemen])) $items[$idDepartemen] = $semuaPosisi;
-    }
     return $items;
+}
+
+function posisiValidUntukDepartemen(mysqli $conn, string $departement, string $posisi): bool
+{
+    $stmt = mysqli_prepare($conn, "SELECT 1 FROM master_posisi_departemen r INNER JOIN master_posisi p ON p.id = r.posisi_id INNER JOIN master_departemen d ON d.id = r.department_id WHERE d.nama = ? AND p.nama = ? LIMIT 1");
+    if (!$stmt) return false;
+    mysqli_stmt_bind_param($stmt, "ss", $departement, $posisi);
+    mysqli_stmt_execute($stmt);
+    $valid = mysqli_stmt_get_result($stmt)->num_rows > 0;
+    mysqli_stmt_close($stmt);
+    return $valid;
+}
+
+function ambilPosisiPerNamaDepartemen(mysqli $conn): array
+{
+    $hasil = [];
+    $query = mysqli_query($conn, "SELECT d.nama AS departemen, p.nama AS posisi FROM master_posisi_departemen r INNER JOIN master_posisi p ON p.id = r.posisi_id INNER JOIN master_departemen d ON d.id = r.department_id ORDER BY d.nama, p.nama");
+    while ($query && ($row = mysqli_fetch_assoc($query))) $hasil[(string) $row["departemen"]][] = (string) $row["posisi"];
+    return $hasil;
 }
 
 function ambilDepartemenPilihan(mysqli $conn, ?int $departmentId = null): array
