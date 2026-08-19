@@ -114,18 +114,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $hash = password_hash($password, PASSWORD_DEFAULT);
                 mysqli_stmt_bind_param($stmt, "ssssi", $username, $hash, $nama, $role, $departmentId);
 
-                if (mysqli_stmt_execute($stmt)) {
-                    $pesan = "Akun berhasil ditambahkan.";
-                    catatAktivitas(
-                        $conn,
-                        "Menambahkan pengguna " . $username . " dengan role " . labelRole($role)
-                            . " dan departemen ID " . ($departmentId > 0 ? (string) $departmentId : "semua") . "."
-                    );
-                } else {
-                    $pesan = mysqli_stmt_errno($stmt) === 1062
-                        ? "Username sudah digunakan."
-                        : "Akun gagal ditambahkan.";
+                try {
+                    if (mysqli_stmt_execute($stmt)) {
+                        $pesan = "Akun berhasil ditambahkan.";
+                        catatAktivitas(
+                            $conn,
+                            "Menambahkan pengguna " . $username . " dengan role " . labelRole($role)
+                                . " dan departemen ID " . ($departmentId > 0 ? (string) $departmentId : "semua") . "."
+                        );
+                    } else {
+                        $pesan = mysqli_stmt_errno($stmt) === 1062
+                            ? "Username sudah digunakan. Silakan gunakan username lain."
+                            : "Akun gagal ditambahkan.";
+                        $tipePesan = "error";
+                    }
+                } catch (mysqli_sql_exception $exception) {
+                    $pesan = $exception->getCode() === 1062
+                        ? "Username sudah digunakan. Silakan gunakan username lain."
+                        : "Akun gagal ditambahkan karena terjadi kesalahan database.";
                     $tipePesan = "error";
+                    error_log("Gagal menambahkan pengguna: " . $exception->getMessage());
                 }
 
                 mysqli_stmt_close($stmt);

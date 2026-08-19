@@ -381,7 +381,7 @@ require __DIR__ . "/partials/atas.php";
             </div>
 
             <div class="form-group">
-                <label for="cuti-total-hari">Total Durasi</label>
+                <label for="cuti-total-hari">Total Hari Cuti</label>
                 <input id="cuti-total-hari" type="text" value="-" readonly>
             </div>
 
@@ -679,9 +679,10 @@ require __DIR__ . "/partials/atas.php";
             if (halfDay) endDate.value = startDate.value;
         }
 
+        // 0,5 hari
         if (halfDay && startDate.value) {
             totalDays.value = isWorkingDay(parseDateUtc(startDate.value))
-                ? "0,5 hari kerja"
+                ? "-"
                 : "Bukan hari kerja";
             return;
         }
