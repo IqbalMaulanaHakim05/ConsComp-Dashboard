@@ -73,16 +73,64 @@ function labelTahapPersetujuanIzin(string $tahap): string
     };
 }
 
-function labelStatusPersetujuanIzin(string $status, string $tahap): string
+function labelStatusPersetujuanIzin(string $status, string $tahap, ?string $rolePemroses = null): string
 {
     if ($status === 'disetujui') {
-        return 'Disetujui Manager';
+        return $rolePemroses === 'superadmin'
+            ? 'Disetujui Superadmin'
+            : 'Disetujui Manager';
     }
     if ($status === 'ditolak') {
         return 'Ditolak';
     }
 
     return 'Menunggu ' . labelTahapPersetujuanIzin($tahap);
+}
+
+function prosesKeputusanLangsungSuperadminIzin(
+    mysqli $conn,
+    string $tabel,
+    int $izinId,
+    string $role,
+    string $keputusan,
+    string $catatan,
+    int $pemrosesId
+): bool {
+    if (
+        !tabelPersetujuanIzinDiizinkan($tabel)
+        || $izinId <= 0
+        || $role !== 'superadmin'
+        || $pemrosesId <= 0
+        || !in_array($keputusan, ['disetujui', 'ditolak'], true)
+    ) {
+        return false;
+    }
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "UPDATE `{$tabel}`
+         SET status = ?, tahap_persetujuan = 'selesai', diproses_oleh_user_id = ?,
+             catatan_persetujuan = NULLIF(?, ''), diproses_at = CURRENT_TIMESTAMP
+         WHERE id = ?
+           AND status = 'menunggu'"
+    );
+    if (!$stmt) {
+        return false;
+    }
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        'sisi',
+        $keputusan,
+        $pemrosesId,
+        $catatan,
+        $izinId
+    );
+    mysqli_stmt_execute($stmt);
+    $berhasil = mysqli_stmt_affected_rows($stmt) > 0;
+    mysqli_stmt_close($stmt);
+
+    return $berhasil;
 }
 
 function prosesKeputusanPersetujuanIzin(

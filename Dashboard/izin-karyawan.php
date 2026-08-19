@@ -13,9 +13,10 @@ wajibRole("admin", "superadmin", "pic", "koordinator", "manager");
 $pesan = "";
 $roleSaatIni = rolePengguna();
 $departmentId = departmentIdPengguna();
-$bolehMenginput = $roleSaatIni === "admin";
+$keputusanLangsungSuperadmin = $roleSaatIni === "superadmin";
+$bolehMenginput = in_array($roleSaatIni, ["admin", "superadmin"], true);
 $tahapPersetujuanRole = tahapPersetujuanIzinUntukRole($roleSaatIni);
-$bolehMenyetujui = $tahapPersetujuanRole !== null;
+$bolehMenyetujui = $keputusanLangsungSuperadmin || $tahapPersetujuanRole !== null;
 $bolehMenghapus = $roleSaatIni === "superadmin";
 $durasiDiizinkan = [30, 60, 120];
 $form = [
@@ -52,25 +53,40 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $pesan = "Alasan penolakan wajib diisi.";
         } else {
             $pemrosesId = (int) ($_SESSION["user"]["id"] ?? 0);
-            $berhasilDiproses = prosesKeputusanPersetujuanIzin(
-                $conn,
-                "izin_meninggalkan_pekerjaan",
-                $izinId,
-                (int) ($departmentId ?? 0),
-                $roleSaatIni,
-                $keputusan,
-                $catatan,
-                $pemrosesId
-            );
+            if ($keputusanLangsungSuperadmin) {
+                $berhasilDiproses = prosesKeputusanLangsungSuperadminIzin(
+                    $conn,
+                    "izin_meninggalkan_pekerjaan",
+                    $izinId,
+                    $roleSaatIni,
+                    $keputusan,
+                    $catatan,
+                    $pemrosesId
+                );
+                $labelTahap = "Superadmin";
+            } else {
+                $berhasilDiproses = prosesKeputusanPersetujuanIzin(
+                    $conn,
+                    "izin_meninggalkan_pekerjaan",
+                    $izinId,
+                    (int) ($departmentId ?? 0),
+                    $roleSaatIni,
+                    $keputusan,
+                    $catatan,
+                    $pemrosesId
+                );
+                $labelTahap = labelTahapPersetujuanIzin((string) $tahapPersetujuanRole);
+            }
 
             if ($berhasilDiproses) {
-                $labelTahap = labelTahapPersetujuanIzin((string) $tahapPersetujuanRole);
                 catatAktivitas($conn, $labelTahap . " memproses izin meninggalkan pekerjaan ID " . $izinId . " menjadi " . $keputusan . ".");
                 header("Location: izin-karyawan.php?pesan=" . urlencode("Keputusan " . $labelTahap . " berhasil disimpan."));
                 exit;
             }
 
-            $pesan = "Tahap persetujuan izin tidak sesuai, sudah diproses, atau berada di luar departemen Anda.";
+            $pesan = $keputusanLangsungSuperadmin
+                ? "Data izin sudah diproses atau tidak ditemukan."
+                : "Tahap persetujuan izin tidak sesuai, sudah diproses, atau berada di luar departemen Anda.";
         }
     } elseif ($aksi === "hapus") {
         $izinId = (int) ($_POST["izin_id"] ?? 0);
@@ -105,7 +121,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $pesan = "Data izin tidak ditemukan atau statusnya belum disetujui/ditolak.";
         }
     } elseif ($aksi === "simpan" && !$bolehMenginput) {
-        $pesan = "Hanya Admin HRGA yang dapat menginput izin.";
+        $pesan = "Hanya Admin HRGA dan superadmin yang dapat menginput izin.";
     } elseif ($aksi === "simpan") {
         foreach (array_keys($form) as $namaKolom) {
             $form[$namaKolom] = trim((string) ($_POST[$namaKolom] ?? ""));
@@ -241,7 +257,8 @@ mysqli_stmt_close($stmtKaryawan);
 
 $sqlDaftar = "SELECT i.*, k.emp_id, k.employee_name, k.position, k.department,
                      p.emp_id AS pengganti_emp_id, p.employee_name AS pengganti_nama,
-                     pembuat.nama AS nama_pembuat, pemroses.nama AS nama_pemroses
+                     pembuat.nama AS nama_pembuat, pemroses.nama AS nama_pemroses,
+                     pemroses.role AS role_pemroses
               FROM izin_meninggalkan_pekerjaan i
               INNER JOIN karyawan k ON k.id = i.karyawan_id
               INNER JOIN karyawan p ON p.id = i.karyawan_pengganti_id
@@ -408,10 +425,14 @@ require __DIR__ . "/partials/atas.php";
                             default => (int) $izin["durasi_menit"] . " menit",
                         };
                         $tahapPersetujuan = (string) ($izin["tahap_persetujuan"] ?? "pic");
-                        $statusPersetujuan = labelStatusPersetujuanIzin((string) $izin["status"], $tahapPersetujuan);
-                        $bolehMemproses = $bolehMenyetujui
-                            && $izin["status"] === "menunggu"
-                            && $tahapPersetujuan === $tahapPersetujuanRole;
+                        $statusPersetujuan = labelStatusPersetujuanIzin(
+                            (string) $izin["status"],
+                            $tahapPersetujuan,
+                            (string) ($izin["role_pemroses"] ?? "")
+                        );
+                        $bolehMemproses = $izin["status"] === "menunggu"
+                            && ($keputusanLangsungSuperadmin
+                                || ($bolehMenyetujui && $tahapPersetujuan === $tahapPersetujuanRole));
                         $bolehMenghapusData = $bolehMenghapus && in_array($izin["status"], ["disetujui", "ditolak"], true);
                         ?>
                         <tr>
