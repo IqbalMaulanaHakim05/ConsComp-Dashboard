@@ -7,13 +7,14 @@ require_once __DIR__ . "/fungsi/auth.php";
 require_once __DIR__ . "/fungsi/media-karyawan.php";
 require_once __DIR__ . "/fungsi/master-data.php";
 require_once __DIR__ . "/fungsi/performa-karyawan.php";
+require_once __DIR__ . "/fungsi/slip-gaji.php";
 
 wajibLogin();
 siapkanMasterData($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 $posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
 
-$id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
+$id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
 $karyawan = null;
 
 if ($id !== false && $id !== null && $id > 0) {
@@ -79,6 +80,9 @@ while ($rowPendidikan = mysqli_fetch_assoc($hasilPendidikan)) $riwayatPendidikan
 $riwayatPekerjaan = [];
 $hasilPekerjaan = mysqli_query($conn, "SELECT id, nama_perusahaan, posisi, departemen, tanggal_mulai, tanggal_selesai, deskripsi FROM riwayat_pekerjaan WHERE karyawan_id = " . (int) $karyawan["id"] . " ORDER BY COALESCE(tanggal_mulai, tanggal_selesai) DESC, id DESC");
 while ($rowPekerjaan = mysqli_fetch_assoc($hasilPekerjaan)) $riwayatPekerjaan[] = $rowPekerjaan;
+$daftarSlipGaji = siapkanPenyimpananSlipGaji($conn)
+    ? daftarSlipGajiKaryawan($conn, (int) $karyawan["id"])
+    : [];
 
 require __DIR__ . "/partials/atas.php";
 
@@ -269,6 +273,31 @@ require __DIR__ . "/partials/atas.php";
                         <strong><?= htmlspecialchars(tanggalProfil($karyawan, "tanggal_mcu_terakhir")); ?></strong>
                     <?php endif; ?>
                 </div>
+            </div>
+        </article>
+
+        <article class="profile-card profile-payslip-card" id="slip-gaji">
+            <h3>Slip Gaji</h3>
+            <p class="profile-card-note">Riwayat slip tersimpan berdasarkan periode dan versi revisi.</p>
+            <div class="profile-payslip-list">
+                <?php if ($daftarSlipGaji === []): ?>
+                    <p class="profile-history-empty">Belum ada slip gaji yang didistribusikan.</p>
+                <?php else: ?>
+                    <?php foreach ($daftarSlipGaji as $slip): ?>
+                        <div class="profile-payslip-row">
+                            <div>
+                                <strong><?= htmlspecialchars(namaBulanSlipGaji((int) $slip["bulan"]) . " " . (int) $slip["tahun"]); ?></strong>
+                                <span>Versi <?= (int) $slip["versi"]; ?> · Rp <?= number_format((float) $slip["gaji_bersih"], 0, ",", "."); ?></span>
+                                <small>Dibuat oleh <?= htmlspecialchars((string) $slip["nama_pembuat"]); ?> pada <?= htmlspecialchars(date("d-m-Y H:i", strtotime((string) $slip["generated_at"]))); ?></small>
+                            </div>
+                            <?php if (trim((string) ($slip["nama_file"] ?? "")) !== ""): ?>
+                                <a class="btn btn-primary" target="_blank" rel="noopener" href="fungsi/lihat-slip-gaji.php?id=<?= (int) $slip["id"]; ?>">Lihat/Unduh</a>
+                            <?php else: ?>
+                                <em>File tidak tersedia</em>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </article>
     </div>

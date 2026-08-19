@@ -324,6 +324,42 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
 }
 
+.profil-karyawan-page .profile-payslip-card {
+    grid-column: 1 / -1;
+}
+
+.profil-karyawan-page .profile-card-note {
+    margin: -14px 0 20px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.profil-karyawan-page .profile-payslip-list {
+    display: grid;
+    gap: 10px;
+}
+
+.profil-karyawan-page .profile-payslip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.profil-karyawan-page .profile-payslip-row > div {
+    display: grid;
+    gap: 3px;
+}
+
+.profil-karyawan-page .profile-payslip-row strong { color: #111827; font-size: 16px; }
+.profil-karyawan-page .profile-payslip-row span { color: #334155; font-size: 14px; }
+.profil-karyawan-page .profile-payslip-row small { color: #64748b; font-size: 12px; }
+.profil-karyawan-page .profile-payslip-row .btn { min-width: 140px; justify-content: center; }
+
 :root[data-theme="dark"] .profil-karyawan-page .profile-document-date-input {
     border-color: #475569;
     color: #e2e8f0;
@@ -337,6 +373,16 @@
 :root[data-theme="dark"] .profil-karyawan-page .profile-document-date strong {
     color: #f8fafc;
 }
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-payslip-row {
+    border-color: #334155;
+    background: #0f172a;
+}
+
+:root[data-theme="dark"] .profil-karyawan-page .profile-payslip-row strong,
+:root[data-theme="dark"] .profil-karyawan-page .profile-payslip-row span { color: #f8fafc; }
+:root[data-theme="dark"] .profil-karyawan-page .profile-payslip-row small,
+:root[data-theme="dark"] .profil-karyawan-page .profile-card-note { color: #94a3b8; }
 
 .profil-karyawan-page > .profile-page > .profile-actions,
 .profil-karyawan-page .profile-page > .profile-actions {
@@ -406,6 +452,15 @@
     }
 
     .profil-karyawan-page .profile-documents-card .btn {
+        width: 100%;
+    }
+
+    .profil-karyawan-page .profile-payslip-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .profil-karyawan-page .profile-payslip-row .btn {
         width: 100%;
     }
 }

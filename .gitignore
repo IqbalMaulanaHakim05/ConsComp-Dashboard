@@ -6,3 +6,9 @@
 composer.json
 composer.lock
 build_employee_excel.mjs
+
+/Dashboard/uploads/cv/
+/Dashboard/uploads/foto/
+/Dashboard/uploads/ijazah/
+/Dashboard/uploads/mcu/
+/Dashboard/uploads/slip/

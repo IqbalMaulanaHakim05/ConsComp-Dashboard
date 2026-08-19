@@ -49,7 +49,7 @@ $cssPerHalaman = [
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
 $kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
 $versiCssHalaman = match ($halamanAktif) {
-    "upah" => "20260813-upah-preview-table12",
+    "upah" => "20260819-upah-batch-slip1",
     "lembur" => "20260818-lembur-department-flow1",
     "izin-karyawan", "izin-cuti" => "20260818-izin-delete-actions2",
     "master-data" => "20260819-master-cards1",
@@ -69,13 +69,10 @@ if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_a
     header("Location: karyawan.php");
     exit;
 }
-if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
-    header("Location: karyawan.php");
-    exit;
-}
 if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
     $cssHalamanAktif = "admin-profile.css";
     $kelasHalaman = "profil-karyawan";
+    $versiCssHalaman = "20260819-profile-payslip1";
 }
 
 ?>

@@ -18,3 +18,54 @@ html {
 .upah-page .export-excel-btn:hover { background: #e8dcff; color: #5b35b5; }
 .upah-page .export-preview-top-actions { display: flex; justify-content: flex-end; gap: 10px; margin: 0 0 16px; }
 .upah-page .export-preview-top-actions + .data-card > div:last-child { display: none !important; visibility: hidden !important; height: 0 !important; padding: 0 !important; margin: 0 !important; }
+
+.upah-page .batch-filter-form {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr)) auto auto;
+    gap: 14px;
+    align-items: end;
+    width: 100%;
+}
+
+.upah-page .batch-filter-form label {
+    display: grid;
+    gap: 7px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.upah-page .batch-filter-form input,
+.upah-page .batch-filter-form select {
+    width: 100%;
+    min-height: 42px;
+}
+
+.upah-page .batch-selection-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0 18px;
+}
+
+.upah-page .batch-selection-bar label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.upah-page .batch-validation { max-width: 320px; white-space: normal; }
+.upah-page .batch-validation.is-ready { color: #15803d; font-weight: 700; }
+.upah-page .batch-validation.is-error { color: #b91c1c; }
+.upah-page .batch-result-card { border-top: 4px solid #22c55e; }
+
+@media screen and (max-width: 1100px) {
+    .upah-page .batch-filter-form { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+}
+
+@media screen and (max-width: 640px) {
+    .upah-page .batch-filter-form { grid-template-columns: 1fr; }
+    .upah-page .batch-selection-bar { align-items: stretch; flex-direction: column; }
+}
