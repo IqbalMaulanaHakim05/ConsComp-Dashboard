@@ -8,7 +8,7 @@
 */
 
 ?>
-<?php if (in_array(rolePengguna(), ["admin", "superadmin"], true)): ?>
+<?php if (punyaRole("superadmin")): ?>
     <a
         href="fungsi/import_excel.php"
         class="btn btn-warning"

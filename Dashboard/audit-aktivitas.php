@@ -54,7 +54,7 @@ require __DIR__ . "/partials/atas.php";
                             <tr>
                                 <td><?= htmlspecialchars((string) $baris["dibuat_pada"]); ?></td>
                                 <td><?= htmlspecialchars($baris["nama"] ?: ($baris["username"] ?: "-")); ?></td>
-                                <td><?= htmlspecialchars($baris["aktivitas"]); ?></td>
+                                <td><?= htmlspecialchars(labelAktivitas((string) $baris["aktivitas"])); ?></td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>

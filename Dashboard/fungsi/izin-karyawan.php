@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/alur-persetujuan-izin.php';
+
 /**
  * Menyiapkan penyimpanan izin meninggalkan pekerjaan.
  *
@@ -10,7 +12,7 @@ declare(strict_types=1);
  */
 function siapkanTabelIzinKaryawan(mysqli $conn): bool
 {
-    return mysqli_query(
+    $tabelSiap = mysqli_query(
         $conn,
         "CREATE TABLE IF NOT EXISTS izin_meninggalkan_pekerjaan (
             id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -22,6 +24,7 @@ function siapkanTabelIzinKaryawan(mysqli $conn): bool
             nomor_kontak VARCHAR(50) NOT NULL,
             karyawan_pengganti_id INT NOT NULL,
             status ENUM('menunggu', 'disetujui', 'ditolak') NOT NULL DEFAULT 'menunggu',
+            tahap_persetujuan ENUM('pic', 'koordinator', 'manager', 'selesai') NOT NULL DEFAULT 'pic',
             dibuat_oleh_user_id INT NOT NULL,
             diproses_oleh_user_id INT NULL,
             catatan_persetujuan TEXT NULL,
@@ -46,4 +49,6 @@ function siapkanTabelIzinKaryawan(mysqli $conn): bool
                 CHECK (durasi_menit IN (30, 60, 120))
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     ) !== false;
+
+    return $tabelSiap && siapkanTahapPersetujuanIzin($conn, 'izin_meninggalkan_pekerjaan');
 }

@@ -13,7 +13,10 @@ wajibRole("admin", "superadmin", "pic", "koordinator", "manager");
 $pesan = "";
 $roleSaatIni = rolePengguna();
 $departmentId = departmentIdPengguna();
-$bolehMenyetujui = in_array($roleSaatIni, ["admin", "superadmin"], true);
+$bolehMenginput = $roleSaatIni === "admin";
+$tahapPersetujuanRole = tahapPersetujuanIzinUntukRole($roleSaatIni);
+$bolehMenyetujui = $tahapPersetujuanRole !== null;
+$bolehMenghapus = $roleSaatIni === "superadmin";
 $durasiDiizinkan = [30, 60, 120];
 $form = [
     "position" => "",
@@ -42,42 +45,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $catatan = trim((string) ($_POST["catatan"] ?? ""));
 
         if (!$bolehMenyetujui) {
-            $pesan = "Hanya admin dan superadmin yang dapat memproses izin.";
+            $pesan = "Persetujuan izin hanya dapat diproses berurutan oleh PIC, Koordinator, dan Manager.";
         } elseif (!in_array($keputusan, ["disetujui", "ditolak"], true)) {
             $pesan = "Keputusan izin tidak valid.";
         } elseif ($keputusan === "ditolak" && $catatan === "") {
             $pesan = "Alasan penolakan wajib diisi.";
         } else {
             $pemrosesId = (int) ($_SESSION["user"]["id"] ?? 0);
-            $stmt = mysqli_prepare(
+            $berhasilDiproses = prosesKeputusanPersetujuanIzin(
                 $conn,
-                "UPDATE izin_meninggalkan_pekerjaan
-                 SET status = ?, diproses_oleh_user_id = ?, catatan_persetujuan = NULLIF(?, ''),
-                     diproses_at = CURRENT_TIMESTAMP
-                 WHERE id = ? AND status = 'menunggu'"
+                "izin_meninggalkan_pekerjaan",
+                $izinId,
+                (int) ($departmentId ?? 0),
+                $roleSaatIni,
+                $keputusan,
+                $catatan,
+                $pemrosesId
             );
 
-            if ($stmt) {
-                mysqli_stmt_bind_param($stmt, "sisi", $keputusan, $pemrosesId, $catatan, $izinId);
-                mysqli_stmt_execute($stmt);
-
-                if (mysqli_stmt_affected_rows($stmt) > 0) {
-                    mysqli_stmt_close($stmt);
-                    catatAktivitas($conn, "Memproses izin meninggalkan pekerjaan ID " . $izinId . " menjadi " . $keputusan . ".");
-                    header("Location: izin-karyawan.php?pesan=" . urlencode("Izin berhasil " . $keputusan . "."));
-                    exit;
-                }
-
-                mysqli_stmt_close($stmt);
+            if ($berhasilDiproses) {
+                $labelTahap = labelTahapPersetujuanIzin((string) $tahapPersetujuanRole);
+                catatAktivitas($conn, $labelTahap . " memproses izin meninggalkan pekerjaan ID " . $izinId . " menjadi " . $keputusan . ".");
+                header("Location: izin-karyawan.php?pesan=" . urlencode("Keputusan " . $labelTahap . " berhasil disimpan."));
+                exit;
             }
 
-            $pesan = "Izin sudah diproses atau tidak ditemukan.";
+            $pesan = "Tahap persetujuan izin tidak sesuai, sudah diproses, atau berada di luar departemen Anda.";
         }
     } elseif ($aksi === "hapus") {
         $izinId = (int) ($_POST["izin_id"] ?? 0);
 
-        if (!$bolehMenyetujui) {
-            $pesan = "Hanya admin dan superadmin yang dapat menghapus data izin.";
+        if (!$bolehMenghapus) {
+            $pesan = "Hanya superadmin yang dapat menghapus data izin.";
         } elseif ($izinId <= 0) {
             $pesan = "Data izin yang akan dihapus tidak valid.";
         } else {
@@ -105,6 +104,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $pesan = "Data izin tidak ditemukan atau statusnya belum disetujui/ditolak.";
         }
+    } elseif ($aksi === "simpan" && !$bolehMenginput) {
+        $pesan = "Hanya Admin HRGA yang dapat menginput izin.";
     } elseif ($aksi === "simpan") {
         foreach (array_keys($form) as $namaKolom) {
             $form[$namaKolom] = trim((string) ($_POST[$namaKolom] ?? ""));
@@ -272,6 +273,7 @@ require __DIR__ . "/partials/atas.php";
     <div class="alert-error" role="alert"><?= htmlspecialchars($pesan); ?></div>
 <?php endif; ?>
 
+<?php if ($bolehMenginput): ?>
 <form method="POST" id="izin-karyawan-form" class="izin-entry-form">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
     <input type="hidden" name="aksi" value="simpan">
@@ -365,6 +367,7 @@ require __DIR__ . "/partials/atas.php";
         </div>
     </section>
 </form>
+<?php endif; ?>
 
 <section class="data-card izin-data-card">
     <div class="data-card-header">
@@ -404,8 +407,12 @@ require __DIR__ . "/partials/atas.php";
                             120 => "2 jam",
                             default => (int) $izin["durasi_menit"] . " menit",
                         };
-                        $bolehMemproses = $bolehMenyetujui && $izin["status"] === "menunggu";
-                        $bolehMenghapus = $bolehMenyetujui && in_array($izin["status"], ["disetujui", "ditolak"], true);
+                        $tahapPersetujuan = (string) ($izin["tahap_persetujuan"] ?? "pic");
+                        $statusPersetujuan = labelStatusPersetujuanIzin((string) $izin["status"], $tahapPersetujuan);
+                        $bolehMemproses = $bolehMenyetujui
+                            && $izin["status"] === "menunggu"
+                            && $tahapPersetujuan === $tahapPersetujuanRole;
+                        $bolehMenghapusData = $bolehMenghapus && in_array($izin["status"], ["disetujui", "ditolak"], true);
                         ?>
                         <tr>
                             <td><?= (int) $izin["id"]; ?></td>
@@ -418,7 +425,7 @@ require __DIR__ . "/partials/atas.php";
                             <td class="izin-description-cell"><?= nl2br(htmlspecialchars((string) $izin["deskripsi"])); ?></td>
                             <td><?= htmlspecialchars((string) $izin["nomor_kontak"]); ?></td>
                             <td><?= htmlspecialchars($izin["pengganti_emp_id"] . " - " . $izin["pengganti_nama"]); ?></td>
-                            <td><span class="status-badge status-<?= htmlspecialchars((string) $izin["status"]); ?>"><?= htmlspecialchars((string) $izin["status"]); ?></span></td>
+                            <td><span class="status-badge status-<?= htmlspecialchars((string) $izin["status"]); ?>"><?= htmlspecialchars($statusPersetujuan); ?></span></td>
                             <td><?= htmlspecialchars((string) $izin["nama_pembuat"]); ?></td>
                             <td class="izin-actions">
                                 <?php if ($bolehMemproses): ?>
@@ -437,11 +444,11 @@ require __DIR__ . "/partials/atas.php";
                                             <span><?= htmlspecialchars((string) $izin["catatan_persetujuan"]); ?></span>
                                         <?php endif; ?>
                                     </div>
-                                <?php elseif (!$bolehMenghapus): ?>
+                                <?php elseif (!$bolehMenghapusData): ?>
                                     -
                                 <?php endif; ?>
 
-                                <?php if ($bolehMenghapus): ?>
+                                <?php if ($bolehMenghapusData): ?>
                                     <form method="POST" class="delete-izin-form" onsubmit="return confirm('Hapus permanen data izin ini?');">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                                         <input type="hidden" name="aksi" value="hapus">
@@ -462,6 +469,7 @@ require __DIR__ . "/partials/atas.php";
     </div>
 </section>
 
+<?php if ($bolehMenginput): ?>
 <script>
 (() => {
     const employees = <?= json_encode($dataKaryawan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
@@ -616,6 +624,7 @@ require __DIR__ . "/partials/atas.php";
     updateReturnTime();
 })();
 </script>
+<?php endif; ?>
 
 <?php
 mysqli_stmt_close($stmtDaftar);

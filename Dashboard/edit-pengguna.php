@@ -69,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             catatAktivitas(
                 $conn,
                 "Mengubah pengguna " . $pengguna["username"]
-                    . " menjadi role " . $role
+                    . " menjadi role " . labelRole($role)
                     . " dan departemen ID " . ($departmentId > 0 ? (string) $departmentId : "semua") . "."
             );
             mysqli_stmt_close($update);
@@ -121,7 +121,7 @@ require __DIR__ . "/partials/atas.php";
                     <div class="form-group">
                         <label for="role">Role</label>
                         <select id="role" name="role" required>
-                            <?php foreach (["admin" => "Admin", "pic" => "PIC", "koordinator" => "Koordinator", "manager" => "Manager", "viewer" => "Viewer"] as $nilai => $label): ?>
+                            <?php foreach (["admin" => "Admin HRGA", "pic" => "PIC", "koordinator" => "Koordinator", "manager" => "Manager", "viewer" => "Viewer"] as $nilai => $label): ?>
                                 <option value="<?= $nilai; ?>" <?= $pengguna["role"] === $nilai ? "selected" : ""; ?>><?= $label; ?></option>
                             <?php endforeach; ?>
                         </select>

@@ -74,6 +74,84 @@ function rolePengguna(): string
     return (string) ($_SESSION['user']['role'] ?? '');
 }
 
+function labelRole(string $role): string
+{
+    return match ($role) {
+        'admin' => 'Admin HRGA',
+        'superadmin' => 'Superadmin',
+        'pic' => 'PIC',
+        'koordinator' => 'Koordinator',
+        'manager' => 'Manager',
+        'viewer' => 'Viewer',
+        default => ucfirst($role),
+    };
+}
+
+function labelAktivitas(string $aktivitas): string
+{
+    return preg_replace('/\badmin\b(?!\s+HRGA)/i', 'Admin HRGA', $aktivitas) ?? $aktivitas;
+}
+
+function fieldKaryawanAdminHrga(): array
+{
+    return [
+        'alamat',
+        'tanggal_lahir',
+        'agama',
+        'gender',
+        'marital_status',
+        'kontak',
+        'email',
+        'biografi',
+        'keahlian',
+        'riwayat_pendidikan',
+        'tanggal_riwayat_pendidikan',
+        'riwayat_pekerjaan',
+        'tanggal_riwayat_pekerjaan',
+    ];
+}
+
+function adminHrgaBolehEditFieldKaryawan(string $field): bool
+{
+    return in_array($field, fieldKaryawanAdminHrga(), true);
+}
+
+function fieldRequestEditKaryawanAdminHrga(): array
+{
+    return array_merge(
+        fieldKaryawanAdminHrga(),
+        ['pendidikan', 'pekerjaan', 'return_to_profile', 'csrf_token']
+    );
+}
+
+function fieldTerlarangEditKaryawanAdminHrga(array $post, array $files, array $dataKaryawan): array
+{
+    $fieldDiizinkan = fieldRequestEditKaryawanAdminHrga();
+    $fieldTerlarang = [];
+
+    foreach ($post as $field => $nilai) {
+        if (in_array($field, $fieldDiizinkan, true)) {
+            continue;
+        }
+
+        $nilaiBerubah = is_array($nilai)
+            || !array_key_exists($field, $dataKaryawan)
+            || trim((string) $nilai) !== trim((string) ($dataKaryawan[$field] ?? ''));
+
+        if ($nilaiBerubah) {
+            $fieldTerlarang[] = (string) $field;
+        }
+    }
+
+    foreach ($files as $field => $file) {
+        if ((int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            $fieldTerlarang[] = (string) $field;
+        }
+    }
+
+    return array_values(array_unique($fieldTerlarang));
+}
+
 function departmentIdPengguna(): ?int
 {
     $nilai = $_SESSION['user']['department_id'] ?? null;
@@ -119,13 +197,13 @@ function punyaRole(string ...$roles): bool
 }
 
 /**
- * PIC hanya boleh membuka halaman Lembur dan dua halaman pendukungnya.
+ * PIC hanya boleh membuka halaman Lembur, Izin, dan halaman pendukungnya.
  */
 function halamanDiizinkanUntukPic(string $namaFile): bool
 {
     return in_array(
         basename($namaFile),
-        ['lembur.php', 'notifikasi.php', 'export_lembur.php', 'logout.php'],
+        ['lembur.php', 'izin-karyawan.php', 'izin-cuti.php', 'notifikasi.php', 'export_lembur.php', 'logout.php'],
         true
     );
 }

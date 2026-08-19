@@ -53,6 +53,137 @@ $form = [
     "date_of_exit" => (string) ($data["date_of_exit"] ?? ""),
 ];
 
+$adminHrga = rolePengguna() === "admin";
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST" && $adminHrga) {
+    header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1");
+    exit;
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
+    $fieldTerlarang = fieldTerlarangEditKaryawanAdminHrga($_POST, $_FILES, $data);
+
+    if ($fieldTerlarang !== []) {
+        catatAktivitas(
+            $conn,
+            "Percobaan Admin HRGA mengubah field karyawan yang tidak diizinkan pada ID " . $id . ": " . implode(", ", $fieldTerlarang) . "."
+        );
+        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Admin HRGA hanya dapat mengubah Biodata dan Informasi yang diizinkan."));
+        exit;
+    }
+
+    $nilaiAdmin = static function (string $field) use ($data): string {
+        return array_key_exists($field, $_POST)
+            ? trim((string) $_POST[$field])
+            : trim((string) ($data[$field] ?? ""));
+    };
+
+    $alamat = $nilaiAdmin("alamat");
+    $tanggalLahir = $nilaiAdmin("tanggal_lahir");
+    $agama = $nilaiAdmin("agama");
+    $gender = $nilaiAdmin("gender");
+    $maritalStatus = $nilaiAdmin("marital_status");
+    $kontak = $nilaiAdmin("kontak");
+    $email = $nilaiAdmin("email");
+    $biografi = $nilaiAdmin("biografi");
+    $keahlian = $nilaiAdmin("keahlian");
+    $riwayatPendidikan = $nilaiAdmin("riwayat_pendidikan");
+    $tanggalRiwayatPendidikan = $nilaiAdmin("tanggal_riwayat_pendidikan");
+    $riwayatPekerjaan = $nilaiAdmin("riwayat_pekerjaan");
+    $tanggalRiwayatPekerjaan = $nilaiAdmin("tanggal_riwayat_pekerjaan");
+
+    $tanggalValid = static function (string $tanggal): bool {
+        if ($tanggal === "") return true;
+        $objek = DateTime::createFromFormat("Y-m-d", $tanggal);
+        return $objek !== false && $objek->format("Y-m-d") === $tanggal;
+    };
+
+    $errorAdmin = "";
+    if (!in_array($gender, ["M", "F"], true)) {
+        $errorAdmin = "Jenis kelamin wajib dipilih.";
+    } elseif ($email !== "" && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        $errorAdmin = "Format email tidak valid.";
+    } elseif (!$tanggalValid($tanggalLahir) || !$tanggalValid($tanggalRiwayatPendidikan) || !$tanggalValid($tanggalRiwayatPekerjaan)) {
+        $errorAdmin = "Format tanggal Biodata atau Informasi tidak valid.";
+    }
+
+    if ($errorAdmin !== "") {
+        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode($errorAdmin));
+        exit;
+    }
+
+    mysqli_begin_transaction($conn);
+    try {
+        $stmtAdmin = mysqli_prepare(
+            $conn,
+            "UPDATE karyawan SET alamat = ?, tanggal_lahir = NULLIF(?, ''), agama = NULLIF(?, ''), gender = ?, marital_status = NULLIF(?, ''), kontak = NULLIF(?, ''), email = NULLIF(?, ''), biografi = ?, keahlian = ?, riwayat_pendidikan = ?, tanggal_riwayat_pendidikan = NULLIF(?, ''), riwayat_pekerjaan = ?, tanggal_riwayat_pekerjaan = NULLIF(?, '') WHERE id = ?"
+        );
+        if (!$stmtAdmin) throw new RuntimeException(mysqli_error($conn));
+        mysqli_stmt_bind_param(
+            $stmtAdmin,
+            "sssssssssssssi",
+            $alamat,
+            $tanggalLahir,
+            $agama,
+            $gender,
+            $maritalStatus,
+            $kontak,
+            $email,
+            $biografi,
+            $keahlian,
+            $riwayatPendidikan,
+            $tanggalRiwayatPendidikan,
+            $riwayatPekerjaan,
+            $tanggalRiwayatPekerjaan,
+            $id
+        );
+        if (!mysqli_stmt_execute($stmtAdmin)) throw new RuntimeException(mysqli_stmt_error($stmtAdmin));
+        mysqli_stmt_close($stmtAdmin);
+
+        if (!mysqli_query($conn, "DELETE FROM riwayat_pendidikan WHERE karyawan_id = " . $id)) {
+            throw new RuntimeException(mysqli_error($conn));
+        }
+        $insertPendidikan = mysqli_prepare($conn, "INSERT INTO riwayat_pendidikan (karyawan_id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)");
+        if (!$insertPendidikan) throw new RuntimeException(mysqli_error($conn));
+        foreach ((array) ($_POST["pendidikan"] ?? []) as $itemPendidikan) {
+            $institusi = trim((string) ($itemPendidikan["institusi"] ?? "")); if ($institusi === "") continue;
+            $jenjang = trim((string) ($itemPendidikan["jenjang"] ?? "")); $jurusan = trim((string) ($itemPendidikan["jurusan"] ?? "")); $mulai = trim((string) ($itemPendidikan["tanggal_mulai"] ?? "")); $selesai = trim((string) ($itemPendidikan["tanggal_selesai"] ?? "")); $keterangan = trim((string) ($itemPendidikan["keterangan"] ?? ""));
+            mysqli_stmt_bind_param($insertPendidikan, "issssss", $id, $institusi, $jenjang, $jurusan, $mulai, $selesai, $keterangan);
+            if (!mysqli_stmt_execute($insertPendidikan)) throw new RuntimeException(mysqli_stmt_error($insertPendidikan));
+        }
+        mysqli_stmt_close($insertPendidikan);
+
+        if (!mysqli_query($conn, "DELETE FROM riwayat_pekerjaan WHERE karyawan_id = " . $id)) {
+            throw new RuntimeException(mysqli_error($conn));
+        }
+        $insertPekerjaan = mysqli_prepare($conn, "INSERT INTO riwayat_pekerjaan (karyawan_id, nama_perusahaan, posisi, departemen, tanggal_mulai, tanggal_selesai, deskripsi) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)");
+        if (!$insertPekerjaan) throw new RuntimeException(mysqli_error($conn));
+        foreach ((array) ($_POST["pekerjaan"] ?? []) as $itemPekerjaan) {
+            $perusahaan = trim((string) ($itemPekerjaan["nama_perusahaan"] ?? "")); if ($perusahaan === "") continue;
+            $posisiRiwayat = trim((string) ($itemPekerjaan["posisi"] ?? "")); $departemenRiwayat = trim((string) ($itemPekerjaan["departemen"] ?? "")); $mulaiRiwayat = trim((string) ($itemPekerjaan["tanggal_mulai"] ?? "")); $selesaiRiwayat = trim((string) ($itemPekerjaan["tanggal_selesai"] ?? "")); $deskripsiRiwayat = trim((string) ($itemPekerjaan["deskripsi"] ?? ""));
+            mysqli_stmt_bind_param($insertPekerjaan, "issssss", $id, $perusahaan, $posisiRiwayat, $departemenRiwayat, $mulaiRiwayat, $selesaiRiwayat, $deskripsiRiwayat);
+            if (!mysqli_stmt_execute($insertPekerjaan)) throw new RuntimeException(mysqli_stmt_error($insertPekerjaan));
+        }
+        mysqli_stmt_close($insertPekerjaan);
+
+        mysqli_commit($conn);
+    } catch (Throwable $exception) {
+        mysqli_rollback($conn);
+        error_log("Edit Biodata Admin HRGA gagal: " . $exception->getMessage());
+        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Perubahan Biodata dan Informasi gagal disimpan."));
+        exit;
+    }
+
+    try {
+        sinkronkanSemuaDataset($conn);
+    } catch (Throwable $error) {
+        error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
+    }
+    catatAktivitas($conn, "Admin HRGA mengedit Biodata dan Informasi karyawan ID " . $id . ".");
+    header("Location: ../profil-karyawan.php?id=" . $id . "&pesan=edit-berhasil");
+    exit;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     foreach ($form as $namaKolom => $nilaiAwal) {
         $form[$namaKolom] = trim($_POST[$namaKolom] ?? "");

@@ -23,7 +23,7 @@ $urlStyle = $urlRootProyek . "/style/";
 // Nama variabel dibedakan dari $pesan halaman (mis. pesan error form).
 $pesanNotifikasi = trim($_GET["pesan"] ?? "");
 $halamanAktif = $halamanAktif ?? "dashboard";
-$judulHalaman = $judulHalaman ?? "Dashboard Admin";
+$judulHalaman = $judulHalaman ?? "Dashboard Admin HRGA";
 $subjudulHalaman = $subjudulHalaman ?? "";
 
 // Path partial action bar; kosong berarti halaman tidak punya action bar.
@@ -56,7 +56,11 @@ $versiCssHalaman = match ($halamanAktif) {
     "dashboard" => "20260811-dashboard-columns5",
     default => "20260811-layout8",
 };
-if (function_exists("rolePengguna") && rolePengguna() === "pic" && $halamanAktif !== "lembur") {
+if (
+    function_exists("rolePengguna")
+    && rolePengguna() === "pic"
+    && !in_array($halamanAktif, ["lembur", "izin-karyawan", "izin-cuti"], true)
+) {
     header("Location: lembur.php");
     exit;
 }
@@ -84,7 +88,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Dashboard Admin Karyawan</title>
+    <title>Dashboard Admin HRGA</title>
 
     <script>
         (() => {
@@ -149,7 +153,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-        <h2>Admin Karyawan</h2>
+        <h2>Admin HRGA</h2>
 
         <p>
             Sistem pengelolaan dataset
@@ -163,6 +167,18 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 class="<?= $halamanAktif === "lembur" ? "active" : ""; ?>"
             >
                 <span class="sidebar-icon" aria-hidden="true">↗</span>Lembur
+            </a>
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>izin-karyawan.php"
+                class="<?= $halamanAktif === "izin-karyawan" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">1</span>Izin Karyawan
+            </a>
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>izin-cuti.php"
+                class="<?= $halamanAktif === "izin-cuti" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">2</span>Izin Cuti
             </a>
         <?php else: ?>
         <?php if (!(function_exists("punyaRole") && punyaRole("pic", "koordinator"))): ?><a
@@ -255,7 +271,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                     href="<?= htmlspecialchars(URL_DASAR); ?>pengguna.php"
                     class="<?= $halamanAktif === "pengguna" ? "active" : ""; ?>"
                     >
-                    <span class="sidebar-icon" aria-hidden="true">♟</span>Manajemen Admin
+                    <span class="sidebar-icon" aria-hidden="true">♟</span>Manajemen Pengguna
                 </a>
 
                 <a
@@ -277,7 +293,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 </span>
 
                 <span class="role-badge role-<?= htmlspecialchars(rolePengguna()); ?>">
-                    <?= htmlspecialchars(ucfirst(rolePengguna())); ?>
+                    <?= htmlspecialchars(labelRole(rolePengguna())); ?>
                 </span>
             </div>
 
@@ -299,7 +315,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
         class="btn btn-primary mobile-menu"
         onclick="toggleSidebar()"
     >
-        Menu Admin
+        Menu Admin HRGA
     </button>
 
     <div class="topbar">

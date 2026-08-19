@@ -219,7 +219,7 @@ $parameterHalaman = ["cari" => $kataKunci, "departemen" => $departemen];
             <a href="#tentang">Tentang</a>
 
             <a href="Dashboard/index.php" class="btn-admin">
-                Admin
+                Admin HRGA
             </a>
             <button type="button" class="button theme-toggle" onclick="toggleTheme()" aria-label="Ganti tema">🌙 Dark</button>
         </div>

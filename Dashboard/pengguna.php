@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         catatAktivitas(
                             $conn,
                             "Menghapus pengguna ID " . $hapusId
-                                . " dengan role " . ($target["role"] ?? "tidak diketahui") . "."
+                                . " dengan role " . labelRole((string) ($target["role"] ?? "tidak diketahui")) . "."
                         );
                     } else {
                         $pesan = "Akun gagal dihapus.";
@@ -110,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $pesan = "Akun berhasil ditambahkan.";
                     catatAktivitas(
                         $conn,
-                        "Menambahkan pengguna " . $username . " dengan role " . $role
+                        "Menambahkan pengguna " . $username . " dengan role " . labelRole($role)
                             . " dan departemen ID " . ($departmentId > 0 ? (string) $departmentId : "semua") . "."
                     );
                 } else {
@@ -135,8 +135,8 @@ $daftarPengguna = mysqli_query(
 );
 $daftarDepartemen = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
 
-$judulHalaman = "Manajemen Admin";
-$subjudulHalaman = "Kelola akun dengan akses admin.";
+$judulHalaman = "Manajemen Pengguna";
+$subjudulHalaman = "Kelola akun dan akses Admin HRGA serta peran operasional.";
 $halamanAktif = "pengguna";
 
 require __DIR__ . "/partials/atas.php";
@@ -207,7 +207,7 @@ require __DIR__ . "/partials/atas.php";
                     <div class="form-group">
                         <label for="role">Role</label>
                         <select id="role" name="role" required>
-                            <option value="admin">Admin</option>
+                            <option value="admin">Admin HRGA</option>
                             <option value="pic">PIC</option>
                             <option value="koordinator">Koordinator</option>
                             <option value="manager">Manager</option>
@@ -251,7 +251,7 @@ require __DIR__ . "/partials/atas.php";
                             <tr>
                                 <td><?= htmlspecialchars($pengguna["nama"]); ?></td>
                                 <td><?= htmlspecialchars($pengguna["username"]); ?></td>
-                                <td><span class="badge"><?= htmlspecialchars(ucfirst($pengguna["role"])); ?></span></td>
+                                <td><span class="badge"><?= htmlspecialchars(labelRole((string) $pengguna["role"])); ?></span></td>
                                 <td>
                                     <?php if ($pengguna["role"] !== "superadmin"): ?>
                                         <div class="action-buttons">

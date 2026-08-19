@@ -50,7 +50,7 @@ $halaman = $data["halaman"];
 $totalHalaman = $data["totalHalaman"];
 $offset = $data["offset"];
 
-$judulHalaman = "Dashboard Admin";
+$judulHalaman = "Dashboard Admin HRGA";
 $subjudulHalaman = "Ringkasan dan pantauan data karyawan perusahaan.";
 $halamanAktif = "dashboard";
 

@@ -6,7 +6,7 @@ require __DIR__ . "/koneksi.php";
 require_once __DIR__ . "/fungsi/auth.php";
 require_once __DIR__ . "/fungsi/audit.php";
 
-wajibRole("admin", "superadmin");
+wajibRole("superadmin");
 $id = (int) ($_GET["id"] ?? $_POST["id"] ?? 0);
 $filterKembali = [
     "cari" => trim((string) ($_POST["cari"] ?? $_GET["cari"] ?? "")),

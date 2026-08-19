@@ -5,7 +5,7 @@ require_once __DIR__ . "/audit.php";
 require_once __DIR__ . "/sinkronisasi.php";
 require_once __DIR__ . "/performa-karyawan.php";
 
-wajibRole("admin", "superadmin");
+wajibRole("superadmin");
 
 $pesan = "";
 $tipePesan = "error";

@@ -71,6 +71,8 @@ $judulHalaman = "Profil Karyawan";
 $subjudulHalaman = "Informasi internal karyawan yang sedang dipilih.";
 $halamanAktif = "karyawan";
 $modeEdit = isset($_GET["edit"]) && $_GET["edit"] === "1" && punyaRole("admin", "superadmin");
+$adminHrgaEdit = $modeEdit && rolePengguna() === "admin";
+$errorEdit = trim((string) ($_GET["error"] ?? ""));
 $riwayatPendidikan = [];
 $hasilPendidikan = mysqli_query($conn, "SELECT id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan FROM riwayat_pendidikan WHERE karyawan_id = " . (int) $karyawan["id"] . " ORDER BY COALESCE(tanggal_mulai, tanggal_selesai) DESC, id DESC");
 while ($rowPendidikan = mysqli_fetch_assoc($hasilPendidikan)) $riwayatPendidikan[] = $rowPendidikan;
@@ -88,6 +90,8 @@ require __DIR__ . "/partials/atas.php";
         <p>Ringkasan informasi karyawan berdasarkan data yang tersimpan.</p>
     </div>
 
+    <?php if ($errorEdit !== ""): ?><div class="alert-error" role="alert"><?= htmlspecialchars($errorEdit); ?></div><?php endif; ?>
+
     <?php if ($modeEdit): ?>
         <article class="profile-card profile-inline-edit">
             <h3>Edit Data Karyawan</h3>
@@ -102,6 +106,13 @@ require __DIR__ . "/partials/atas.php";
                         "salary" => "Gaji", "gender" => "Jenis Kelamin", "employment_status" => "Status Kerja",
                         "performance_score" => "Skor Performa"
                     ];
+                    if ($adminHrgaEdit) {
+                        $fieldEdit = array_filter(
+                            $fieldEdit,
+                            static fn (string $label, string $field): bool => adminHrgaBolehEditFieldKaryawan($field),
+                            ARRAY_FILTER_USE_BOTH
+                        );
+                    }
                     foreach ($fieldEdit as $field => $label):
                         $type = str_starts_with($field, "tanggal_") ? "date" : ($field === "email" ? "email" : ($field === "salary" || $field === "performance_score" ? "number" : "text"));
                     ?>
@@ -120,7 +131,7 @@ require __DIR__ . "/partials/atas.php";
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
-                    <div class="form-group"><label for="profile_emp_id">ID Karyawan</label><input id="profile_emp_id" type="text" value="<?= htmlspecialchars((string) ($karyawan["emp_id"] ?? "")); ?>" readonly><p class="field-note">ID karyawan tidak dapat diubah.</p></div>
+                    <?php if (!$adminHrgaEdit): ?><div class="form-group"><label for="profile_emp_id">ID Karyawan</label><input id="profile_emp_id" type="text" value="<?= htmlspecialchars((string) ($karyawan["emp_id"] ?? "")); ?>" readonly><p class="field-note">ID karyawan tidak dapat diubah.</p></div><?php endif; ?>
                     <div class="form-group form-group-full"><label for="profile_alamat">Alamat</label><textarea id="profile_alamat" name="alamat" rows="3"><?= htmlspecialchars((string) ($karyawan["alamat"] ?? "")); ?></textarea></div>
                     <div class="form-group form-group-full"><label for="profile_biografi">Biografi Diri</label><textarea id="profile_biografi" name="biografi" rows="5" maxlength="2000"><?= htmlspecialchars((string) ($karyawan["biografi"] ?? "")); ?></textarea></div>
                 </div>
@@ -141,7 +152,7 @@ require __DIR__ . "/partials/atas.php";
                 <?php else: ?>
                     <div class="profile-photo profile-photo-empty">Belum ada foto</div>
                 <?php endif; ?>
-                <?php if ($modeEdit): ?>
+                <?php if ($modeEdit && punyaRole("superadmin")): ?>
                     <div class="profile-photo-edit"><label for="inline_foto_profil">Ganti Foto Profil</label><input id="inline_foto_profil" type="file" name="foto_profil" form="inline-edit-form" accept=".jpg,.jpeg,image/jpeg"><p class="field-note">JPG/JPEG, maksimal 2 MB.</p></div>
                 <?php endif; ?>
             </div>
@@ -228,7 +239,7 @@ require __DIR__ . "/partials/atas.php";
 
         <article class="profile-card profile-documents-card" id="dokumen">
             <h3>Dokumen Pendukung</h3>
-            <?php if ($modeEdit): ?>
+            <?php if ($modeEdit && punyaRole("superadmin")): ?>
                 <div class="profile-document-edit-grid">
                     <div class="form-group"><label for="inline_file_cv">Ganti CV</label><input id="inline_file_cv" type="file" name="file_cv" form="inline-edit-form" accept=".pdf,application/pdf"><p class="field-note">PDF, maksimal 5 MB.</p></div>
                     <div class="form-group"><label for="inline_file_ijazah">Ganti Ijazah</label><input id="inline_file_ijazah" type="file" name="file_ijazah" form="inline-edit-form" accept=".pdf,application/pdf"><p class="field-note">PDF, maksimal 5 MB.</p></div>
@@ -252,7 +263,7 @@ require __DIR__ . "/partials/atas.php";
                 <?php endforeach; ?>
                 <div class="profile-document-row profile-document-date">
                     <span>Tanggal MCU terakhir</span>
-                    <?php if ($modeEdit): ?>
+                    <?php if ($modeEdit && punyaRole("superadmin")): ?>
                         <input class="profile-document-date-input" id="inline_tanggal_mcu_terakhir" type="date" name="tanggal_mcu_terakhir" form="inline-edit-form" value="<?= htmlspecialchars((string) ($karyawan["tanggal_mcu_terakhir"] ?? "")); ?>">
                     <?php else: ?>
                         <strong><?= htmlspecialchars(tanggalProfil($karyawan, "tanggal_mcu_terakhir")); ?></strong>
@@ -435,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!sourceForm || !editor) return;
     editor.style.display = 'none';
 
-    const fields = ['employee_name','emp_id','nik','alamat','tanggal_lahir','tanggal_mcu_terakhir','riwayat_pekerjaan','tanggal_riwayat_pekerjaan','riwayat_pendidikan','tanggal_riwayat_pendidikan','agama','marital_status','kontak','email','position','department','salary','gender','employment_status','performance_score','biografi','keahlian'];
+    const fields = <?= json_encode(array_values(array_unique(array_merge(array_keys($fieldEdit), ["alamat", "biografi"]))), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
     const labels = {
         employee_name:'Nama Karyawan', emp_id:'ID Karyawan', nik:'NIK', alamat:'Alamat', tanggal_lahir:'Tanggal Lahir', tanggal_mcu_terakhir:'Tanggal MCU Terakhir', riwayat_pekerjaan:'Riwayat Pekerjaan', tanggal_riwayat_pekerjaan:'Tanggal Riwayat Pekerjaan', riwayat_pendidikan:'Riwayat Pendidikan', tanggal_riwayat_pendidikan:'Tanggal Riwayat Pendidikan', agama:'Agama',
         marital_status:'Status Kawin', kontak:'Kontak', email:'Email', position:'Posisi', department:'Departemen', salary:'Gaji',
@@ -463,6 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const inlineDepartment = document.querySelector('.profile-inline-input[name="department"]');
     const inlinePosition = document.querySelector('.profile-inline-input[name="position"]');
     const updatePositions = function (restore) {
+        if (!department || !position) return;
         const current = restore ? position.value : '';
         const available = positionsByDepartment[department.value] || [];
         const fill = function (target) {
@@ -474,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         fill(position); fill(inlinePosition);
     };
-    department.addEventListener('change', () => {
+    department?.addEventListener('change', () => {
         if (inlineDepartment) inlineDepartment.value = department.value;
         updatePositions(false);
     });
