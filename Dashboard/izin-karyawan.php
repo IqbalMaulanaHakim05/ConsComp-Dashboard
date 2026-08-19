@@ -6,6 +6,7 @@ require __DIR__ . "/koneksi.php";
 require_once __DIR__ . "/fungsi/auth.php";
 require_once __DIR__ . "/fungsi/audit.php";
 require_once __DIR__ . "/fungsi/izin-karyawan.php";
+require_once __DIR__ . "/fungsi/master-data.php";
 
 wajibRole("admin", "superadmin", "pic", "koordinator", "manager");
 
@@ -221,6 +222,8 @@ if ($parameterDepartment !== null) {
 mysqli_stmt_execute($stmtKaryawan);
 $hasilKaryawan = mysqli_stmt_get_result($stmtKaryawan);
 $dataKaryawan = [];
+$departemenPilihan = ambilDepartemenPilihan($conn, roleOperasional() ? (int) ($departmentId ?? 0) : null);
+$posisiPerDepartemen = ambilPosisiPerDepartemen($conn, roleOperasional() ? (int) ($departmentId ?? 0) : null);
 
 while ($item = mysqli_fetch_assoc($hasilKaryawan)) {
     $dataKaryawan[] = [
@@ -234,11 +237,6 @@ while ($item = mysqli_fetch_assoc($hasilKaryawan)) {
 }
 mysqli_stmt_close($stmtKaryawan);
 
-$departemenPilihan = [];
-foreach ($dataKaryawan as $item) {
-    $departemenPilihan[(string) $item["department_id"]] = $item["departemen"];
-}
-asort($departemenPilihan, SORT_NATURAL | SORT_FLAG_CASE);
 
 $sqlDaftar = "SELECT i.*, k.emp_id, k.employee_name, k.position, k.department,
                      p.emp_id AS pengganti_emp_id, p.employee_name AS pengganti_nama,
@@ -467,6 +465,7 @@ require __DIR__ . "/partials/atas.php";
 <script>
 (() => {
     const employees = <?= json_encode($dataKaryawan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const positionsByDepartment = <?= json_encode($posisiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
     const position = document.getElementById("izin-position");
     const department = document.getElementById("izin-department");
     const employee = document.getElementById("izin-karyawan");
@@ -496,11 +495,7 @@ require __DIR__ . "/partials/atas.php";
             return;
         }
 
-        const availablePositions = [...new Set(
-            employees
-                .filter(item => String(item.department_id) === department.value)
-                .map(item => item.posisi)
-        )].sort((first, second) => first.localeCompare(second, "id", { sensitivity: "base" }));
+        const availablePositions = [...new Set(positionsByDepartment[department.value] || [])].sort((first, second) => first.localeCompare(second, "id", { sensitivity: "base" }));
 
         position.append(createOption("", availablePositions.length ? "Pilih posisi" : "Tidak ada posisi pada departemen ini"));
         availablePositions.forEach(item => position.append(createOption(item, item)));
@@ -534,7 +529,9 @@ require __DIR__ . "/partials/atas.php";
         matching.forEach(item => employee.append(createOption(item.id, `${item.emp_id} - ${item.nama}`)));
         employee.disabled = matching.length === 0;
 
-        if (matching.some(item => String(item.id) === String(selectedId))) {
+        if (matching.length === 1) {
+            employee.value = String(matching[0].id);
+        } else if (matching.some(item => String(item.id) === String(selectedId))) {
             employee.value = String(selectedId);
         }
         employee.dataset.selected = "";

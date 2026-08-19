@@ -7,6 +7,7 @@ function siapkanMasterData(mysqli $conn): void
     mysqli_query($conn, "UPDATE karyawan SET employment_status = 'Aktif' WHERE LOWER(employment_status) IN ('active', 'aktif')");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_departemen (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi_departemen (posisi_id INT UNSIGNED NOT NULL, department_id INT UNSIGNED NOT NULL, PRIMARY KEY (posisi_id, department_id), FOREIGN KEY (posisi_id) REFERENCES master_posisi(id) ON DELETE CASCADE, FOREIGN KEY (department_id) REFERENCES master_departemen(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_status_kerja (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_agama (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     // Master data dikelola sepenuhnya dari halaman Master Data. Jangan mengisi
@@ -22,6 +23,10 @@ function siapkanMasterData(mysqli $conn): void
             mysqli_query($conn, "INSERT IGNORE INTO `$table` (nama) VALUES ('$safe')");
         }
     }
+    // Pulihkan foreign key departemen untuk data lama maupun karyawan baru
+    // yang sebelumnya hanya menyimpan nama departemen.
+    mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id WHERE k.department_id IS NULL OR k.department_id <> d.id");
+    mysqli_query($conn, "INSERT IGNORE INTO master_posisi_departemen (posisi_id, department_id) SELECT p.id, k.department_id FROM master_posisi p INNER JOIN karyawan k ON k.position = p.nama WHERE k.department_id IS NOT NULL");
 }
 
 function ambilMasterData(mysqli $conn, string $jenis): array
@@ -32,6 +37,41 @@ function ambilMasterData(mysqli $conn, string $jenis): array
     $result = mysqli_query($conn, "SELECT nama FROM `$table` ORDER BY nama ASC");
     $items = [];
     while ($result && ($row = mysqli_fetch_assoc($result))) $items[] = $row["nama"];
+    return $items;
+}
+
+function ambilPosisiPerDepartemen(mysqli $conn, ?int $departmentId = null): array
+{
+    siapkanMasterData($conn);
+    $sql = "SELECT r.department_id, p.nama AS posisi FROM master_posisi_departemen r INNER JOIN master_posisi p ON p.id = r.posisi_id INNER JOIN master_departemen d ON d.id = r.department_id WHERE d.is_active = 1";
+    if ($departmentId !== null) $sql .= " AND r.department_id = " . (int) $departmentId;
+    $sql .= " ORDER BY p.nama";
+    $result = mysqli_query($conn, $sql);
+    $items = [];
+    while ($result && ($row = mysqli_fetch_assoc($result))) $items[(string) $row["department_id"]][] = (string) $row["posisi"];
+
+    // Departemen baru belum memiliki karyawan, sehingga belum punya relasi
+    // posisi. Sediakan seluruh posisi aktif sebagai pilihan awal.
+    $departemenResult = mysqli_query($conn, "SELECT id FROM master_departemen WHERE is_active = 1" . ($departmentId !== null ? " AND id = " . (int) $departmentId : ""));
+    $posisiResult = mysqli_query($conn, "SELECT nama FROM master_posisi ORDER BY nama");
+    $semuaPosisi = [];
+    while ($posisiResult && ($row = mysqli_fetch_assoc($posisiResult))) $semuaPosisi[] = (string) $row["nama"];
+    while ($departemenResult && ($row = mysqli_fetch_assoc($departemenResult))) {
+        $idDepartemen = (string) $row["id"];
+        if (!isset($items[$idDepartemen])) $items[$idDepartemen] = $semuaPosisi;
+    }
+    return $items;
+}
+
+function ambilDepartemenPilihan(mysqli $conn, ?int $departmentId = null): array
+{
+    siapkanMasterData($conn);
+    $sql = "SELECT id, nama FROM master_departemen WHERE is_active = 1";
+    if ($departmentId !== null) $sql .= " AND id = " . (int) $departmentId;
+    $sql .= " ORDER BY nama";
+    $result = mysqli_query($conn, $sql);
+    $items = [];
+    while ($result && ($row = mysqli_fetch_assoc($result))) $items[(string) $row["id"]] = (string) $row["nama"];
     return $items;
 }
 

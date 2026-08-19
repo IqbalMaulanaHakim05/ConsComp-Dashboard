@@ -94,7 +94,7 @@ require __DIR__ . "/partials/atas.php";
                 <div class="profile-edit-grid">
                     <?php
                     $fieldEdit = [
-                        "employee_name" => "Nama Karyawan", "emp_id" => "ID Karyawan", "nik" => "NIK", "keahlian" => "Keahlian",
+                        "employee_name" => "Nama Karyawan", "nik" => "NIK", "keahlian" => "Keahlian",
                         "tanggal_lahir" => "Tanggal Lahir", "tanggal_mcu_terakhir" => "Tanggal MCU Terakhir", "agama" => "Agama", "marital_status" => "Status Kawin",
                         "kontak" => "Kontak", "email" => "Email", "position" => "Posisi", "department" => "Departemen",
                         "salary" => "Gaji", "gender" => "Jenis Kelamin", "employment_status" => "Status Kerja",
@@ -118,6 +118,7 @@ require __DIR__ . "/partials/atas.php";
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
+                    <div class="form-group"><label for="profile_emp_id">ID Karyawan</label><input id="profile_emp_id" type="text" value="<?= htmlspecialchars((string) ($karyawan["emp_id"] ?? "")); ?>" readonly><p class="field-note">ID karyawan tidak dapat diubah.</p></div>
                     <div class="form-group form-group-full"><label for="profile_alamat">Alamat</label><textarea id="profile_alamat" name="alamat" rows="3"><?= htmlspecialchars((string) ($karyawan["alamat"] ?? "")); ?></textarea></div>
                     <div class="form-group form-group-full"><label for="profile_biografi">Biografi Diri</label><textarea id="profile_biografi" name="biografi" rows="5" maxlength="2000"><?= htmlspecialchars((string) ($karyawan["biografi"] ?? "")); ?></textarea></div>
                 </div>
@@ -178,18 +179,23 @@ require __DIR__ . "/partials/atas.php";
         <article class="profile-card profile-history-card">
             <h3>Informasi Karyawan</h3>
             <dl class="profile-details">
-                <div><dt>Kontak</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "kontak")); ?></dd></div>
-                <div><dt>Email</dt><dd><?= htmlspecialchars(nilaiProfil($karyawan, "email")); ?></dd></div>
                 <div class="profile-biography-row"><dt>Biodata</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "biografi"))); ?></dd></div>
                 <div class="profile-biography-row"><dt>Keahlian</dt><dd><?= nl2br(htmlspecialchars(nilaiProfil($karyawan, "keahlian"))); ?></dd></div>
                 <div class="profile-history-row"><dt>Riwayat Pekerjaan</dt><dd><?php if ($riwayatPekerjaan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPekerjaan as $item): ?><div class="profile-history-entry" data-history-key="db-pekerjaan-<?= (int) $item["id"]; ?>"><div><strong><?= htmlspecialchars($item["nama_perusahaan"]); ?></strong><span> - <?= htmlspecialchars($item["posisi"] ?? ""); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if (trim((string) ($item["deskripsi"] ?? "")) !== ""): ?><p class="profile-history-description"><?= nl2br(htmlspecialchars((string) $item["deskripsi"])); ?></p><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-danger" type="button" data-history-delete="pekerjaan" data-history-key="db-pekerjaan-<?= (int) $item["id"]; ?>">Hapus</button><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pekerjaan">+ Tambah Pekerjaan</button><?php endif; ?></dd></div>
-                <div class="profile-history-row"><dt>Riwayat Pendidikan</dt><dd><?php if ($riwayatPendidikan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPendidikan as $item): ?><div class="profile-history-entry" data-history-key="db-pendidikan-<?= (int) $item["id"]; ?>"><div><strong><?= htmlspecialchars($item["institusi"]); ?></strong><span> - <?= htmlspecialchars(trim((string) ($item["jenjang"] ?? "") . " " . (string) ($item["jurusan"] ?? ""))); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if ($modeEdit): ?><button class="btn btn-danger" type="button" data-history-delete="pendidikan" data-history-key="db-pendidikan-<?= (int) $item["id"]; ?>">Hapus</button><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pendidikan">+ Tambah Pendidikan</button><?php endif; ?></dd></div>
             </dl>
         </article>
 
         <article class="profile-card profile-detail-card">
             <h3>Biodata Karyawan</h3>
             <dl class="profile-details">
+                <div>
+                    <dt>Kontak</dt>
+                    <dd><?= htmlspecialchars(nilaiProfil($karyawan, "kontak")); ?></dd>
+                </div>
+                <div>
+                    <dt>Email</dt>
+                    <dd><?= htmlspecialchars(nilaiProfil($karyawan, "email")); ?></dd>
+                </div>
                 <div>
                     <dt>NIK</dt>
                     <dd><?= htmlspecialchars(nilaiProfil($karyawan, "nik")); ?></dd>
@@ -214,6 +220,7 @@ require __DIR__ . "/partials/atas.php";
                     <dt>Status Kawin</dt>
                     <dd><?= htmlspecialchars(nilaiProfil($karyawan, "marital_status")); ?></dd>
                 </div>
+                <div class="profile-history-row"><dt>Riwayat Pendidikan</dt><dd><?php if ($riwayatPendidikan === []): ?><span class="profile-history-empty">-</span><?php else: ?><?php foreach ($riwayatPendidikan as $item): ?><div class="profile-history-entry" data-history-key="db-pendidikan-<?= (int) $item["id"]; ?>"><div><strong><?= htmlspecialchars($item["institusi"]); ?></strong><span> - <?= htmlspecialchars(trim((string) ($item["jenjang"] ?? "") . " " . (string) ($item["jurusan"] ?? ""))); ?></span></div><small><?= htmlspecialchars($item["tanggal_mulai"] ?: "-"); ?> &nbsp; s/d &nbsp; <?= htmlspecialchars($item["tanggal_selesai"] ?: "Sekarang"); ?></small><?php if ($modeEdit): ?><button class="btn btn-danger" type="button" data-history-delete="pendidikan" data-history-key="db-pendidikan-<?= (int) $item["id"]; ?>">Hapus</button><?php endif; ?></div><?php endforeach; ?><?php endif; ?><?php if ($modeEdit): ?><button class="btn btn-secondary open-history" type="button" data-type="pendidikan">+ Tambah Pendidikan</button><?php endif; ?></dd></div>
             </dl>
         </article>
 

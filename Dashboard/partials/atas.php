@@ -174,7 +174,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
         <?php if (!(function_exists("punyaRole") && punyaRole("pic"))): ?><a
             href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php"
-            class="<?= in_array($halamanAktif, ["karyawan", "analisis", "upah", "lembur", "periode-gaji"], true) ? "active" : ""; ?>"
+            class="<?= in_array($halamanAktif, ["karyawan", "analisis", "periode-gaji"], true) ? "active" : ""; ?>"
         >
             <span class="sidebar-icon" aria-hidden="true">♙</span>Data Karyawan
         </a><?php endif; ?>
@@ -196,20 +196,22 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 <span class="sidebar-icon" aria-hidden="true">◒</span>Analisis
             </a><?php endif; ?>
 
-            <a
-                href="<?= htmlspecialchars(URL_DASAR); ?>upah.php"
-                class="<?= $halamanAktif === "upah" ? "active" : ""; ?>"
-            >
-                <span class="sidebar-icon" aria-hidden="true">Rp</span>Upah
-            </a>
+        </div>
 
+        <a
+            href="<?= htmlspecialchars(URL_DASAR); ?>upah.php"
+            class="<?= in_array($halamanAktif, ["upah", "lembur"], true) ? "active" : ""; ?>"
+        >
+            <span class="sidebar-icon" aria-hidden="true">Rp</span>Upah
+        </a>
+
+        <div class="sidebar-tree-children">
             <a
                 href="<?= htmlspecialchars(URL_DASAR); ?>lembur.php"
                 class="<?= $halamanAktif === "lembur" ? "active" : ""; ?>"
             >
                 <span class="sidebar-icon" aria-hidden="true">↗</span>Lembur
             </a>
-
         </div>
 
         <a
