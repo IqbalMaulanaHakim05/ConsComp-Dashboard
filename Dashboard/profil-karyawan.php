@@ -8,11 +8,11 @@ require_once __DIR__ . "/fungsi/media-karyawan.php";
 require_once __DIR__ . "/fungsi/master-data.php";
 require_once __DIR__ . "/fungsi/performa-karyawan.php";
 require_once __DIR__ . "/fungsi/slip-gaji.php";
+require_once __DIR__ . "/fungsi/promosi-karyawan.php";
 
-wajibLogin();
+wajibRole("admin", "superadmin", "koordinator", "manager");
 siapkanMasterData($conn);
-$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
-$posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
+$masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 
 $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
 $karyawan = null;
@@ -80,8 +80,32 @@ while ($rowPendidikan = mysqli_fetch_assoc($hasilPendidikan)) $riwayatPendidikan
 $riwayatPekerjaan = [];
 $hasilPekerjaan = mysqli_query($conn, "SELECT id, nama_perusahaan, posisi, departemen, tanggal_mulai, tanggal_selesai, deskripsi FROM riwayat_pekerjaan WHERE karyawan_id = " . (int) $karyawan["id"] . " ORDER BY COALESCE(tanggal_mulai, tanggal_selesai) DESC, id DESC");
 while ($rowPekerjaan = mysqli_fetch_assoc($hasilPekerjaan)) $riwayatPekerjaan[] = $rowPekerjaan;
+$historiJabatan = siapkanTabelHistoriJabatan($conn)
+    ? daftarHistoriJabatanKaryawan($conn, (int) $karyawan["id"])
+    : [];
+$departemenPromosi = ambilDepartemenPilihan($conn);
+$posisiPromosiPerDepartemen = [];
+$hasilPosisiPromosi = mysqli_query(
+    $conn,
+    "SELECT r.department_id, p.id, p.nama
+     FROM master_posisi_departemen r
+     INNER JOIN master_posisi p ON p.id = r.posisi_id
+     INNER JOIN master_departemen d ON d.id = r.department_id
+     WHERE d.is_active = 1
+     ORDER BY d.nama, p.nama"
+);
+while ($hasilPosisiPromosi && ($rowPosisiPromosi = mysqli_fetch_assoc($hasilPosisiPromosi))) {
+    $posisiPromosiPerDepartemen[(string) $rowPosisiPromosi["department_id"]][] = [
+        "id" => (int) $rowPosisiPromosi["id"],
+        "nama" => (string) $rowPosisiPromosi["nama"],
+    ];
+}
+$errorPromosi = trim((string) ($_GET["error_promosi"] ?? ""));
+$bolehLihatDetailSlipGaji = punyaRole("admin", "superadmin");
 $daftarSlipGaji = siapkanPenyimpananSlipGaji($conn)
-    ? daftarSlipGajiKaryawan($conn, (int) $karyawan["id"])
+    ? ($bolehLihatDetailSlipGaji
+        ? daftarSlipGajiKaryawan($conn, (int) $karyawan["id"])
+        : daftarRiwayatSlipGajiKaryawanTerbatas($conn, (int) $karyawan["id"]))
     : [];
 
 require __DIR__ . "/partials/atas.php";
@@ -106,7 +130,7 @@ require __DIR__ . "/partials/atas.php";
                     $fieldEdit = [
                         "employee_name" => "Nama Karyawan", "nik" => "NIK", "keahlian" => "Keahlian",
                         "tanggal_lahir" => "Tanggal Lahir", "tanggal_mcu_terakhir" => "Tanggal MCU Terakhir", "agama" => "Agama", "marital_status" => "Status Kawin",
-                        "kontak" => "Kontak", "email" => "Email", "position" => "Posisi", "department" => "Departemen",
+                        "kontak" => "Kontak", "email" => "Email",
                         "salary" => "Gaji", "gender" => "Jenis Kelamin", "employment_status" => "Status Kerja",
                         "performance_score" => "Skor Performa"
                     ];
@@ -122,8 +146,8 @@ require __DIR__ . "/partials/atas.php";
                     ?>
                         <div class="form-group">
                             <label for="profile_<?= $field; ?>"><?= $label; ?><?= $field === "nik" ? ' <span class="required">*</span>' : ""; ?></label>
-                            <?php if ($field === "position" || $field === "department" || $field === "employment_status" || $field === "agama"): ?>
-                                <select id="profile_<?= $field; ?>" name="<?= $field; ?>" <?= $field === "agama" ? "" : "required"; ?>><option value="">Pilih</option><?php foreach (($field === "position" ? $masterPosisi : ($field === "department" ? $masterDepartemen : ($field === "employment_status" ? $masterStatus : $masterAgama))) as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                            <?php if ($field === "employment_status" || $field === "agama"): ?>
+                                <select id="profile_<?= $field; ?>" name="<?= $field; ?>" <?= $field === "agama" ? "" : "required"; ?>><option value="">Pilih</option><?php foreach (($field === "employment_status" ? $masterStatus : $masterAgama) as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                             <?php elseif ($field === "alamat" || $field === "biografi" || $field === "keahlian"): ?>
                                 <textarea id="profile_<?= $field; ?>" name="<?= $field; ?>" rows="4"><?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?></textarea>
                             <?php elseif ($field === "gender"): ?>
@@ -131,7 +155,7 @@ require __DIR__ . "/partials/atas.php";
                             <?php elseif ($field === "marital_status"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>"><option value="">Pilih status</option><option <?= ($karyawan[$field] ?? "") === "Single" ? "selected" : ""; ?>>Single</option><option <?= ($karyawan[$field] ?? "") === "Married" ? "selected" : ""; ?>>Married</option></select>
                             <?php else: ?>
-                                <input id="profile_<?= $field; ?>" type="<?= $type; ?>" name="<?= $field; ?>" value="<?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?>" <?= in_array($field, ["employee_name", "emp_id", "nik", "position", "department", "salary", "gender", "employment_status"], true) ? "required" : ""; ?> <?= $field === "performance_score" ? 'min="0" max="100" step="1"' : ""; ?>>
+                                <input id="profile_<?= $field; ?>" type="<?= $type; ?>" name="<?= $field; ?>" value="<?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?>" <?= in_array($field, ["employee_name", "emp_id", "nik", "salary", "gender", "employment_status"], true) ? "required" : ""; ?> <?= $field === "performance_score" ? 'min="0" max="100" step="1"' : ""; ?>>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
@@ -276,9 +300,65 @@ require __DIR__ . "/partials/atas.php";
             </div>
         </article>
 
+        <article class="profile-card profile-promotion-card" id="promosi">
+            <div class="profile-promotion-heading">
+                <div>
+                    <h3>Promosi dan Perpindahan Posisi</h3>
+                    <p>Jabatan aktif: <strong><?= htmlspecialchars((string) $karyawan["department"] . " - " . (string) $karyawan["position"]); ?></strong></p>
+                </div>
+            </div>
+
+            <?php if ($errorPromosi !== ""): ?><div class="alert-error" role="alert"><?= htmlspecialchars($errorPromosi); ?></div><?php endif; ?>
+
+            <?php if (punyaRole("admin", "superadmin")): ?>
+                <form class="profile-promotion-form" method="POST" action="fungsi/proses-promosi-karyawan.php">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+                    <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">
+                    <label>Departemen Baru
+                        <select id="promotion-department" name="department_baru_id" required>
+                            <option value="">Pilih departemen</option>
+                            <?php foreach ($departemenPromosi as $departmentIdPromosi => $namaDepartemenPromosi): ?><option value="<?= (int) $departmentIdPromosi; ?>"><?= htmlspecialchars((string) $namaDepartemenPromosi); ?></option><?php endforeach; ?>
+                        </select>
+                    </label>
+                    <label>Posisi Baru
+                        <select id="promotion-position" name="posisi_baru_id" required disabled>
+                            <option value="">Pilih departemen terlebih dahulu</option>
+                        </select>
+                    </label>
+                    <label>Tanggal Perubahan
+                        <input type="date" name="tanggal_perubahan" value="<?= date("Y-m-d"); ?>" required>
+                    </label>
+                    <label>Tanggal Mulai Jabatan
+                        <input type="date" name="tanggal_mulai_jabatan" value="<?= date("Y-m-d"); ?>" required>
+                    </label>
+                    <button class="btn btn-success" type="submit" onclick="return confirm('Simpan promosi atau perpindahan posisi ini?');">Simpan Promosi</button>
+                </form>
+            <?php endif; ?>
+
+            <div class="profile-promotion-history">
+                <h4>Riwayat Jabatan</h4>
+                <?php if ($historiJabatan === []): ?>
+                    <p class="profile-history-empty">Belum ada riwayat promosi atau perpindahan posisi.</p>
+                <?php else: ?>
+                    <ol>
+                        <?php foreach ($historiJabatan as $histori): ?>
+                            <li>
+                                <div class="promotion-history-route">
+                                    <span><?= htmlspecialchars((string) $histori["departemen_lama_snapshot"] . " - " . (string) $histori["posisi_lama_snapshot"]); ?></span>
+                                    <b aria-hidden="true">→</b>
+                                    <strong><?= htmlspecialchars((string) $histori["departemen_baru_snapshot"] . " - " . (string) $histori["posisi_baru_snapshot"]); ?></strong>
+                                </div>
+                                <small>Perubahan <?= htmlspecialchars(date("d-m-Y", strtotime((string) $histori["tanggal_perubahan"]))); ?> · Mulai jabatan <?= htmlspecialchars(date("d-m-Y", strtotime((string) $histori["tanggal_mulai_jabatan"]))); ?> · Oleh <?= htmlspecialchars((string) $histori["nama_pengubah"]); ?></small>
+                            </li>
+                        <?php endforeach; ?>
+                    </ol>
+                <?php endif; ?>
+            </div>
+        </article>
+
         <article class="profile-card profile-payslip-card" id="slip-gaji">
             <h3>Slip Gaji</h3>
-            <p class="profile-card-note">Riwayat slip tersimpan berdasarkan periode dan versi revisi.</p>
+            <p class="profile-card-note"><?= $bolehLihatDetailSlipGaji ? "Riwayat slip tersimpan berdasarkan periode dan versi revisi." : "Riwayat periode slip gaji karyawan."; ?></p>
             <div class="profile-payslip-list">
                 <?php if ($daftarSlipGaji === []): ?>
                     <p class="profile-history-empty">Belum ada slip gaji yang didistribusikan.</p>
@@ -287,13 +367,19 @@ require __DIR__ . "/partials/atas.php";
                         <div class="profile-payslip-row">
                             <div>
                                 <strong><?= htmlspecialchars(namaBulanSlipGaji((int) $slip["bulan"]) . " " . (int) $slip["tahun"]); ?></strong>
-                                <span>Versi <?= (int) $slip["versi"]; ?> · Rp <?= number_format((float) $slip["gaji_bersih"], 0, ",", "."); ?></span>
-                                <small>Dibuat oleh <?= htmlspecialchars((string) $slip["nama_pembuat"]); ?> pada <?= htmlspecialchars(date("d-m-Y H:i", strtotime((string) $slip["generated_at"]))); ?></small>
+                                <?php if ($bolehLihatDetailSlipGaji): ?>
+                                    <span>Versi <?= (int) $slip["versi"]; ?> · Rp <?= number_format((float) $slip["gaji_bersih"], 0, ",", "."); ?></span>
+                                    <small>Dibuat oleh <?= htmlspecialchars((string) $slip["nama_pembuat"]); ?> pada <?= htmlspecialchars(date("d-m-Y H:i", strtotime((string) $slip["generated_at"]))); ?></small>
+                                <?php else: ?>
+                                    <small>Dibuat pada <?= htmlspecialchars(date("d-m-Y H:i", strtotime((string) $slip["generated_at"]))); ?></small>
+                                <?php endif; ?>
                             </div>
-                            <?php if (trim((string) ($slip["nama_file"] ?? "")) !== ""): ?>
-                                <a class="btn btn-primary" target="_blank" rel="noopener" href="fungsi/lihat-slip-gaji.php?id=<?= (int) $slip["id"]; ?>">Lihat/Unduh</a>
-                            <?php else: ?>
-                                <em>File tidak tersedia</em>
+                            <?php if ($bolehLihatDetailSlipGaji): ?>
+                                <?php if (trim((string) ($slip["nama_file"] ?? "")) !== ""): ?>
+                                    <a class="btn btn-primary" target="_blank" rel="noopener" href="fungsi/lihat-slip-gaji.php?id=<?= (int) $slip["id"]; ?>">Lihat/Unduh</a>
+                                <?php else: ?>
+                                    <em>File tidak tersedia</em>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
@@ -340,6 +426,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const actions = page?.querySelector(':scope > .profile-actions');
     if (page && hero && actions) page.insertBefore(actions, hero);
 });
+(() => {
+    const department = document.getElementById('promotion-department');
+    const position = document.getElementById('promotion-position');
+    if (!department || !position) return;
+    const positions = <?= json_encode($posisiPromosiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    department.addEventListener('change', function () {
+        const available = positions[this.value] || [];
+        position.replaceChildren(new Option(available.length ? 'Pilih posisi' : 'Belum ada posisi pada departemen ini', ''));
+        available.forEach(item => position.append(new Option(item.nama, item.id)));
+        position.disabled = available.length === 0;
+    });
+})();
     const fieldConfig = {
         pendidikan: [['institusi','Institusi'],['jenjang','Jenjang'],['jurusan','Jurusan'],['tanggal_mulai','Tanggal mulai'],['tanggal_selesai','Tanggal selesai'],['keterangan','Keterangan']],
         pekerjaan: [['nama_perusahaan','Nama Perusahaan'],['posisi','Posisi'],['departemen','Departemen'],['tanggal_mulai','Tanggal mulai'],['tanggal_selesai','Tanggal selesai'],['deskripsi','Deskripsi']]
@@ -478,7 +576,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fields = <?= json_encode(array_values(array_unique(array_merge(array_keys($fieldEdit), ["alamat", "biografi"]))), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
     const labels = {
         employee_name:'Nama Karyawan', emp_id:'ID Karyawan', nik:'NIK', alamat:'Alamat', tanggal_lahir:'Tanggal Lahir', tanggal_mcu_terakhir:'Tanggal MCU Terakhir', riwayat_pekerjaan:'Riwayat Pekerjaan', tanggal_riwayat_pekerjaan:'Tanggal Riwayat Pekerjaan', riwayat_pendidikan:'Riwayat Pendidikan', tanggal_riwayat_pendidikan:'Tanggal Riwayat Pendidikan', agama:'Agama',
-        marital_status:'Status Kawin', kontak:'Kontak', email:'Email', position:'Posisi', department:'Departemen', salary:'Gaji',
+        marital_status:'Status Kawin', kontak:'Kontak', email:'Email', salary:'Gaji',
         gender:'Jenis Kelamin', employment_status:'Status Kerja', performance_score:'Skor Performa', biografi:'Biodata', keahlian:'Keahlian'
     };
     const detailRows = [...document.querySelectorAll('.profile-details > div')];
@@ -497,35 +595,6 @@ document.addEventListener('DOMContentLoaded', function () {
         input.addEventListener('input', () => { source.value = input.value; });
         input.addEventListener('change', () => { source.value = input.value; });
     });
-    const positionsByDepartment = <?= json_encode($posisiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
-    const department = sourceForm.elements.department;
-    const position = sourceForm.elements.position;
-    const inlineDepartment = document.querySelector('.profile-inline-input[name="department"]');
-    const inlinePosition = document.querySelector('.profile-inline-input[name="position"]');
-    const updatePositions = function (restore) {
-        if (!department || !position) return;
-        const current = restore ? position.value : '';
-        const available = positionsByDepartment[department.value] || [];
-        const fill = function (target) {
-            if (!target) return;
-            target.replaceChildren(new Option(available.length ? 'Pilih posisi' : 'Belum ada posisi pada departemen ini', ''));
-            available.forEach(item => target.append(new Option(item, item)));
-            target.disabled = available.length === 0;
-            if (available.includes(current)) target.value = current;
-        };
-        fill(position); fill(inlinePosition);
-    };
-    department?.addEventListener('change', () => {
-        if (inlineDepartment) inlineDepartment.value = department.value;
-        updatePositions(false);
-    });
-    inlineDepartment?.addEventListener('change', () => {
-        department.value = inlineDepartment.value;
-        updatePositions(false);
-        if (inlinePosition) inlinePosition.value = position.value;
-    });
-    inlinePosition?.addEventListener('change', () => { position.value = inlinePosition.value; });
-    updatePositions(true);
 });
 </script>
 <?php endif; ?>

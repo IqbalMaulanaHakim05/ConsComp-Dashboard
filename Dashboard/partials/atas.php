@@ -74,7 +74,7 @@ if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_a
 if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
     $cssHalamanAktif = "admin-profile.css";
     $kelasHalaman = "profil-karyawan";
-    $versiCssHalaman = "20260819-profile-payslip1";
+    $versiCssHalaman = "20260819-profile-promotion1";
 }
 
 ?>

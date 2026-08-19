@@ -1,5 +1,5 @@
 ﻿Employee_Name,EmpID,Position,Department,Salary,Sex,MaritalDesc,DateofHire,EmploymentStatus,PerformanceScore
-"Andi Pratama",EMP001,"Direktur Utama",FINANCE,30000000.00,F,Menikah,2018-01-01,Kontrak,72
+"Andi Pratama",EMP001,"Manager Keuangan",FINANCE,30000000.00,F,Menikah,2018-01-01,Kontrak,72
 "Budi Pratama",EMP002,"Manager Keuangan",FINANCE,15250000.00,M,"Belum Menikah",2019-02-02,Aktif,79
 "Citra Pratama",EMP003,"Staff Keuangan",FINANCE,6500000.00,F,"Belum Menikah",2020-03-03,Aktif,86
 "Dedi Pratama",EMP004,"Staff Keuangan",FINANCE,6750000.00,M,Menikah,2021-04-04,Aktif,93
@@ -221,4 +221,3 @@
 "Taufik Ramadhan",EMP220,"Leader FABA","OPERATIONAL & COMMERCIAL",8750000.00,M,Single,2021-04-04,Aktif,93
 a,EMP221,Driver,HRGA,12.00,M,,2026-08-19,Kontrak,12
 b,EMP222,Pengadaan,FINANCE,11.00,M,,2026-08-19,Nonaktif,1
-a,EMP223,"Helper Housekeeping",HRGA,1234.00,M,,2026-08-06,Nonaktif,

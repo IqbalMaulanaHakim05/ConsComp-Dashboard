@@ -6,7 +6,7 @@ require dirname(__DIR__) . '/koneksi.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/slip-gaji.php';
 
-wajibRole('admin', 'superadmin', 'koordinator', 'manager');
+wajibRole('admin', 'superadmin');
 
 if (!siapkanPenyimpananSlipGaji($conn)) {
     http_response_code(500);
