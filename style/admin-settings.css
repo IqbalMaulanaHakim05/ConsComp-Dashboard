@@ -16,14 +16,219 @@
 
 .master-data-page .master-data-grid {
     width: 100%;
-    align-items: start;
-    grid-auto-rows: max-content;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 0;
 }
 
 .master-data-page .master-data-grid .chart-card {
-    min-height: 0;
-    height: max-content;
-    align-self: start;
+    display: flex;
+    min-height: 340px;
+    padding: 16px;
+    flex-direction: column;
+    align-self: stretch;
+    border: 1px solid #cbd5e1;
+    border-top-width: 7px;
+    border-radius: 9px;
+    box-shadow: none;
+}
+
+.master-data-page .master-data-grid .master-data-card-departemen {
+    border-top-color: #ef2626;
+}
+
+.master-data-page .master-data-grid .master-data-card-posisi {
+    border-top-color: #2035e8;
+}
+
+.master-data-page .master-data-grid .master-data-card-status {
+    border-top-color: #6d39b6;
+}
+
+.master-data-page .master-data-grid .master-data-card-agama {
+    border-top-color: #eab308;
+}
+
+.master-data-page .master-data-card h2 {
+    margin: 3px 5px 14px;
+    font-size: 16px;
+}
+
+.master-data-page .master-data-card .master-add-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    margin: 0 0 13px;
+}
+
+.master-data-page .master-data-card .master-add-form input {
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    padding: 7px 14px;
+    border-color: #8998ff;
+    border-radius: 9px;
+    text-align: center;
+}
+
+.master-data-page .master-data-card .master-add-form .btn {
+    min-width: 80px;
+}
+
+.master-data-page .master-data-card .master-list {
+    display: grid;
+    min-height: 176px;
+    max-height: none;
+    align-content: start;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+.master-data-page .master-data-card .master-list li {
+    min-height: 38px;
+    padding: 5px 9px 5px 18px;
+    border-color: #d7dce3;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+.master-data-page .master-data-card .master-list li > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.master-data-page .master-data-card .master-list li form {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.master-data-page .master-data-card .master-list .btn {
+    min-width: 65px;
+    padding: 5px 12px;
+}
+
+.master-data-page .master-data-card .master-list .manage-positions {
+    min-width: 118px;
+    color: #c96912;
+    border-color: #e7c29f;
+    background: #fff7ed;
+}
+
+.master-data-page .master-data-card .master-list-empty {
+    justify-content: center;
+    color: #64748b;
+}
+
+.master-data-page .master-data-card .master-item[hidden] {
+    display: none;
+}
+
+.master-data-page .master-pagination {
+    display: grid;
+    grid-template-columns: auto minmax(120px, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 14px;
+}
+
+.master-data-page .master-page-label {
+    color: #111827;
+    text-align: center;
+    font-size: 13px;
+}
+
+.master-data-page .master-page-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.master-data-page .master-pagination .btn {
+    min-height: 32px;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.master-data-page .master-pagination .master-page-reset {
+    min-width: 55px;
+}
+
+.master-data-page .master-page-controls .btn {
+    min-width: 105px;
+}
+
+.master-data-page .master-pagination .btn:disabled {
+    opacity: .58;
+    cursor: not-allowed;
+}
+
+:root[data-theme="dark"] .master-data-page .master-data-grid .chart-card {
+    border-right-color: #475569;
+    border-bottom-color: #475569;
+    border-left-color: #475569;
+}
+
+:root[data-theme="dark"] .master-data-page .master-data-card .master-list li {
+    border-color: #475569;
+    background: #172033;
+}
+
+:root[data-theme="dark"] .master-data-page .master-page-label {
+    color: #e2e8f0;
+}
+
+@media (max-width: 1100px) {
+    .master-data-page .master-pagination {
+        grid-template-columns: auto 1fr;
+    }
+
+    .master-data-page .master-page-label {
+        grid-column: 1 / -1;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 900px) {
+    .master-data-page .master-data-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .master-data-page .master-data-card .master-add-form {
+        grid-template-columns: 1fr;
+    }
+
+    .master-data-page .master-data-card .master-list li {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .master-data-page .master-data-card .master-list li form,
+    .master-data-page .master-data-card .master-list li form .btn {
+        width: 100%;
+    }
+
+    .master-data-page .master-pagination {
+        grid-template-columns: 1fr;
+    }
+
+    .master-data-page .master-page-label,
+    .master-data-page .master-page-controls,
+    .master-data-page .master-page-reset {
+        grid-column: 1;
+    }
+
+    .master-data-page .master-page-controls .btn {
+        min-width: 0;
+        flex: 1;
+    }
 }
 
 /* Pengaturan halaman publik: layout editor yang lebih fokus dan modern. */

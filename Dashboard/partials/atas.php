@@ -52,6 +52,7 @@ $versiCssHalaman = match ($halamanAktif) {
     "upah" => "20260813-upah-preview-table12",
     "lembur" => "20260818-lembur-department-flow1",
     "izin-karyawan", "izin-cuti" => "20260818-izin-delete-actions2",
+    "master-data" => "20260819-master-cards1",
     "karyawan" => "20260811-karyawan-columns1",
     "dashboard" => "20260811-dashboard-columns5",
     default => "20260811-layout8",

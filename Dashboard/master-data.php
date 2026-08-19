@@ -12,6 +12,12 @@ $map = [
     "status" => "master_status_kerja",
     "agama" => "master_agama",
 ];
+$tampilanMaster = [
+    "departemen" => ["judul" => "Master Departemen", "placeholder" => "Tambah Departemen"],
+    "posisi" => ["judul" => "Master Posisi", "placeholder" => "Tambah Posisi"],
+    "status" => ["judul" => "Master Status", "placeholder" => "Tambah Status"],
+    "agama" => ["judul" => "Master Agama", "placeholder" => "Tambah Agama"],
+];
 $pesan = trim((string) ($_GET["pesan"] ?? ""));
 $error = trim((string) ($_GET["error"] ?? ""));
 
@@ -179,18 +185,18 @@ require __DIR__ . "/partials/atas.php";
             $items[] = $item;
         }
         ?>
-        <article class="chart-card">
-            <h2><?= ucfirst($jenis); ?></h2>
-            <form method="POST" class="search-form">
+        <article class="chart-card master-data-card master-data-card-<?= htmlspecialchars($jenis); ?>" data-master-card>
+            <h2><?= htmlspecialchars($tampilanMaster[$jenis]["judul"]); ?></h2>
+            <form method="POST" class="search-form master-add-form">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                 <input type="hidden" name="aksi" value="tambah">
                 <input type="hidden" name="jenis" value="<?= htmlspecialchars($jenis); ?>">
-                <input name="nama" placeholder="Tambah <?= htmlspecialchars($jenis); ?>" required>
+                <input name="nama" placeholder="<?= htmlspecialchars($tampilanMaster[$jenis]["placeholder"]); ?>" aria-label="<?= htmlspecialchars($tampilanMaster[$jenis]["placeholder"]); ?>" required>
                 <button class="btn btn-success" type="submit">Tambah</button>
             </form>
-            <ul class="master-list">
+            <ul class="master-list" data-master-list>
                 <?php foreach ($items as $item): ?>
-                    <li>
+                    <li class="master-item" data-master-item>
                         <span><?= htmlspecialchars($item["nama"]); ?></span>
                         <form method="POST" onsubmit="return confirm('Hapus data ini?');">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
@@ -202,7 +208,18 @@ require __DIR__ . "/partials/atas.php";
                         </form>
                     </li>
                 <?php endforeach; ?>
+                <?php if ($items === []): ?>
+                    <li class="master-list-empty">Belum ada data <?= htmlspecialchars($jenis); ?>.</li>
+                <?php endif; ?>
             </ul>
+            <div class="master-pagination" data-master-pagination>
+                <button class="btn btn-secondary master-page-reset" type="button">Batal</button>
+                <span class="master-page-label" aria-live="polite">Halaman 1 dari 1</span>
+                <div class="master-page-controls">
+                    <button class="btn btn-secondary master-page-previous" type="button">Sebelumnya</button>
+                    <button class="btn btn-secondary master-page-next" type="button">Berikutnya</button>
+                </div>
+            </div>
         </article>
     <?php endforeach; ?>
 </section>
@@ -256,6 +273,46 @@ document.addEventListener('DOMContentLoaded', function () {
         notificationUrl.searchParams.delete('error');
         window.history.replaceState({}, document.title, notificationUrl.pathname + notificationUrl.search + notificationUrl.hash);
     }
+
+    const masterPageSize = 4;
+    document.querySelectorAll('[data-master-card]').forEach(function (card) {
+        const items = Array.from(card.querySelectorAll('[data-master-item]'));
+        const previous = card.querySelector('.master-page-previous');
+        const next = card.querySelector('.master-page-next');
+        const reset = card.querySelector('.master-page-reset');
+        const label = card.querySelector('.master-page-label');
+        const addForm = card.querySelector('.master-add-form');
+        let page = 1;
+
+        const renderMasterPage = function () {
+            const totalPages = Math.max(1, Math.ceil(items.length / masterPageSize));
+            page = Math.min(Math.max(page, 1), totalPages);
+            const start = (page - 1) * masterPageSize;
+
+            items.forEach(function (item, index) {
+                item.hidden = index < start || index >= start + masterPageSize;
+            });
+            label.textContent = 'Halaman ' + page + ' dari ' + totalPages;
+            previous.disabled = page <= 1;
+            next.disabled = page >= totalPages;
+        };
+
+        previous.addEventListener('click', function () {
+            page--;
+            renderMasterPage();
+        });
+        next.addEventListener('click', function () {
+            page++;
+            renderMasterPage();
+        });
+        reset.addEventListener('click', function () {
+            addForm.reset();
+            page = 1;
+            renderMasterPage();
+        });
+
+        renderMasterPage();
+    });
 
     const dialog = document.getElementById('position-dialog');
     const list = document.getElementById('department-position-list');
