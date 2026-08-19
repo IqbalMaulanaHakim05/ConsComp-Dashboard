@@ -46,7 +46,7 @@ function siapkanTahapPersetujuanIzin(mysqli $conn, string $tabel): bool
 
 function tahapPersetujuanIzinUntukRole(string $role): ?string
 {
-    return match ($role) {
+    return match (roleEfektif($role)) {
         'pic' => 'pic',
         'koordinator' => 'koordinator',
         'manager' => 'manager',
@@ -76,9 +76,11 @@ function labelTahapPersetujuanIzin(string $tahap): string
 function labelStatusPersetujuanIzin(string $status, string $tahap, ?string $rolePemroses = null): string
 {
     if ($status === 'disetujui') {
-        return $rolePemroses === 'superadmin'
-            ? 'Disetujui Superadmin'
-            : 'Disetujui Manager';
+        return match ($rolePemroses) {
+            'superadmin' => 'Disetujui Superadmin',
+            'direktur' => 'Disetujui Direktur',
+            default => 'Disetujui Manager',
+        };
     }
     if ($status === 'ditolak') {
         return 'Ditolak';

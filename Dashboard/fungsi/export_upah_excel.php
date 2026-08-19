@@ -65,7 +65,7 @@ if ($kolomDipilih === []) $kolomDipilih = array_keys($kolomExportPilihan);
 if (!isset($kolomExportUrutan[$sortExport])) $sortExport = "employee_name";
 $departemenPilihan = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
 $where = ["1=1"];
-if (in_array($roleExport, ["pic", "koordinator", "manager"], true)) $where[] = "k.department_id = " . (int) ($departmentPengguna ?? 0);
+if (roleOperasional()) $where[] = "k.department_id = " . (int) ($departmentPengguna ?? 0);
 if ($cari !== "") { $safe = mysqli_real_escape_string($conn, $cari); $where[] = "(k.employee_name LIKE '%$safe%' OR k.emp_id LIKE '%$safe%')"; }
 if ($department > 0) $where[] = "k.department_id = $department";
 if ($position !== "") { $safePosition = mysqli_real_escape_string($conn, $position); $where[] = "k.position = '$safePosition'"; }

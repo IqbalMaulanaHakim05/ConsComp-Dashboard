@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
 |--------------------------------------------------------------------------
 | Autentikasi & otorisasi.
-| Login berbasis tabel `users` dengan dua peran: superadmin dan admin.
+| Login berbasis tabel `users` dengan peran sesuai kebutuhan aplikasi.
 |--------------------------------------------------------------------------
 */
 
@@ -53,10 +53,19 @@ function sudahLogin(): bool
 {
     return isset($_SESSION['user']['id'])
         && in_array(
-            (string) ($_SESSION['user']['role'] ?? ''),
+            roleEfektif((string) ($_SESSION['user']['role'] ?? '')),
             ['admin', 'superadmin', 'pic', 'koordinator', 'manager'],
             true
         );
+}
+
+/**
+ * Direktur memiliki hak akses yang sama dengan Manager, tetapi identitas
+ * role aslinya tetap dipertahankan untuk tampilan dan audit.
+ */
+function roleEfektif(string $role): string
+{
+    return $role === 'direktur' ? 'manager' : $role;
 }
 
 function penggunaAktif(): ?array
@@ -82,6 +91,7 @@ function labelRole(string $role): string
         'pic' => 'PIC',
         'koordinator' => 'Koordinator',
         'manager' => 'Manager',
+        'direktur' => 'Direktur',
         'viewer' => 'Viewer',
         default => ucfirst($role),
     };
@@ -160,7 +170,7 @@ function departmentIdPengguna(): ?int
 
 function roleOperasional(): bool
 {
-    return in_array(rolePengguna(), ['pic', 'koordinator', 'manager'], true);
+    return in_array(roleEfektif(rolePengguna()), ['pic', 'koordinator', 'manager'], true);
 }
 
 function karyawanDalamCakupan(mysqli $conn, int $id): ?array
@@ -193,7 +203,7 @@ function karyawanDalamCakupan(mysqli $conn, int $id): ?array
  */
 function punyaRole(string ...$roles): bool
 {
-    return sudahLogin() && in_array(rolePengguna(), $roles, true);
+    return sudahLogin() && in_array(roleEfektif(rolePengguna()), $roles, true);
 }
 
 /**
@@ -286,7 +296,7 @@ function loginPengguna(mysqli $conn, string $username, string $password): bool
         return false;
     }
 
-    if (in_array($data['role'], ['pic', 'koordinator', 'manager'], true) && empty($data['department_id'])) {
+    if (in_array(roleEfektif((string) $data['role']), ['pic', 'koordinator', 'manager'], true) && empty($data['department_id'])) {
         return false;
     }
 

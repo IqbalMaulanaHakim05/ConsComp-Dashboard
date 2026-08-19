@@ -39,9 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (!csrfValid($_POST["csrf_token"] ?? null)) {
         $pesan = "Sesi formulir tidak valid. Muat ulang halaman lalu coba kembali.";
-    } elseif ($nama === "" || !in_array($role, ["admin", "pic", "koordinator", "manager", "viewer"], true)) {
+    } elseif ($nama === "" || !in_array($role, ["admin", "pic", "koordinator", "direktur", "manager", "viewer"], true)) {
         $pesan = "Nama wajib diisi.";
-    } elseif (in_array($role, ["pic", "koordinator", "manager"], true) && $departmentId <= 0) {
+    } elseif (in_array(roleEfektif($role), ["pic", "koordinator", "manager"], true) && $departmentId <= 0) {
         $pesan = "Departemen wajib dipilih untuk role operasional.";
     } elseif ($password !== "" && strlen($password) < 8) {
         $pesan = "Password baru minimal 8 karakter.";
@@ -121,7 +121,7 @@ require __DIR__ . "/partials/atas.php";
                     <div class="form-group">
                         <label for="role">Role</label>
                         <select id="role" name="role" required>
-                            <?php foreach (["admin" => "Admin HRGA", "pic" => "PIC", "koordinator" => "Koordinator", "manager" => "Manager", "viewer" => "Viewer"] as $nilai => $label): ?>
+                            <?php foreach (["admin" => "Admin HRGA", "pic" => "PIC", "koordinator" => "Koordinator", "direktur" => "Direktur", "manager" => "Manager", "viewer" => "Viewer"] as $nilai => $label): ?>
                                 <option value="<?= $nilai; ?>" <?= $pengguna["role"] === $nilai ? "selected" : ""; ?>><?= $label; ?></option>
                             <?php endforeach; ?>
                         </select>

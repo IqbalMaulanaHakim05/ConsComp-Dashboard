@@ -7,7 +7,7 @@ require_once __DIR__ . "/performa-karyawan.php";
 wajibRole("admin", "superadmin", "manager");
 
 $departmentIdPengguna = departmentIdPengguna();
-$filterDepartemen = rolePengguna() === "manager"
+$filterDepartemen = roleOperasional()
     ? " WHERE department_id = " . (int) ($departmentIdPengguna ?? 0)
     : "";
 $kataKunci = trim((string) ($_GET["cari"] ?? ""));

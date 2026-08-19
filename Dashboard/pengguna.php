@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (!csrfValid($_POST["csrf_token"] ?? null)) {
             $pesan = "Sesi formulir tidak valid.";
             $tipePesan = "error";
-        } elseif (!in_array(($target["role"] ?? ""), ["admin", "pic", "koordinator", "manager", "viewer"], true)) {
+        } elseif (!in_array(($target["role"] ?? ""), ["admin", "pic", "koordinator", "direktur", "manager", "viewer"], true)) {
             $pesan = "Akun dengan role ini tidak dapat dihapus.";
             $tipePesan = "error";
         } elseif ($hapusId === $superadminAktif) {
@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $konfirmasiPassword = (string) ($_POST["password_confirmation"] ?? "");
         $role = (string) ($_POST["role"] ?? "admin");
         $departmentId = (int) ($_POST["department_id"] ?? 0);
-        $roleDiizinkan = ["admin", "pic", "koordinator", "manager"];
+        $roleDiizinkan = ["admin", "pic", "koordinator", "direktur", "manager"];
 
         if (!csrfValid($_POST["csrf_token"] ?? null)) {
             $pesan = "Sesi formulir tidak valid.";
@@ -93,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } elseif ($password !== $konfirmasiPassword) {
             $pesan = "Konfirmasi password tidak cocok.";
             $tipePesan = "error";
-        } elseif (in_array($role, ["pic", "koordinator", "manager"], true) && $departmentId <= 0) {
+        } elseif (in_array(roleEfektif($role), ["pic", "koordinator", "manager"], true) && $departmentId <= 0) {
             $pesan = "Departemen wajib dipilih untuk role operasional.";
             $tipePesan = "error";
         } else {
@@ -210,6 +210,7 @@ require __DIR__ . "/partials/atas.php";
                             <option value="admin">Admin HRGA</option>
                             <option value="pic">PIC</option>
                             <option value="koordinator">Koordinator</option>
+                            <option value="direktur">Direktur</option>
                             <option value="manager">Manager</option>
                         </select>
                     </div>
@@ -259,7 +260,7 @@ require __DIR__ . "/partials/atas.php";
                                                 Edit
                                             </a>
 
-                                            <?php if (in_array($pengguna["role"], ["admin", "pic", "koordinator", "manager", "viewer"], true)): ?>
+                                            <?php if (in_array($pengguna["role"], ["admin", "pic", "koordinator", "direktur", "manager", "viewer"], true)): ?>
                                             <form
                                                 method="POST"
                                                 style="display:inline"
