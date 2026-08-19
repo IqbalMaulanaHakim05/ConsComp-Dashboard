@@ -91,7 +91,7 @@ require __DIR__ . "/partials/atas.php";
         <article class="analysis-kpi-card"><span>Perempuan</span><strong><?= number_format($kpi["perempuan"], 0, ",", "."); ?></strong><small>Total karyawan perempuan</small></article>
         <article class="analysis-kpi-card"><span>Karyawan Aktif</span><strong><?= number_format($kpi["aktif"], 0, ",", "."); ?></strong><small>Status Active atau Aktif</small></article>
         <article class="analysis-kpi-card"><span>Rata-rata Gaji</span><strong>Rp <?= number_format($kpi["rata_gaji"], 0, ",", "."); ?></strong><small>Rata-rata data gaji valid</small></article>
-        <article class="analysis-kpi-card"><span>Rata-rata Performa</span><strong><?= number_format($kpi["rata_performa"], 1, ",", "."); ?></strong><small>Rata-rata skor performa</small></article>
+        <article class="analysis-kpi-card"><span>Rata-rata Performa</span><strong><?= $kpi["rata_performa"] === null ? "Belum dinilai" : number_format($kpi["rata_performa"], 1, ",", "."); ?></strong><small>Rata-rata skor performa yang sudah dinilai</small></article>
     </div>
 
     <div class="analysis-chart-grid">
@@ -130,7 +130,7 @@ require __DIR__ . "/partials/atas.php";
                             <td><?= number_format((int) $baris["jumlah"], 0, ",", "."); ?></td>
                             <td><?= number_format((int) $baris["aktif"], 0, ",", "."); ?></td>
                             <td>Rp <?= number_format((float) $baris["rata_gaji"], 0, ",", "."); ?></td>
-                            <td><?= number_format((float) $baris["rata_performa"], 1, ",", "."); ?></td>
+                            <td><?= $baris["rata_performa"] === null ? "-" : number_format((float) $baris["rata_performa"], 1, ",", "."); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

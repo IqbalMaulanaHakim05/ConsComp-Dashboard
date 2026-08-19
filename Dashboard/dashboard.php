@@ -84,15 +84,12 @@ require __DIR__ . "/partials/atas.php";
         </div><?php endif; ?>
 
         <?php if (in_array("rata_performa", $kartuDashboardAktif, true)): ?><div class="stat-card">
-            <span>Total Performa</span>
+            <span>Rata-rata Performa</span>
 
             <h3>
-                <?= number_format(
-                    $rataRataPerforma,
-                    1,
-                    ",",
-                    "."
-                ); ?>
+                <?= $rataRataPerforma === null
+                    ? "Belum dinilai"
+                    : number_format($rataRataPerforma, 1, ",", "."); ?>
             </h3>
 
             <p>

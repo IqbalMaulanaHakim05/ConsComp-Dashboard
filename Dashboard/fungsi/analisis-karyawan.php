@@ -169,7 +169,13 @@ function ambilAnalisisKaryawan(mysqli $conn): array
             SUM(CASE WHEN gender = 'F' THEN 1 ELSE 0 END) AS perempuan,
             SUM(CASE WHEN LOWER(TRIM(employment_status)) IN ('active', 'aktif') THEN 1 ELSE 0 END) AS aktif,
             AVG(CAST(NULLIF(REPLACE(salary, ',', ''), '') AS DECIMAL(15,2))) AS rata_gaji,
-            AVG(CAST(NULLIF(performance_score, '') AS DECIMAL(10,2))) AS rata_performa
+            AVG(CASE
+                WHEN performance_score IS NOT NULL
+                    AND TRIM(performance_score) <> ''
+                    AND CAST(performance_score AS DECIMAL(10,2)) > 0
+                THEN CAST(performance_score AS DECIMAL(10,2))
+                ELSE NULL
+            END) AS rata_performa
          FROM karyawan",
         $kondisi,
         $tipe,
@@ -275,9 +281,9 @@ function ambilAnalisisKaryawan(mysqli $conn): array
         queryAnalisis(
             $conn,
             "SELECT department AS label,
-                    AVG(CAST(NULLIF(performance_score, '') AS DECIMAL(10,2))) AS rata
+                    AVG(CAST(performance_score AS DECIMAL(10,2))) AS rata
              FROM karyawan",
-            array_merge($kondisi, ["department IS NOT NULL", "TRIM(department) <> ''", "performance_score IS NOT NULL", "TRIM(performance_score) <> ''"]),
+            array_merge($kondisi, ["department IS NOT NULL", "TRIM(department) <> ''", "performance_score IS NOT NULL", "TRIM(performance_score) <> ''", "CAST(performance_score AS DECIMAL(10,2)) > 0"]),
             $tipe,
             $parameter,
             " GROUP BY department ORDER BY rata DESC, department ASC"
@@ -293,7 +299,13 @@ function ambilAnalisisKaryawan(mysqli $conn): array
             COUNT(*) AS jumlah,
             SUM(CASE WHEN LOWER(TRIM(employment_status)) IN ('active', 'aktif') THEN 1 ELSE 0 END) AS aktif,
             AVG(CAST(NULLIF(REPLACE(salary, ',', ''), '') AS DECIMAL(15,2))) AS rata_gaji,
-            AVG(CAST(NULLIF(performance_score, '') AS DECIMAL(10,2))) AS rata_performa
+            AVG(CASE
+                WHEN performance_score IS NOT NULL
+                    AND TRIM(performance_score) <> ''
+                    AND CAST(performance_score AS DECIMAL(10,2)) > 0
+                THEN CAST(performance_score AS DECIMAL(10,2))
+                ELSE NULL
+            END) AS rata_performa
          FROM karyawan",
         array_merge($kondisi, ["department IS NOT NULL", "TRIM(department) <> ''"]),
         $tipe,
@@ -314,7 +326,7 @@ function ambilAnalisisKaryawan(mysqli $conn): array
             "perempuan" => (int) ($kpi["perempuan"] ?? 0),
             "aktif" => (int) ($kpi["aktif"] ?? 0),
             "rata_gaji" => (float) ($kpi["rata_gaji"] ?? 0),
-            "rata_performa" => (float) ($kpi["rata_performa"] ?? 0),
+            "rata_performa" => isset($kpi["rata_performa"]) ? (float) $kpi["rata_performa"] : null,
         ],
         "departemen" => $departemen,
         "posisi" => $posisi,

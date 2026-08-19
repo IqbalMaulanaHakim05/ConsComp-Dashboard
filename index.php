@@ -2,6 +2,7 @@
 
 require __DIR__ . "/Dashboard/koneksi.php";
 require_once __DIR__ . "/Dashboard/fungsi/pengaturan-publik.php";
+require_once __DIR__ . "/Dashboard/fungsi/performa-karyawan.php";
 
 // Halaman publik harus selalu mencerminkan data SQL terbaru setelah proses
 // tambah, edit, hapus, atau import Excel.
@@ -432,9 +433,7 @@ $parameterHalaman = ["cari" => $kataKunci, "departemen" => $departemen];
                         </td><?php endif; ?>
 
                         <?php if ($tampilkanKolom("performance_score")): ?><td>
-                            <?= htmlspecialchars(
-                                $row["performance_score"] ?? "-"
-                            ); ?>
+                            <?= htmlspecialchars(tampilkanSkorPerforma($row["performance_score"] ?? null)); ?>
                         </td><?php endif; ?>
                     </tr>
                 <?php endwhile; ?>

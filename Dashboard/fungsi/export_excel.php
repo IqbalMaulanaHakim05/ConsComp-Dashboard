@@ -2,6 +2,7 @@
 
 require __DIR__ . "/../koneksi.php";
 require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/performa-karyawan.php";
 
 wajibRole("admin", "superadmin", "manager");
 
@@ -201,7 +202,7 @@ while ($row = mysqli_fetch_assoc($query)) {
     }
 
     $gaji = number_format((float) ($row["salary"] ?? 0), 2, ".", "");
-    $skor = (string) (int) ($row["performance_score"] ?? 0);
+    $skor = tampilkanSkorPerforma($row["performance_score"] ?? null, "");
 
     $barisXml .= "<row r=\"{$nomorBaris}\">";
     $barisXml .= selAngka($kolom[0] . $nomorBaris, (string) $nomor);
@@ -210,7 +211,11 @@ while ($row = mysqli_fetch_assoc($query)) {
         if ($namaKolom === "gender") $nilai = $genderTampil;
         if ($namaKolom === "date_of_hire") $nilai = $tanggalMasuk;
         if ($namaKolom === "salary") $barisXml .= selAngka($kolom[$index + 1] . $nomorBaris, $gaji, 2);
-        elseif ($namaKolom === "performance_score") $barisXml .= selAngka($kolom[$index + 1] . $nomorBaris, $skor);
+        elseif ($namaKolom === "performance_score") {
+            $barisXml .= $skor === ""
+                ? selTeks($kolom[$index + 1] . $nomorBaris, "")
+                : selAngka($kolom[$index + 1] . $nomorBaris, $skor);
+        }
         else $barisXml .= selTeks($kolom[$index + 1] . $nomorBaris, $nilai);
     }
     $barisXml .= "</row>";

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . "/performa-karyawan.php";
+
 /*
 |--------------------------------------------------------------------------
 | Fungsi pengambilan data yang dipakai bersama antar halaman.
@@ -15,7 +17,7 @@ function ambilStatistik(mysqli $conn): array
     $cakupan = roleOperasional() ? " WHERE department_id = " . (int) (departmentIdPengguna() ?? 0) : "";
     $totalKaryawan = 0;
     $totalDepartemen = 0;
-    $rataRataPerforma = 0.0;
+    $rataRataPerforma = null;
 
     $queryKaryawan = mysqli_query(
         $conn,
@@ -44,16 +46,16 @@ function ambilStatistik(mysqli $conn): array
 
     $queryPerforma = mysqli_query(
         $conn,
-        "SELECT AVG(performance_score) AS rata_rata
+        "SELECT AVG(CAST(NULLIF(TRIM(performance_score), '') AS DECIMAL(10,2))) AS rata_rata
          FROM karyawan
          WHERE performance_score IS NOT NULL
-           AND performance_score != ''" . (roleOperasional() ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0) : "")
+           AND TRIM(performance_score) <> ''
+           AND CAST(performance_score AS DECIMAL(10,2)) > 0" . (roleOperasional() ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0) : "")
     );
 
     if ($queryPerforma) {
-        $rataRataPerforma = (float) (
-            mysqli_fetch_assoc($queryPerforma)["rata_rata"] ?? 0
-        );
+        $nilaiRataPerforma = mysqli_fetch_assoc($queryPerforma)["rata_rata"] ?? null;
+        $rataRataPerforma = $nilaiRataPerforma === null ? null : (float) $nilaiRataPerforma;
     }
 
     return [
@@ -104,7 +106,8 @@ function ambilDataGrafik(mysqli $conn): array
             COUNT(*) AS jumlah
          FROM karyawan
          WHERE performance_score IS NOT NULL
-           AND performance_score != ''" . $cakupan . "
+           AND TRIM(performance_score) <> ''
+           AND CAST(performance_score AS DECIMAL(10,2)) > 0" . $cakupan . "
          GROUP BY performance_score
          ORDER BY jumlah DESC"
     );
@@ -158,7 +161,7 @@ function ambilDataKaryawan(
         "emp_id" => "emp_id", "nama" => "employee_name",
         "posisi" => "position", "departemen" => "department", "gaji" => "CAST(salary AS DECIMAL(15,2))",
         "tanggal_masuk" => "date_of_hire", "status_kerja" => "employment_status",
-        "performa" => "CAST(NULLIF(performance_score, '') AS DECIMAL(10,2))",
+        "performa" => "CAST(NULLIF(TRIM(performance_score), '') AS DECIMAL(10,2))",
     ];
     $sort = (string) ($_GET["sort"] ?? "emp_id");
     if (!isset($sortPilihan[$sort])) $sort = "emp_id";

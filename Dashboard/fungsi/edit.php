@@ -8,6 +8,7 @@ require_once __DIR__ . "/sinkronisasi.php";
 require_once __DIR__ . "/master-data.php";
 require_once __DIR__ . "/tanggal-keluar-karyawan.php";
 require_once __DIR__ . "/nik-karyawan.php";
+require_once __DIR__ . "/performa-karyawan.php";
 
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
@@ -67,10 +68,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $gender = $form["gender"];
     $employmentStatus = $form["employment_status"];
     $dateOfExit = $form["date_of_exit"] !== "" ? $form["date_of_exit"] : null;
-    $performanceScore = filter_var(
-        $form["performance_score"],
-        FILTER_VALIDATE_INT
-    );
+    $pesanPerforma = "";
+    try {
+        $performanceScore = normalisasiSkorPerforma($form["performance_score"]);
+    } catch (InvalidArgumentException $exception) {
+        $performanceScore = null;
+        $pesanPerforma = $exception->getMessage();
+    }
 
     if (
         $employeeName === ""
@@ -80,9 +84,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $form["salary"] === ""
         || $gender === ""
         || $employmentStatus === ""
-        || $form["performance_score"] === ""
     ) {
         $pesan = "Semua kolom wajib diisi.";
+    } elseif ($pesanPerforma !== "") {
+        $pesan = $pesanPerforma;
     } elseif (nikKaryawanSudahDigunakan($conn, $nik, $id)) {
         $pesan = "NIK sudah digunakan oleh karyawan lain. Gunakan NIK yang berbeda.";
     } elseif (!posisiValidUntukDepartemen($conn, $department, $position)) {
@@ -91,12 +96,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $pesan = "Gaji tidak boleh bernilai negatif.";
     } elseif ($dateOfExit !== null && (!preg_match("/^\\d{4}-\\d{2}-\\d{2}$/", $dateOfExit) || !checkdate((int) substr($dateOfExit, 5, 2), (int) substr($dateOfExit, 8, 2), (int) substr($dateOfExit, 0, 4)))) {
         $pesan = "Tanggal keluar tidak valid.";
-    } elseif (
-        $performanceScore === false
-        || $performanceScore < 1
-        || $performanceScore > 100
-    ) {
-        $pesan = "Skor performa harus berupa angka antara 1 sampai 100.";
     } else {
         $fileCv = $data["file_cv"] ?? null;
         $fotoProfil = $data["foto_profil"] ?? null;
@@ -374,21 +373,19 @@ require __DIR__ . "/../partials/atas.php";
                     </div>
 
                     <div class="form-group">
-                        <label for="performance_score">
-                            Skor Performa <span class="required">*</span>
-                        </label>
+                        <label for="performance_score">Skor Performa</label>
                         <input
                             type="number"
                             id="performance_score"
                             name="performance_score"
                             value="<?= htmlspecialchars($form["performance_score"]); ?>"
-                            placeholder="Masukkan nilai 1-100"
-                            min="1"
+                            placeholder="Kosongkan atau isi 0 jika belum dinilai"
+                            min="0"
                             max="100"
                             step="1"
                             inputmode="numeric"
-                            required
                         >
+                        <p class="field-note">Nilai 0 atau kosong disimpan sebagai belum dinilai.</p>
                     </div>
                 </div>
 

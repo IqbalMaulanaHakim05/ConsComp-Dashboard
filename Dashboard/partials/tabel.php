@@ -235,9 +235,7 @@ $filterAktif = $kataKunci !== ""
                             </td>
 
                             <td>
-                                <?= htmlspecialchars(
-                                    $row["performance_score"] ?? "-"
-                                ); ?>
+                                <?= htmlspecialchars(tampilkanSkorPerforma($row["performance_score"] ?? null)); ?>
                             </td>
 
                             <?php if ($bolehAksi): ?>

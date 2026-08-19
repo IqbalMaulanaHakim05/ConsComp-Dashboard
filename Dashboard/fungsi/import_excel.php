@@ -3,6 +3,7 @@ require __DIR__ . "/../koneksi.php";
 require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/audit.php";
 require_once __DIR__ . "/sinkronisasi.php";
+require_once __DIR__ . "/performa-karyawan.php";
 
 wajibRole("admin", "superadmin");
 
@@ -248,8 +249,10 @@ function validasiDataExcel(array $barisExcel): array
         if (!in_array($gender, ['M', 'F'], true)) {
             throw new RuntimeException("Baris data ke-{$nomorBaris}: jenis kelamin harus Laki-laki/M atau Perempuan/F.");
         }
-        if (!ctype_digit($skorMentah) || (int) $skorMentah < 1 || (int) $skorMentah > 100) {
-            throw new RuntimeException("Baris data ke-{$nomorBaris}: skor performa harus 1 sampai 100.");
+        try {
+            $skor = normalisasiSkorPerforma($skorMentah);
+        } catch (InvalidArgumentException $exception) {
+            throw new RuntimeException("Baris data ke-{$nomorBaris}: " . $exception->getMessage());
         }
         $tanggal = normalisasiTanggal($tanggalMentah);
         if ($tanggalMentah !== '' && $tanggal === null) {
@@ -267,7 +270,7 @@ function validasiDataExcel(array $barisExcel): array
             'marital_status' => $statusPernikahan,
             'date_of_hire' => $tanggal,
             'employment_status' => $statusKerja,
-            'performance_score' => (int) $skorMentah,
+            'performance_score' => $skor,
         ];
     }
 
@@ -354,7 +357,7 @@ function gantiDataSql(mysqli $conn, array $data): void
             $statusPernikahan = $item['marital_status'];
             $tanggalMasuk = $item['date_of_hire'];
             $statusKerja = $item['employment_status'];
-            $skor = (string) $item['performance_score'];
+            $skor = $item['performance_score'];
 
             mysqli_stmt_bind_param($stmtInsert, 'ssssdsssss', $nama, $empId, $posisi, $departemen, $gaji, $gender, $statusPernikahan, $tanggalMasuk, $statusKerja, $skor);
             if (!mysqli_stmt_execute($stmtInsert)) {
@@ -472,7 +475,7 @@ require __DIR__ . "/../partials/atas.php";
                         accept=".xls,.xlsx"
                         required
                     >
-                    <p class="field-note">Format .xls atau .xlsx, maksimal 5 MB. Skor performa wajib 1&ndash;100.</p>
+                    <p class="field-note">Format .xls atau .xlsx, maksimal 5 MB. Skor performa boleh kosong atau 0; nilai lainnya wajib bilangan bulat 1&ndash;100.</p>
                 </div>
 
                 <div class="form-actions">

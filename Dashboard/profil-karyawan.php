@@ -6,6 +6,7 @@ require __DIR__ . "/koneksi.php";
 require_once __DIR__ . "/fungsi/auth.php";
 require_once __DIR__ . "/fungsi/media-karyawan.php";
 require_once __DIR__ . "/fungsi/master-data.php";
+require_once __DIR__ . "/fungsi/performa-karyawan.php";
 
 wajibLogin();
 siapkanMasterData($conn);
@@ -115,7 +116,7 @@ require __DIR__ . "/partials/atas.php";
                             <?php elseif ($field === "marital_status"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>"><option value="">Pilih status</option><option <?= ($karyawan[$field] ?? "") === "Single" ? "selected" : ""; ?>>Single</option><option <?= ($karyawan[$field] ?? "") === "Married" ? "selected" : ""; ?>>Married</option></select>
                             <?php else: ?>
-                                <input id="profile_<?= $field; ?>" type="<?= $type; ?>" name="<?= $field; ?>" value="<?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?>" <?= in_array($field, ["employee_name", "emp_id", "nik", "position", "department", "salary", "gender", "employment_status", "performance_score"], true) ? "required" : ""; ?>>
+                                <input id="profile_<?= $field; ?>" type="<?= $type; ?>" name="<?= $field; ?>" value="<?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?>" <?= in_array($field, ["employee_name", "emp_id", "nik", "position", "department", "salary", "gender", "employment_status"], true) ? "required" : ""; ?> <?= $field === "performance_score" ? 'min="0" max="100" step="1"' : ""; ?>>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
@@ -172,7 +173,7 @@ require __DIR__ . "/partials/atas.php";
                 </div>
                 <div>
                     <dt>Skor Performa</dt>
-                    <dd><?= htmlspecialchars(nilaiProfil($karyawan, "performance_score")); ?></dd>
+                    <dd><?= htmlspecialchars(tampilkanSkorPerforma($karyawan["performance_score"] ?? null, "Belum dinilai")); ?></dd>
                 </div>
             </dl>
         </article>
