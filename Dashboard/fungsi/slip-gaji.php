@@ -55,7 +55,7 @@ function siapkanPenyimpananSlipGaji(mysqli $conn): bool
             KEY idx_slip_gaji_karyawan (karyawan_id),
             KEY idx_slip_gaji_batch (batch_id),
             CONSTRAINT fk_slip_gaji_periode FOREIGN KEY (periode_gaji_id) REFERENCES periode_gaji(id) ON DELETE RESTRICT,
-            CONSTRAINT fk_slip_gaji_karyawan FOREIGN KEY (karyawan_id) REFERENCES karyawan(id) ON DELETE RESTRICT,
+            CONSTRAINT fk_slip_gaji_karyawan FOREIGN KEY (karyawan_id) REFERENCES karyawan(id) ON DELETE CASCADE,
             CONSTRAINT fk_slip_gaji_generator FOREIGN KEY (generated_by) REFERENCES users(id) ON DELETE RESTRICT
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     ) !== false;

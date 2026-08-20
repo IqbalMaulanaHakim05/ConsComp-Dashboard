@@ -22,7 +22,7 @@ function siapkanTabelIzinCuti(mysqli $conn): bool
             total_hari DECIMAL(6,1) NOT NULL,
             deskripsi TEXT NOT NULL,
             nomor_kontak VARCHAR(50) NOT NULL,
-            karyawan_pengganti_id INT NOT NULL,
+            karyawan_pengganti_id INT NULL DEFAULT NULL,
             status ENUM('menunggu', 'disetujui', 'ditolak') NOT NULL DEFAULT 'menunggu',
             tahap_persetujuan ENUM('pic', 'koordinator', 'manager', 'selesai') NOT NULL DEFAULT 'pic',
             dibuat_oleh_user_id INT NOT NULL,
@@ -36,11 +36,11 @@ function siapkanTabelIzinCuti(mysqli $conn): bool
             INDEX idx_cuti_status (status),
             INDEX idx_cuti_pengganti (karyawan_pengganti_id),
             CONSTRAINT fk_cuti_karyawan
-                FOREIGN KEY (karyawan_id) REFERENCES karyawan(id) ON DELETE RESTRICT,
+                FOREIGN KEY (karyawan_id) REFERENCES karyawan(id) ON DELETE CASCADE,
             CONSTRAINT fk_cuti_department
                 FOREIGN KEY (department_id) REFERENCES master_departemen(id) ON DELETE RESTRICT,
             CONSTRAINT fk_cuti_pengganti
-                FOREIGN KEY (karyawan_pengganti_id) REFERENCES karyawan(id) ON DELETE RESTRICT,
+                FOREIGN KEY (karyawan_pengganti_id) REFERENCES karyawan(id) ON DELETE SET NULL,
             CONSTRAINT fk_cuti_pembuat
                 FOREIGN KEY (dibuat_oleh_user_id) REFERENCES users(id) ON DELETE RESTRICT,
             CONSTRAINT fk_cuti_pemroses
