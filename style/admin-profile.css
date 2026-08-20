@@ -395,13 +395,27 @@
     padding: 0;
     margin: 0;
     list-style: none;
+    max-height: 270px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
 }
 
 .profil-karyawan-page .profile-promotion-history li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
     padding: 14px 16px;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     background: #f8fafc;
+}
+
+.profil-karyawan-page .promotion-history-content {
+    flex: 1;
+    min-width: 0;
 }
 
 .profil-karyawan-page .promotion-history-route {
@@ -422,6 +436,12 @@
     font-size: 12px;
 }
 
+.profil-karyawan-page .promotion-delete-form,
+.profil-karyawan-page .payslip-delete-form {
+    margin: 0;
+    display: inline-flex;
+}
+
 .profil-karyawan-page .profile-card-note {
     margin: -14px 0 20px;
     color: #64748b;
@@ -431,6 +451,22 @@
 .profil-karyawan-page .profile-payslip-list {
     display: grid;
     gap: 10px;
+    max-height: 270px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.profil-karyawan-page .profile-promotion-history ol::-webkit-scrollbar,
+.profil-karyawan-page .profile-payslip-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profil-karyawan-page .profile-promotion-history ol::-webkit-scrollbar-thumb,
+.profil-karyawan-page .profile-payslip-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
 }
 
 .profil-karyawan-page .profile-payslip-row {
@@ -444,15 +480,23 @@
     background: #f8fafc;
 }
 
-.profil-karyawan-page .profile-payslip-row > div {
+.profil-karyawan-page .profile-payslip-row > div:first-child {
     display: grid;
     gap: 3px;
+}
+
+.profil-karyawan-page .profile-payslip-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .profil-karyawan-page .profile-payslip-row strong { color: #111827; font-size: 16px; }
 .profil-karyawan-page .profile-payslip-row span { color: #334155; font-size: 14px; }
 .profil-karyawan-page .profile-payslip-row small { color: #64748b; font-size: 12px; }
-.profil-karyawan-page .profile-payslip-row .btn { min-width: 140px; justify-content: center; }
+.profil-karyawan-page .profile-payslip-row .btn { min-width: 110px; justify-content: center; }
 
 :root[data-theme="dark"] .profil-karyawan-page .profile-document-date-input {
     border-color: #475569;
@@ -559,13 +603,31 @@
         width: 100%;
     }
 
+    .profil-karyawan-page .profile-promotion-history li {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .profil-karyawan-page .promotion-delete-form,
+    .profil-karyawan-page .promotion-delete-form .btn {
+        width: 100%;
+    }
+
     .profil-karyawan-page .profile-payslip-row {
         align-items: flex-start;
         flex-direction: column;
+        gap: 12px;
     }
 
-    .profil-karyawan-page .profile-payslip-row .btn {
+    .profil-karyawan-page .profile-payslip-actions,
+    .profil-karyawan-page .payslip-delete-form {
         width: 100%;
+    }
+
+    .profil-karyawan-page .profile-payslip-actions .btn {
+        width: 100%;
+        flex: 1;
     }
 
     .profil-karyawan-page .profile-promotion-form {

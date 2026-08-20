@@ -213,7 +213,7 @@ require __DIR__ . "/partials/atas.php";
                 <?php endif; ?>
             </ul>
             <div class="master-pagination" data-master-pagination>
-                <button class="btn btn-secondary master-page-reset" type="button">Batal</button>
+                <button class="btn btn-secondary master-page-reset" type="button" hidden style="display: none;">Awal</button>
                 <span class="master-page-label" aria-live="polite">Halaman 1 dari 1</span>
                 <div class="master-page-controls">
                     <button class="btn btn-secondary master-page-previous" type="button">Sebelumnya</button>
@@ -295,6 +295,10 @@ document.addEventListener('DOMContentLoaded', function () {
             label.textContent = 'Halaman ' + page + ' dari ' + totalPages;
             previous.disabled = page <= 1;
             next.disabled = page >= totalPages;
+            if (reset) {
+                reset.hidden = page <= 1;
+                reset.style.display = page <= 1 ? 'none' : '';
+            }
         };
 
         previous.addEventListener('click', function () {
@@ -305,11 +309,13 @@ document.addEventListener('DOMContentLoaded', function () {
             page++;
             renderMasterPage();
         });
-        reset.addEventListener('click', function () {
-            addForm.reset();
-            page = 1;
-            renderMasterPage();
-        });
+        if (reset) {
+            reset.addEventListener('click', function () {
+                addForm.reset();
+                page = 1;
+                renderMasterPage();
+            });
+        }
 
         renderMasterPage();
     });

@@ -52,8 +52,8 @@ $kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
 $versiCssHalaman = match ($halamanAktif) {
     "upah" => "20260820-upah-pdf-link3",
     "lembur" => "20260818-lembur-department-flow1",
-    "izin-karyawan", "izin-cuti" => "20260820-izin-notifikasi1",
-    "master-data" => "20260819-master-cards1",
+    "izin-karyawan", "izin-cuti" => "20260820-izin-export1",
+    "master-data" => "20260820-master-reset-btn2",
     "karyawan" => "20260811-karyawan-columns1",
     "penilaian-performa" => "20260819-performance-form1",
     "dashboard" => "20260811-dashboard-columns5",
@@ -74,7 +74,7 @@ if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_a
 if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
     $cssHalamanAktif = "admin-profile.css";
     $kelasHalaman = "profil-karyawan";
-    $versiCssHalaman = "20260819-profile-promotion1";
+    $versiCssHalaman = "20260820-profile-cards-delete1";
 }
 
 ?>
@@ -143,7 +143,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260812-export-options1">
+    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260820-hidden-fix1">
     <?php if ($cssHalamanAktif !== ""): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= htmlspecialchars($versiCssHalaman); ?>">
     <?php endif; ?>

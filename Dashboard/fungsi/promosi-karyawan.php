@@ -53,7 +53,7 @@ function daftarHistoriJabatanKaryawan(mysqli $conn, int $karyawanId): array
          FROM histori_jabatan_karyawan h
          INNER JOIN users u ON u.id = h.diubah_oleh
          WHERE h.karyawan_id = ?
-         ORDER BY h.tanggal_mulai_jabatan ASC, h.tanggal_perubahan ASC, h.id ASC"
+         ORDER BY h.tanggal_mulai_jabatan DESC, h.tanggal_perubahan DESC, h.id DESC"
     );
     if (!$stmt) {
         return [];
@@ -210,3 +210,24 @@ function promosikanKaryawan(
         throw $exception;
     }
 }
+
+function hapusHistoriJabatan(mysqli $conn, int $historiId, int $karyawanId): bool
+{
+    if ($historiId <= 0 || $karyawanId <= 0) {
+        return false;
+    }
+    $stmt = mysqli_prepare(
+        $conn,
+        "DELETE FROM histori_jabatan_karyawan WHERE id = ? AND karyawan_id = ?"
+    );
+    if (!$stmt) {
+        return false;
+    }
+    mysqli_stmt_bind_param($stmt, 'ii', $historiId, $karyawanId);
+    $berhasil = mysqli_stmt_execute($stmt);
+    $terhapus = mysqli_stmt_affected_rows($stmt);
+    mysqli_stmt_close($stmt);
+
+    return $berhasil && $terhapus > 0;
+}
+

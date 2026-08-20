@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require __DIR__ . "/../koneksi.php";
 require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/xlsx-builder.php";
 wajibRole("pic", "koordinator", "manager", "admin", "superadmin");
 $departmentId = departmentIdPengguna();
 $halamanAktif = "lembur";
@@ -37,12 +38,19 @@ if (!$query) { http_response_code(500); exit("Data lembur gagal diproses."); }
 $rows = [];
 while ($row = mysqli_fetch_assoc($query)) $rows[] = $row;
 if (isset($_GET["download"])) {
-    header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
-    header('Content-Disposition: attachment; filename="laporan-lembur-' . date("Y-m-d") . '.xls"');
-    echo "\xEF\xBB\xBF";
-    echo "<table border='1'><tr>"; foreach ($kolomDipilih as $namaKolom) echo "<th>" . htmlspecialchars($kolomExportPilihan[$namaKolom]["label"], ENT_QUOTES, "UTF-8") . "</th>"; echo "</tr>";
-    foreach ($rows as $row) { echo "<tr>"; foreach ($kolomDipilih as $namaKolom) echo "<td>" . htmlspecialchars((string) ($row[$namaKolom] ?? ""), ENT_QUOTES, "UTF-8") . "</td>"; echo "</tr>"; }
-    echo "</table>"; exit;
+    $headers = [];
+    foreach ($kolomDipilih as $namaKolom) {
+        $headers[] = $kolomExportPilihan[$namaKolom]["label"];
+    }
+    $exportRows = [];
+    foreach ($rows as $row) {
+        $rowCells = [];
+        foreach ($kolomDipilih as $namaKolom) {
+            $rowCells[] = $row[$namaKolom] ?? "";
+        }
+        $exportRows[] = $rowCells;
+    }
+    unduhSpreadsheetXlsx("laporan-lembur-" . date("Y-m-d"), "Lembur", $headers, $exportRows);
 }
 require __DIR__ . "/../partials/atas.php";
 ?>

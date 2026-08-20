@@ -74,6 +74,9 @@ $halamanAktif = "karyawan";
 $modeEdit = isset($_GET["edit"]) && $_GET["edit"] === "1" && punyaRole("admin", "superadmin");
 $adminHrgaEdit = $modeEdit && rolePengguna() === "admin";
 $errorEdit = trim((string) ($_GET["error"] ?? ""));
+$errorPromosi = trim((string) ($_GET["error_promosi"] ?? ""));
+$errorSlip = trim((string) ($_GET["error_slip"] ?? ""));
+$pesan = trim((string) ($_GET["pesan"] ?? ""));
 $riwayatPendidikan = [];
 $hasilPendidikan = mysqli_query($conn, "SELECT id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan FROM riwayat_pendidikan WHERE karyawan_id = " . (int) $karyawan["id"] . " ORDER BY COALESCE(tanggal_mulai, tanggal_selesai) DESC, id DESC");
 while ($rowPendidikan = mysqli_fetch_assoc($hasilPendidikan)) $riwayatPendidikan[] = $rowPendidikan;
@@ -100,7 +103,6 @@ while ($hasilPosisiPromosi && ($rowPosisiPromosi = mysqli_fetch_assoc($hasilPosi
         "nama" => (string) $rowPosisiPromosi["nama"],
     ];
 }
-$errorPromosi = trim((string) ($_GET["error_promosi"] ?? ""));
 $bolehLihatDetailSlipGaji = punyaRole("admin", "superadmin");
 $daftarSlipGaji = siapkanPenyimpananSlipGaji($conn)
     ? ($bolehLihatDetailSlipGaji
@@ -118,6 +120,7 @@ require __DIR__ . "/partials/atas.php";
         <p>Ringkasan informasi karyawan berdasarkan data yang tersimpan.</p>
     </div>
 
+    <?php if ($pesan !== ""): ?><div class="alert" role="status"><?= htmlspecialchars($pesan); ?></div><?php endif; ?>
     <?php if ($errorEdit !== ""): ?><div class="alert-error" role="alert"><?= htmlspecialchars($errorEdit); ?></div><?php endif; ?>
 
     <?php if ($modeEdit): ?>
@@ -343,12 +346,22 @@ require __DIR__ . "/partials/atas.php";
                     <ol>
                         <?php foreach ($historiJabatan as $histori): ?>
                             <li>
-                                <div class="promotion-history-route">
-                                    <span><?= htmlspecialchars((string) $histori["departemen_lama_snapshot"] . " - " . (string) $histori["posisi_lama_snapshot"]); ?></span>
-                                    <b aria-hidden="true">→</b>
-                                    <strong><?= htmlspecialchars((string) $histori["departemen_baru_snapshot"] . " - " . (string) $histori["posisi_baru_snapshot"]); ?></strong>
+                                <div class="promotion-history-content">
+                                    <div class="promotion-history-route">
+                                        <span><?= htmlspecialchars((string) $histori["departemen_lama_snapshot"] . " - " . (string) $histori["posisi_lama_snapshot"]); ?></span>
+                                        <b aria-hidden="true">→</b>
+                                        <strong><?= htmlspecialchars((string) $histori["departemen_baru_snapshot"] . " - " . (string) $histori["posisi_baru_snapshot"]); ?></strong>
+                                    </div>
+                                    <small>Perubahan <?= htmlspecialchars(date("d-m-Y", strtotime((string) $histori["tanggal_perubahan"]))); ?> · Mulai jabatan <?= htmlspecialchars(date("d-m-Y", strtotime((string) $histori["tanggal_mulai_jabatan"]))); ?> · Oleh <?= htmlspecialchars((string) $histori["nama_pengubah"]); ?></small>
                                 </div>
-                                <small>Perubahan <?= htmlspecialchars(date("d-m-Y", strtotime((string) $histori["tanggal_perubahan"]))); ?> · Mulai jabatan <?= htmlspecialchars(date("d-m-Y", strtotime((string) $histori["tanggal_mulai_jabatan"]))); ?> · Oleh <?= htmlspecialchars((string) $histori["nama_pengubah"]); ?></small>
+                                <?php if ($modeEdit): ?>
+                                    <form method="POST" action="fungsi/hapus-promosi-karyawan.php" class="promotion-delete-form" onsubmit="return confirm('Hapus riwayat promosi ini?');">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+                                        <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">
+                                        <input type="hidden" name="histori_id" value="<?= (int) $histori["id"]; ?>">
+                                        <button class="btn btn-danger btn-sm" type="submit">Hapus</button>
+                                    </form>
+                                <?php endif; ?>
                             </li>
                         <?php endforeach; ?>
                     </ol>
@@ -359,6 +372,7 @@ require __DIR__ . "/partials/atas.php";
         <article class="profile-card profile-payslip-card" id="slip-gaji">
             <h3>Slip Gaji</h3>
             <p class="profile-card-note"><?= $bolehLihatDetailSlipGaji ? "Riwayat slip tersimpan berdasarkan periode dan versi revisi." : "Riwayat periode slip gaji karyawan."; ?></p>
+            <?php if ($errorSlip !== ""): ?><div class="alert-error" role="alert"><?= htmlspecialchars($errorSlip); ?></div><?php endif; ?>
             <div class="profile-payslip-list">
                 <?php if ($daftarSlipGaji === []): ?>
                     <p class="profile-history-empty">Belum ada slip gaji yang didistribusikan.</p>
@@ -374,13 +388,23 @@ require __DIR__ . "/partials/atas.php";
                                     <small>Dibuat pada <?= htmlspecialchars(date("d-m-Y H:i", strtotime((string) $slip["generated_at"]))); ?></small>
                                 <?php endif; ?>
                             </div>
-                            <?php if ($bolehLihatDetailSlipGaji): ?>
-                                <?php if (trim((string) ($slip["nama_file"] ?? "")) !== ""): ?>
-                                    <a class="btn btn-primary" target="_blank" rel="noopener" href="fungsi/lihat-slip-gaji.php?id=<?= (int) $slip["id"]; ?>">Lihat/Unduh</a>
-                                <?php else: ?>
-                                    <em>File tidak tersedia</em>
+                            <div class="profile-payslip-actions">
+                                <?php if ($bolehLihatDetailSlipGaji): ?>
+                                    <?php if (trim((string) ($slip["nama_file"] ?? "")) !== ""): ?>
+                                        <a class="btn btn-primary" target="_blank" rel="noopener" href="fungsi/lihat-slip-gaji.php?id=<?= (int) $slip["id"]; ?>">Lihat/Unduh</a>
+                                    <?php else: ?>
+                                        <em>File tidak tersedia</em>
+                                    <?php endif; ?>
                                 <?php endif; ?>
-                            <?php endif; ?>
+                                <?php if ($modeEdit): ?>
+                                    <form method="POST" action="fungsi/hapus-slip-gaji.php" class="payslip-delete-form" onsubmit="return confirm('Hapus slip gaji periode <?= htmlspecialchars(namaBulanSlipGaji((int) $slip["bulan"]) . " " . (int) $slip["tahun"]); ?> ini?');">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+                                        <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">
+                                        <input type="hidden" name="slip_id" value="<?= (int) $slip["id"]; ?>">
+                                        <button class="btn btn-danger btn-sm" type="submit">Hapus</button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>

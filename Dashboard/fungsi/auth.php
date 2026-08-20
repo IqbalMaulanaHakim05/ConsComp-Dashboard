@@ -213,7 +213,18 @@ function halamanDiizinkanUntukPic(string $namaFile): bool
 {
     return in_array(
         basename($namaFile),
-        ['lembur.php', 'izin-karyawan.php', 'izin-cuti.php', 'notifikasi.php', 'export_lembur.php', 'logout.php'],
+        [
+            'lembur.php',
+            'izin-karyawan.php',
+            'izin-cuti.php',
+            'notifikasi.php',
+            'notifikasi-izin-karyawan.php',
+            'notifikasi-izin-cuti.php',
+            'export_lembur.php',
+            'export_izin_karyawan.php',
+            'export_izin_cuti.php',
+            'logout.php',
+        ],
         true
     );
 }

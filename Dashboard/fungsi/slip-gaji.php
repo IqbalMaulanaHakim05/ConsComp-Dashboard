@@ -651,3 +651,67 @@ function daftarSlipGajiKaryawan(mysqli $conn, int $karyawanId): array
     mysqli_stmt_close($stmt);
     return $daftar;
 }
+
+function hapusSlipGaji(mysqli $conn, int $slipId, int $karyawanId): array
+{
+    if ($slipId <= 0 || $karyawanId <= 0) {
+        throw new InvalidArgumentException('ID slip gaji atau ID karyawan tidak valid.');
+    }
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT s.id, s.nama_file, s.versi, s.nama_snapshot, p.bulan, p.tahun, s.karyawan_id
+         FROM slip_gaji s
+         INNER JOIN periode_gaji p ON p.id = s.periode_gaji_id
+         WHERE s.id = ? AND s.karyawan_id = ?"
+    );
+    if (!$stmt) {
+        throw new RuntimeException('Gagal menyiapkan query data slip gaji.');
+    }
+    mysqli_stmt_bind_param($stmt, 'ii', $slipId, $karyawanId);
+    mysqli_stmt_execute($stmt);
+    $slip = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    mysqli_stmt_close($stmt);
+
+    if (!$slip) {
+        throw new RuntimeException('Data slip gaji tidak ditemukan atau sudah dihapus.');
+    }
+
+    mysqli_begin_transaction($conn);
+    try {
+        $stmtItems = mysqli_prepare($conn, "DELETE FROM slip_gaji_items WHERE slip_gaji_id = ?");
+        if ($stmtItems) {
+            mysqli_stmt_bind_param($stmtItems, 'i', $slipId);
+            mysqli_stmt_execute($stmtItems);
+            mysqli_stmt_close($stmtItems);
+        }
+
+        $stmtDel = mysqli_prepare($conn, "DELETE FROM slip_gaji WHERE id = ? AND karyawan_id = ?");
+        if (!$stmtDel) {
+            throw new RuntimeException('Gagal menyiapkan statement penghapusan slip gaji.');
+        }
+        mysqli_stmt_bind_param($stmtDel, 'ii', $slipId, $karyawanId);
+        mysqli_stmt_execute($stmtDel);
+        $terhapus = mysqli_stmt_affected_rows($stmtDel);
+        mysqli_stmt_close($stmtDel);
+
+        if ($terhapus < 1) {
+            throw new RuntimeException('Data slip gaji gagal dihapus dari database.');
+        }
+
+        mysqli_commit($conn);
+
+        if (!empty($slip['nama_file'])) {
+            $path = dirname(__DIR__) . '/uploads/slip/' . basename((string) $slip['nama_file']);
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+
+        return $slip;
+    } catch (Throwable $e) {
+        mysqli_rollback($conn);
+        throw $e;
+    }
+}
+

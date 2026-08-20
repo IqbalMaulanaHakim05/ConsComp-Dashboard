@@ -125,8 +125,10 @@
     color: #64748b;
 }
 
-.master-data-page .master-data-card .master-item[hidden] {
-    display: none;
+.master-data-page .master-data-card .master-item[hidden],
+.master-data-page .master-pagination [hidden],
+.master-data-page .master-pagination .master-page-reset[hidden] {
+    display: none !important;
 }
 
 .master-data-page .master-pagination {
@@ -142,11 +144,14 @@
     color: #111827;
     text-align: center;
     font-size: 13px;
+    grid-column: 2;
 }
 
 .master-data-page .master-page-controls {
     display: flex;
     gap: 8px;
+    grid-column: 3;
+    justify-self: end;
 }
 
 .master-data-page .master-pagination .btn {
@@ -157,6 +162,7 @@
 
 .master-data-page .master-pagination .master-page-reset {
     min-width: 55px;
+    grid-column: 1;
 }
 
 .master-data-page .master-page-controls .btn {
@@ -192,6 +198,17 @@
         grid-column: 1 / -1;
         grid-row: 1;
     }
+
+    .master-data-page .master-pagination .master-page-reset {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .master-data-page .master-page-controls {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: end;
+    }
 }
 
 @media (max-width: 900px) {
@@ -221,8 +238,10 @@
 
     .master-data-page .master-page-label,
     .master-data-page .master-page-controls,
-    .master-data-page .master-page-reset {
+    .master-data-page .master-pagination .master-page-reset {
         grid-column: 1;
+        grid-row: auto;
+        justify-self: stretch;
     }
 
     .master-data-page .master-page-controls .btn {

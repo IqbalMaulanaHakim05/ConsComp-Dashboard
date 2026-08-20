@@ -184,6 +184,36 @@
     gap: 10px;
 }
 
+:is(.izin-karyawan-page, .izin-cuti-page) .export-excel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #6d48c7;
+    background: #f1eaff;
+    border: 1px solid #ddccff;
+    border-radius: 9px;
+    font-weight: 700;
+    padding: 10px 20px;
+    min-height: 42px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+:is(.izin-karyawan-page, .izin-cuti-page) .export-excel-btn:hover {
+    background: #e8dcff;
+    color: #5b35b5;
+}
+
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .export-excel-btn {
+    color: #c4b5fd;
+    background: #2e1065;
+    border-color: #5b21b6;
+}
+
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .export-excel-btn:hover {
+    background: #3b0764;
+}
+
 /* Sembunyikan section notifikasi inline di halaman utama;
    notifikasi lengkap tersedia di halaman terpisah. */
 :is(.izin-karyawan-page, .izin-cuti-page) .overtime-notifications {

@@ -292,7 +292,10 @@ require __DIR__ . "/partials/atas.php";
     <div class="alert-error" role="alert"><?= htmlspecialchars($pesan); ?></div>
 <?php endif; ?>
 
-<div class="overtime-notification-action"><a class="btn btn-primary" href="notifikasi-izin-karyawan.php">🔔 Buka Notifikasi</a></div>
+<div class="overtime-notification-action">
+    <a class="btn btn-primary" href="notifikasi-izin-karyawan.php">🔔 Buka Notifikasi</a>
+    <a class="btn export-excel-btn" href="fungsi/export_izin_karyawan.php">Export Excel</a>
+</div>
 <section class="data-card overtime-notifications"><div class="data-card-header"><h2>Notifikasi Terbaru</h2><p class="overtime-note">Persetujuan izin karyawan dan perubahan data terbaru.</p></div><div class="notification-list"><?php if ($notifikasiIzinKaryawan && mysqli_num_rows($notifikasiIzinKaryawan) > 0): ?><?php while ($notif = mysqli_fetch_assoc($notifikasiIzinKaryawan)): ?><div class="notification-item"><strong><?= htmlspecialchars($notif["username"] ?: "Sistem"); ?></strong><span><?= htmlspecialchars(labelAktivitas((string) $notif["aktivitas"])); ?></span><small><?= htmlspecialchars($notif["dibuat_pada"]); ?></small></div><?php endwhile; ?><?php else: ?><div class="notification-empty">Belum ada notifikasi.</div><?php endif; ?></div></section>
 
 <?php if ($bolehMenginput): ?>
