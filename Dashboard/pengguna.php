@@ -155,7 +155,7 @@ $daftarPengguna = mysqli_query(
 $daftarDepartemen = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
 
 $judulHalaman = "Manajemen Pengguna";
-$subjudulHalaman = "Kelola akun dan akses Admin HRGA serta peran operasional.";
+$subjudulHalaman = "Kelola akun dan akses Admin serta peran operasional.";
 $halamanAktif = "pengguna";
 
 require __DIR__ . "/partials/atas.php";
@@ -273,7 +273,7 @@ require __DIR__ . "/partials/atas.php";
                                 <td><?= htmlspecialchars($pengguna["nama"]); ?></td>
                                 <td><?= htmlspecialchars($pengguna["username"]); ?></td>
                                 <td><span class="badge"><?= htmlspecialchars(labelRole((string) $pengguna["role"])); ?></span></td>
-                                <td><?= in_array($pengguna["role"], ["pic", "koordinator", "manager"], true) ? htmlspecialchars((string) ($pengguna["nama_departemen"] ?? "-")) : "-"; ?></td>
+                                <td><?= in_array($pengguna["role"], ["pic", "koordinator", "direktur", "manager"], true) ? htmlspecialchars((string) ($pengguna["nama_departemen"] ?? "-")) : "-"; ?></td>
                                 <td>
                                     <?php if ($pengguna["role"] !== "superadmin"): ?>
                                         <div class="action-buttons">

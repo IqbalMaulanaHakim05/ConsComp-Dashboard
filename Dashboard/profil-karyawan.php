@@ -310,7 +310,7 @@ require __DIR__ . "/partials/atas.php";
 
             <?php if ($errorPromosi !== ""): ?><div class="alert-error" role="alert"><?= htmlspecialchars($errorPromosi); ?></div><?php endif; ?>
 
-            <?php if (punyaRole("admin", "superadmin")): ?>
+            <?php if ($modeEdit): ?>
                 <form class="profile-promotion-form" method="POST" action="fungsi/proses-promosi-karyawan.php">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                     <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">

@@ -12,7 +12,7 @@ require_once __DIR__ . '/sinkronisasi.php';
 wajibRole('admin', 'superadmin');
 
 $karyawanId = (int) ($_POST['karyawan_id'] ?? 0);
-$kembali = '../profil-karyawan.php?id=' . $karyawanId;
+$kembali = '../profil-karyawan.php?id=' . $karyawanId . '&edit=1';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     exit('Metode permintaan tidak diizinkan.');

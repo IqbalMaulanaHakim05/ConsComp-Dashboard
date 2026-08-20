@@ -19,26 +19,71 @@ html {
 .upah-page .export-preview-top-actions { display: flex; justify-content: flex-end; gap: 10px; margin: 0 0 16px; }
 .upah-page .export-preview-top-actions + .data-card > div:last-child { display: none !important; visibility: hidden !important; height: 0 !important; padding: 0 !important; margin: 0 !important; }
 
+/* Gap untuk tiap card agar tidak berhimpitan */
+.upah-page .data-card {
+    margin-bottom: 24px;
+    border: 1px solid #e2e8f0;
+}
+
+:root[data-theme="dark"] .upah-page .data-card {
+    border-color: #334155;
+}
+
+/* Form filter dengan jarak antar kolom yang lebih rapat dan proporsional */
 .upah-page .batch-filter-form {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(150px, 1fr)) auto auto;
-    gap: 14px;
-    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px 12px;
     width: 100%;
 }
 
 .upah-page .batch-filter-form label {
-    display: grid;
-    gap: 7px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     color: #475569;
     font-size: 13px;
     font-weight: 700;
+    flex: 0 1 auto;
 }
 
 .upah-page .batch-filter-form input,
 .upah-page .batch-filter-form select {
-    width: 100%;
-    min-height: 42px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.upah-page .batch-filter-form select[name="bulan"] {
+    width: 135px;
+}
+
+.upah-page .batch-filter-form input[name="tahun"] {
+    width: 90px;
+}
+
+.upah-page .batch-filter-form select[name="department_id"] {
+    min-width: 160px;
+    max-width: 220px;
+}
+
+.upah-page .batch-filter-form select[name="position"] {
+    min-width: 160px;
+    max-width: 220px;
+}
+
+.upah-page .batch-filter-form select[name="batas"] {
+    width: 110px;
+}
+
+.upah-page .batch-filter-form .btn {
+    min-height: 40px;
+    padding: 9px 16px;
+    white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 .upah-page .batch-selection-bar {
@@ -47,6 +92,57 @@ html {
     justify-content: space-between;
     gap: 16px;
     padding: 14px 0 18px;
+    flex-wrap: wrap;
+}
+
+.upah-page .batch-selection-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.upah-page .batch-live-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.upah-page .batch-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 11px;
+    background-color: #e2e8f0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.upah-page .batch-live-count.has-selection .batch-count-badge {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+:root[data-theme="dark"] .upah-page .batch-live-count {
+    color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .upah-page .batch-count-badge {
+    background-color: #334155;
+    color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .upah-page .batch-live-count.has-selection .batch-count-badge {
+    background-color: #14532d;
+    color: #bbf7d0;
 }
 
 .upah-page .batch-selection-bar label {
@@ -61,11 +157,123 @@ html {
 .upah-page .batch-validation.is-error { color: #b91c1c; }
 .upah-page .batch-result-card { border-top: 4px solid #22c55e; }
 
-@media screen and (max-width: 1100px) {
-    .upah-page .batch-filter-form { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+/* Penataan kolom tabel Batch Slip Gaji agar tidak renggang/terlalu jauh */
+.upah-page .batch-result-card table,
+.upah-page .batch-employee-card table,
+.upah-page .batch-history-card table {
+    width: 100%;
+    min-width: 720px;
 }
 
-@media screen and (max-width: 640px) {
-    .upah-page .batch-filter-form { grid-template-columns: 1fr; }
-    .upah-page .batch-selection-bar { align-items: stretch; flex-direction: column; }
+.upah-page .batch-history-card table {
+    min-width: 980px;
+}
+
+.upah-page .batch-result-card th:last-child,
+.upah-page .batch-result-card td:last-child,
+.upah-page .batch-employee-card th:last-child,
+.upah-page .batch-employee-card td:last-child,
+.upah-page .batch-history-card th:last-child,
+.upah-page .batch-history-card td:last-child {
+    position: static !important;
+    right: auto !important;
+    z-index: auto !important;
+    background-color: inherit !important;
+}
+
+.upah-page .batch-result-card th,
+.upah-page .batch-result-card td,
+.upah-page .batch-employee-card th,
+.upah-page .batch-employee-card td,
+.upah-page .batch-history-card th,
+.upah-page .batch-history-card td {
+    padding: 10px 12px;
+}
+
+.upah-page .batch-result-card .btn,
+.upah-page .batch-history-card .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.upah-page .batch-employee-card th:first-child,
+.upah-page .batch-employee-card td:first-child {
+    width: 44px;
+    text-align: center;
+}
+
+.upah-page .batch-employee-card th:nth-child(2),
+.upah-page .batch-employee-card td:nth-child(2) {
+    width: 90px;
+}
+
+.upah-page .batch-employee-card th:nth-child(6),
+.upah-page .batch-employee-card td:nth-child(6) {
+    width: 120px;
+    text-align: center;
+}
+
+.upah-page .batch-result-card th:nth-child(2),
+.upah-page .batch-result-card td:nth-child(2),
+.upah-page .batch-history-card th:nth-child(3),
+.upah-page .batch-history-card td:nth-child(3) {
+    width: 70px;
+    text-align: center;
+}
+
+.upah-page .batch-result-card th:nth-child(3),
+.upah-page .batch-result-card td:nth-child(3),
+.upah-page .batch-history-card th:nth-child(4),
+.upah-page .batch-history-card td:nth-child(4) {
+    width: 95px;
+}
+
+.upah-page .batch-result-card th:last-child,
+.upah-page .batch-result-card td:last-child,
+.upah-page .batch-history-card th:nth-child(6),
+.upah-page .batch-history-card td:nth-child(6) {
+    width: 140px;
+    text-align: center;
+}
+
+.upah-page .batch-history-card th:last-child,
+.upah-page .batch-history-card td:last-child {
+    width: 160px;
+    white-space: nowrap;
+}
+
+@media screen and (max-width: 900px) {
+    .upah-page .batch-filter-form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .upah-page .batch-filter-form label,
+    .upah-page .batch-filter-form select,
+    .upah-page .batch-filter-form input {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    .upah-page .batch-filter-form .btn {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 540px) {
+    .upah-page .batch-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .upah-page .batch-selection-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
 }

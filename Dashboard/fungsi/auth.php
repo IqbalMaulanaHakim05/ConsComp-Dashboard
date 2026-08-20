@@ -99,7 +99,7 @@ function labelRole(string $role): string
 
 function labelAktivitas(string $aktivitas): string
 {
-    return preg_replace('/\badmin\b(?!\s+HRGA)/i', 'Admin HRGA', $aktivitas) ?? $aktivitas;
+    return preg_replace('/\badmin(?:\s+HRGA)?\b/i', 'Admin', $aktivitas) ?? $aktivitas;
 }
 
 function fieldKaryawanAdminHrga(): array

@@ -23,7 +23,7 @@ $urlStyle = $urlRootProyek . "/style/";
 // Nama variabel dibedakan dari $pesan halaman (mis. pesan error form).
 $pesanNotifikasi = trim($_GET["pesan"] ?? "");
 $halamanAktif = $halamanAktif ?? "dashboard";
-$judulHalaman = $judulHalaman ?? "Dashboard Admin HRGA";
+$judulHalaman = $judulHalaman ?? "Dashboard Admin";
 $subjudulHalaman = $subjudulHalaman ?? "";
 
 // Path partial action bar; kosong berarti halaman tidak punya action bar.
@@ -50,7 +50,7 @@ $cssPerHalaman = [
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
 $kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
 $versiCssHalaman = match ($halamanAktif) {
-    "upah" => "20260819-upah-batch-slip1",
+    "upah" => "20260820-upah-pdf-link3",
     "lembur" => "20260818-lembur-department-flow1",
     "izin-karyawan", "izin-cuti" => "20260820-izin-notifikasi1",
     "master-data" => "20260819-master-cards1",
@@ -88,7 +88,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Dashboard Admin HRGA</title>
+    <title>Dashboard Admin</title>
 
     <script>
         (() => {
@@ -153,7 +153,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-        <h2>Admin HRGA</h2>
+        <h2>Admin</h2>
 
         <p>
             Sistem pengelolaan dataset
@@ -315,7 +315,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
         class="btn btn-primary mobile-menu"
         onclick="toggleSidebar()"
     >
-        Menu Admin HRGA
+        Menu Admin
     </button>
 
     <div class="topbar">

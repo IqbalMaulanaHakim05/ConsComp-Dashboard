@@ -65,9 +65,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
     if ($fieldTerlarang !== []) {
         catatAktivitas(
             $conn,
-            "Percobaan Admin HRGA mengubah field karyawan yang tidak diizinkan pada ID " . $id . ": " . implode(", ", $fieldTerlarang) . "."
+            "Percobaan Admin mengubah field karyawan yang tidak diizinkan pada ID " . $id . ": " . implode(", ", $fieldTerlarang) . "."
         );
-        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Admin HRGA hanya dapat mengubah Biodata dan Informasi yang diizinkan."));
+        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Admin hanya dapat mengubah Biodata dan Informasi yang diizinkan."));
         exit;
     }
 
@@ -168,7 +168,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
         mysqli_commit($conn);
     } catch (Throwable $exception) {
         mysqli_rollback($conn);
-        error_log("Edit Biodata Admin HRGA gagal: " . $exception->getMessage());
+        error_log("Edit Biodata Admin gagal: " . $exception->getMessage());
         header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Perubahan Biodata dan Informasi gagal disimpan."));
         exit;
     }
@@ -178,7 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
     } catch (Throwable $error) {
         error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
     }
-    catatAktivitas($conn, "Admin HRGA mengedit Biodata dan Informasi karyawan ID " . $id . ".");
+    catatAktivitas($conn, "Admin mengedit Biodata dan Informasi karyawan ID " . $id . ".");
     header("Location: ../profil-karyawan.php?id=" . $id . "&pesan=edit-berhasil");
     exit;
 }

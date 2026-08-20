@@ -122,7 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $pesan = "Data izin cuti tidak ditemukan atau statusnya belum disetujui/ditolak.";
         }
     } elseif ($aksi === "simpan" && !$bolehMenginput) {
-        $pesan = "Hanya Admin HRGA dan superadmin yang dapat menginput izin cuti.";
+        $pesan = "Hanya Admin dan superadmin yang dapat menginput izin cuti.";
     } elseif ($aksi === "simpan") {
         foreach (array_keys($form) as $namaKolom) {
             $form[$namaKolom] = trim((string) ($_POST[$namaKolom] ?? ""));
