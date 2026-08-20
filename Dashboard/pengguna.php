@@ -147,12 +147,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 $daftarPengguna = mysqli_query(
     $conn,
-    "SELECT id, username, nama, role FROM users ORDER BY nama ASC"
+    "SELECT u.id, u.username, u.nama, u.role, d.nama AS nama_departemen
+     FROM users u
+     LEFT JOIN master_departemen d ON d.id = u.department_id
+     ORDER BY u.nama ASC"
 );
 $daftarDepartemen = mysqli_query($conn, "SELECT id, nama FROM master_departemen WHERE is_active = 1 ORDER BY nama ASC");
 
 $judulHalaman = "Manajemen Pengguna";
-$subjudulHalaman = "Kelola akun dan akses Admin HRGA serta peran operasional.";
+$subjudulHalaman = "Kelola akun dan akses Admin serta peran operasional.";
 $halamanAktif = "pengguna";
 
 require __DIR__ . "/partials/atas.php";
@@ -260,6 +263,7 @@ require __DIR__ . "/partials/atas.php";
                             <th>Nama</th>
                             <th>Username</th>
                             <th>Role</th>
+                            <th>Departemen</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -269,6 +273,7 @@ require __DIR__ . "/partials/atas.php";
                                 <td><?= htmlspecialchars($pengguna["nama"]); ?></td>
                                 <td><?= htmlspecialchars($pengguna["username"]); ?></td>
                                 <td><span class="badge"><?= htmlspecialchars(labelRole((string) $pengguna["role"])); ?></span></td>
+                                <td><?= in_array($pengguna["role"], ["pic", "koordinator", "direktur", "manager"], true) ? htmlspecialchars((string) ($pengguna["nama_departemen"] ?? "-")) : "-"; ?></td>
                                 <td>
                                     <?php if ($pengguna["role"] !== "superadmin"): ?>
                                         <div class="action-buttons">

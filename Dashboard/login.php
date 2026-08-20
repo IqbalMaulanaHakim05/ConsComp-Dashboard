@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Admin HRGA</title>
+    <title>Login Admin</title>
     <script>const savedTheme = localStorage.getItem('employee-theme'); document.documentElement.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
     <link rel="stylesheet" href="../style/login.css">
 </head>
@@ -60,14 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <section class="intro">
         <div class="brand">
             <span class="brand-icon">HR</span>
-            Admin HRGA
+            Admin
         </div>
         <h1>Kelola data karyawan dengan aman.</h1>
         <p>Masuk untuk mengakses dashboard, memperbarui data SQL, melakukan sinkronisasi, serta mengelola impor dan ekspor Excel.</p>
     </section>
 
     <main class="login-panel">
-        <h2>Login Admin HRGA</h2>
+        <h2>Login Admin</h2>
         <p class="subtitle">Masukkan akun administrator untuk melanjutkan.</p>
 
         <?php if ($info !== ''): ?>

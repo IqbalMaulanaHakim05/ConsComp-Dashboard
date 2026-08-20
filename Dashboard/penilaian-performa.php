@@ -124,10 +124,10 @@ require __DIR__ . '/partials/atas.php';
             <?php endforeach; ?>
         </div>
 
-        <aside class="performance-note">
+        <!-- <aside class="performance-note">
             <strong>Catatan</strong>
             <p>Nilai pada halaman ini berdiri sendiri dan tidak mengubah kolom Skor Performa manual pada data karyawan.</p>
-        </aside>
+        </aside> -->
 
         <div class="performance-actions">
             <a class="btn btn-secondary" href="karyawan.php">Kembali</a>

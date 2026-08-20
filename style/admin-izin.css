@@ -175,12 +175,42 @@
 :is(.izin-karyawan-page, .izin-cuti-page) .decision-summary { display: grid; gap: 4px; }
 :is(.izin-karyawan-page, .izin-cuti-page) .decision-summary span { color: #64748b; font-size: 13px; }
 
+/* Tombol notifikasi dan ekspor */
+:is(.izin-karyawan-page, .izin-cuti-page) .overtime-notification-action {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 0 16px;
+    gap: 10px;
+}
+
+/* Sembunyikan section notifikasi inline di halaman utama;
+   notifikasi lengkap tersedia di halaman terpisah. */
+:is(.izin-karyawan-page, .izin-cuti-page) .overtime-notifications {
+    display: none;
+}
+
+/* Halaman notifikasi terpisah */
+:is(.izin-karyawan-page, .izin-cuti-page) .notification-page-card { margin-bottom: 24px; }
+:is(.izin-karyawan-page, .izin-cuti-page) .notification-list { padding: 0 24px 20px; }
+:is(.izin-karyawan-page, .izin-cuti-page) .notification-item {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+:is(.izin-karyawan-page, .izin-cuti-page) .notification-item span { color: #475569; }
+:is(.izin-karyawan-page, .izin-cuti-page) .notification-item small { color: #94a3b8; }
+:is(.izin-karyawan-page, .izin-cuti-page) .notification-empty { padding: 12px 0; color: #64748b; }
+
 :root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .izin-entry-form > .form-card,
 :root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .main-content > .data-card { border-color: #334155; }
 :root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .form-card-header { background: linear-gradient(135deg, #1e293b, #172554); border-color: #334155; }
 :root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .form-card-header p,
 :root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .field-note,
 :root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .decision-summary span { color: #94a3b8; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .notification-item { border-color: #334155; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .notification-item span { color: #94a3b8; }
 :root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .form-group input[readonly] { color: #cbd5e1; background: #0f172a; }
 
 @media screen and (max-width: 760px) {
