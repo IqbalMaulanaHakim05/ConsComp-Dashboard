@@ -22,7 +22,7 @@ function siapkanTabelIzinKaryawan(mysqli $conn): bool
             durasi_menit SMALLINT UNSIGNED NOT NULL,
             deskripsi TEXT NOT NULL,
             nomor_kontak VARCHAR(50) NOT NULL,
-            karyawan_pengganti_id INT NOT NULL,
+            karyawan_pengganti_id INT NULL DEFAULT NULL,
             status ENUM('menunggu', 'disetujui', 'ditolak') NOT NULL DEFAULT 'menunggu',
             tahap_persetujuan ENUM('pic', 'koordinator', 'manager', 'selesai') NOT NULL DEFAULT 'pic',
             dibuat_oleh_user_id INT NOT NULL,
@@ -36,11 +36,11 @@ function siapkanTabelIzinKaryawan(mysqli $conn): bool
             INDEX idx_izin_status (status),
             INDEX idx_izin_pengganti (karyawan_pengganti_id),
             CONSTRAINT fk_izin_karyawan
-                FOREIGN KEY (karyawan_id) REFERENCES karyawan(id) ON DELETE RESTRICT,
+                FOREIGN KEY (karyawan_id) REFERENCES karyawan(id) ON DELETE CASCADE,
             CONSTRAINT fk_izin_department
                 FOREIGN KEY (department_id) REFERENCES master_departemen(id) ON DELETE RESTRICT,
             CONSTRAINT fk_izin_pengganti
-                FOREIGN KEY (karyawan_pengganti_id) REFERENCES karyawan(id) ON DELETE RESTRICT,
+                FOREIGN KEY (karyawan_pengganti_id) REFERENCES karyawan(id) ON DELETE SET NULL,
             CONSTRAINT fk_izin_pembuat
                 FOREIGN KEY (dibuat_oleh_user_id) REFERENCES users(id) ON DELETE RESTRICT,
             CONSTRAINT fk_izin_pemroses
