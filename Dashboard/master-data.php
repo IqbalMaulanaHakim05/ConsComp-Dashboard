@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.history.replaceState({}, document.title, notificationUrl.pathname + notificationUrl.search + notificationUrl.hash);
     }
 
-    const masterPageSize = 4;
+    const masterPageSize = 5;
     document.querySelectorAll('[data-master-card]').forEach(function (card) {
         const items = Array.from(card.querySelectorAll('[data-master-item]'));
         const previous = card.querySelector('.master-page-previous');
