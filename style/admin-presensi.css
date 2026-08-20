@@ -1,0 +1,499 @@
+/* ==========================================================================
+   Gaya Halaman Presensi Karyawan
+   ========================================================================== */
+
+.presensi-page .main-content > section,
+.presensi-page .main-content > .presensi-top-actions {
+    width: 100%;
+    max-width: 1280px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* Top Action Bar */
+.presensi-top-actions {
+    margin-bottom: 20px;
+}
+
+.presensi-top-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.presensi-top-buttons .btn-add-presensi {
+    font-weight: 700;
+    padding: 10px 22px;
+    min-height: 42px;
+}
+
+.presensi-top-buttons .export-excel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #6d48c7;
+    background: #f1eaff;
+    border: 1px solid #ddccff;
+    border-radius: 9px;
+    font-weight: 700;
+    padding: 10px 20px;
+    min-height: 42px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.presensi-top-buttons .export-excel-btn:hover {
+    background: #e8dcff;
+    color: #5b35b5;
+}
+
+/* Summary Grid Cards */
+.presensi-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.presensi-summary-grid .summary-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.presensi-summary-grid .summary-info {
+    display: grid;
+    gap: 4px;
+}
+
+.presensi-summary-grid .summary-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.presensi-summary-grid .summary-count {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+.presensi-summary-grid .summary-icon {
+    font-size: 28px;
+    opacity: 0.9;
+}
+
+.presensi-summary-grid .summary-card.hadir { border-left: 4px solid #16a34a; }
+.presensi-summary-grid .summary-card.hadir .summary-count { color: #16a34a; }
+.presensi-summary-grid .summary-card.terlambat { border-left: 4px solid #ea580c; }
+.presensi-summary-grid .summary-card.terlambat .summary-count { color: #ea580c; }
+.presensi-summary-grid .summary-card.izin { border-left: 4px solid #2563eb; }
+.presensi-summary-grid .summary-card.izin .summary-count { color: #2563eb; }
+.presensi-summary-grid .summary-card.alpa { border-left: 4px solid #dc2626; }
+.presensi-summary-grid .summary-card.alpa .summary-count { color: #dc2626; }
+
+/* Filter Section */
+.presensi-filter-card {
+    margin-bottom: 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.presensi-filter-card .form-card-header {
+    padding: 18px 24px;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.presensi-filter-card .form-card-header h2 { margin: 0; font-size: 18px; }
+.presensi-filter-card .form-card-header p { margin: 4px 0 0; color: #64748b; font-size: 13px; }
+
+.presensi-filter-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px 18px;
+    align-items: end;
+}
+
+.presensi-filter-form .form-group { margin: 0; }
+.presensi-filter-form label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 13px; }
+.presensi-filter-form input,
+.presensi-filter-form select {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 9px;
+}
+
+.presensi-filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    grid-column: 1 / -1;
+    margin-top: 6px;
+}
+
+/* Data Table */
+.presensi-data-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 30px;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.07);
+}
+
+.presensi-data-card .data-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    margin-bottom: 18px;
+    border-bottom: none;
+}
+
+.presensi-data-card .data-card-header h2 { margin: 0; font-size: 19px; color: #0f172a; }
+
+.presensi-data-card .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding: 0;
+    margin: 0;
+}
+
+.presensi-page table {
+    width: 100%;
+    min-width: 1200px;
+    border-collapse: collapse;
+}
+
+.presensi-page thead tr th:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.presensi-page thead tr th:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.badge-time {
+    display: inline-block;
+    padding: 4px 9px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+}
+
+/* Status Badges */
+.status-badge.status-presensi-hadir {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.status-badge.status-presensi-terlambat {
+    background: #ffedd5;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+}
+
+.status-badge.status-presensi-izin {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.status-badge.status-presensi-sakit {
+    background: #fef9c3;
+    color: #a16207;
+    border: 1px solid #fef08a;
+}
+
+.status-badge.status-presensi-alpa {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.presensi-note-cell {
+    max-width: 250px;
+    font-size: 13px;
+    color: #475569;
+}
+
+.presensi-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.presensi-actions form {
+    margin: 0;
+    display: inline;
+}
+
+/* ==========================================================================
+   Modal Dialog
+   ========================================================================== */
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 18px;
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal-dialog {
+    background: #ffffff;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideDown 0.22s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideDown {
+    from { transform: translateY(-20px) scale(0.97); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 26px;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #0f172a;
+}
+
+.btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 26px;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.btn-close-modal:hover {
+    color: #0f172a;
+}
+
+.modal-body {
+    padding: 24px 26px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 18px;
+}
+
+.modal-body .form-group { margin: 0; }
+.modal-body .form-group.full-width { grid-column: 1 / -1; }
+.modal-body label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 13px; }
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 9px;
+}
+.modal-body textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.required-star {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 18px 26px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+/* ==========================================================================
+   Dark Theme
+   ========================================================================== */
+
+:root[data-theme="dark"] .presensi-summary-grid .summary-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+:root[data-theme="dark"] .presensi-summary-grid .summary-count {
+    color: #f8fafc;
+}
+
+:root[data-theme="dark"] .presensi-summary-grid .summary-label {
+    color: #94a3b8;
+}
+
+:root[data-theme="dark"] .presensi-top-buttons .export-excel-btn {
+    color: #c4b5fd;
+    background: #2e1065;
+    border-color: #5b21b6;
+}
+
+:root[data-theme="dark"] .presensi-top-buttons .export-excel-btn:hover {
+    background: #3b0764;
+}
+
+:root[data-theme="dark"] .presensi-filter-card,
+:root[data-theme="dark"] .presensi-data-card {
+    border-color: #334155;
+}
+
+:root[data-theme="dark"] .presensi-filter-card .form-card-header {
+    background: linear-gradient(135deg, #1e293b, #172554);
+    border-color: #334155;
+}
+
+:root[data-theme="dark"] .presensi-filter-card .form-card-header p {
+    color: #94a3b8;
+}
+
+:root[data-theme="dark"] .badge-time {
+    background: #0f172a;
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .presensi-note-cell {
+    color: #94a3b8;
+}
+
+:root[data-theme="dark"] .modal-dialog {
+    background: #1e293b;
+    color: #f8fafc;
+}
+
+:root[data-theme="dark"] .modal-header {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    border-color: #334155;
+}
+
+:root[data-theme="dark"] .modal-header h3 {
+    color: #f8fafc;
+}
+
+:root[data-theme="dark"] .btn-close-modal {
+    color: #94a3b8;
+}
+
+:root[data-theme="dark"] .btn-close-modal:hover {
+    color: #f8fafc;
+}
+
+:root[data-theme="dark"] .modal-footer {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+:root[data-theme="dark"] .status-badge.status-presensi-hadir {
+    background: #052e16;
+    color: #86efac;
+    border-color: #14532d;
+}
+
+:root[data-theme="dark"] .status-badge.status-presensi-terlambat {
+    background: #431407;
+    color: #fdba74;
+    border-color: #7c2d12;
+}
+
+:root[data-theme="dark"] .status-badge.status-presensi-izin {
+    background: #172554;
+    color: #93c5fd;
+    border-color: #1e40af;
+}
+
+:root[data-theme="dark"] .status-badge.status-presensi-sakit {
+    background: #422006;
+    color: #fde047;
+    border-color: #713f12;
+}
+
+:root[data-theme="dark"] .status-badge.status-presensi-alpa {
+    background: #450a0a;
+    color: #fca5a5;
+    border-color: #7f1d1d;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+
+@media screen and (max-width: 768px) {
+    .presensi-top-buttons {
+        justify-content: stretch;
+    }
+
+    .presensi-top-buttons .btn {
+        width: 100%;
+    }
+
+    .presensi-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-body {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-body .form-group {
+        grid-column: 1;
+    }
+
+    .presensi-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .presensi-actions .btn {
+        width: 100%;
+    }
+}

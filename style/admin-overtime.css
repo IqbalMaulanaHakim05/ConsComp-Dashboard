@@ -6,10 +6,15 @@
     margin-left: auto;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
-    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.07);
 }
 
-.lembur-page .main-content > .form-card { margin-bottom: 24px; }
+.lembur-page .main-content > .form-card {
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
 .lembur-page .form-card-header { padding: 20px 26px; background: linear-gradient(135deg, #f8fafc, #eef4ff); border-bottom: 1px solid #e2e8f0; }
 .lembur-page .form-card-header h2 { margin: 0; font-size: 20px; }
 .lembur-page .form-body { padding: 24px 26px 26px; }
@@ -24,9 +29,19 @@
 .lembur-page .form-body textarea { min-height: 92px; resize: vertical; }
 .lembur-page .form-body > form > .btn { grid-column: 1 / -1; justify-self: end; min-width: 150px; min-height: 42px; }
 
-.lembur-page .data-card { padding: 0; }
-.lembur-page .data-card-header { padding: 20px 24px 14px; }
-.lembur-page .data-card-header h2 { margin: 0; font-size: 20px; }
+.lembur-page .data-card {
+    padding: 24px;
+    margin-bottom: 24px;
+}
+.lembur-page .data-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    margin-bottom: 18px;
+    border-bottom: none;
+}
+.lembur-page .data-card-header h2 { margin: 0; font-size: 20px; color: #0f172a; }
 .lembur-page .overtime-note { margin: 6px 0 0; color: #64748b; font-size: 13px; }
 .lembur-page .overtime-notification-action { display: flex; justify-content: center; align-items: center; margin: 0 0 16px; }
 .lembur-page .overtime-notification-action { gap: 10px; }
@@ -63,14 +78,34 @@
 .lembur-page .export-preview-card .table-wrapper table { width: max-content !important; min-width: 1500px !important; table-layout: auto !important; }
 .lembur-page .export-preview-card .table-wrapper th,
 .lembur-page .export-preview-card .table-wrapper td { min-width: 120px; white-space: nowrap; }
-.lembur-page .table-wrapper { padding: 0 20px 20px; }
-.lembur-page table { min-width: 1500px; }
-.lembur-page table th { padding: 13px 14px; }
-.lembur-page table td { padding: 14px; vertical-align: middle; }
-.lembur-page table td:last-child { min-width: 300px; }
-.lembur-page table td:last-child > form { display: inline-flex !important; align-items: center; flex-wrap: wrap; gap: 8px; margin: 2px 6px 2px 0 !important; }
-.lembur-page table td:last-child input { min-width: 155px; min-height: 38px; padding: 7px 10px; border-radius: 8px; }
-.lembur-page table td:last-child .btn { min-height: 38px; padding: 8px 14px; white-space: nowrap; }
+.lembur-page .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding: 0;
+    margin: 0;
+}
+.lembur-page table {
+    width: 100%;
+    min-width: 1400px;
+    border-collapse: collapse;
+}
+.lembur-page thead tr th:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+.lembur-page thead tr th:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+.lembur-page table th { padding: 11px 12px; }
+.lembur-page table td { padding: 8px 12px; vertical-align: middle; }
+.lembur-page table td:last-child {
+    padding: 6px 12px;
+    white-space: nowrap;
+}
+.lembur-page table td:last-child > form { display: inline-flex !important; align-items: center; gap: 6px; margin: 0 !important; }
+.lembur-page table td:last-child input { min-width: 140px; min-height: 32px; padding: 4px 8px; font-size: 13px; border-radius: 6px; }
+.lembur-page table td:last-child .btn { min-height: 32px; padding: 5px 12px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 
 /* Ringkasan kompensasi dan tombol dibuat satu baris di kolom Aksi.
    Tabel tetap dapat digeser secara horizontal. */

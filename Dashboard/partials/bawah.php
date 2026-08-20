@@ -43,6 +43,42 @@
         const sidebar = document.getElementById("sidebar");
         sidebar.classList.toggle("show");
     }
+
+    // Manajemen indikator scroll dan petunjuk visual kolom sticky
+    (() => {
+        const perbaruiStatusScrollTabel = (wrapper) => {
+            if (!wrapper || wrapper.classList.contains("no-actions")) return;
+            const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
+            if (maxScroll <= 2) {
+                wrapper.classList.add("no-scroll");
+                wrapper.classList.remove("is-scrolled-end", "can-scroll-right");
+                return;
+            }
+            wrapper.classList.remove("no-scroll");
+            const sudahSampaiUjungKanan = (wrapper.scrollLeft + wrapper.clientWidth >= wrapper.scrollWidth - 12);
+            wrapper.classList.toggle("is-scrolled-end", sudahSampaiUjungKanan);
+            wrapper.classList.toggle("can-scroll-right", !sudahSampaiUjungKanan);
+        };
+
+        const inisialisasiScrollTabel = () => {
+            document.querySelectorAll(".table-wrapper").forEach((wrapper) => {
+                perbaruiStatusScrollTabel(wrapper);
+                wrapper.addEventListener("scroll", () => perbaruiStatusScrollTabel(wrapper), { passive: true });
+            });
+        };
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", inisialisasiScrollTabel);
+        } else {
+            inisialisasiScrollTabel();
+        }
+        window.addEventListener("resize", () => {
+            document.querySelectorAll(".table-wrapper").forEach(perbaruiStatusScrollTabel);
+        }, { passive: true });
+        window.addEventListener("load", () => {
+            document.querySelectorAll(".table-wrapper").forEach(perbaruiStatusScrollTabel);
+        });
+    })();
 </script>
 
 </body>

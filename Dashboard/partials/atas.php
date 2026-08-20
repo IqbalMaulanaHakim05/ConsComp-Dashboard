@@ -46,28 +46,30 @@ $cssPerHalaman = [
     "lembur" => "admin-overtime.css",
     "izin-karyawan" => "admin-izin.css",
     "izin-cuti" => "admin-izin.css",
+    "presensi" => "admin-presensi.css",
 ];
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
 $kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
 $versiCssHalaman = match ($halamanAktif) {
-    "upah" => "20260820-upah-pdf-link3",
-    "lembur" => "20260818-lembur-department-flow1",
-    "izin-karyawan", "izin-cuti" => "20260820-izin-export1",
+    "upah" => "20260820-upah-table-card1",
+    "lembur" => "20260820-lembur-btn-compact3",
+    "izin-karyawan", "izin-cuti" => "20260820-izin-btn-compact4",
+    "presensi" => "20260820-presensi-card-padding2",
     "master-data" => "20260820-master-reset-btn2",
-    "karyawan" => "20260811-karyawan-columns1",
+    "karyawan" => "20260820-karyawan-card-padding1",
     "penilaian-performa" => "20260819-performance-form1",
-    "dashboard" => "20260811-dashboard-columns5",
-    default => "20260811-layout8",
+    "dashboard" => "20260820-dashboard-card-padding1",
+    default => "20260820-layout-card-padding1",
 };
 if (
     function_exists("rolePengguna")
     && rolePengguna() === "pic"
-    && !in_array($halamanAktif, ["lembur", "izin-karyawan", "izin-cuti"], true)
+    && !in_array($halamanAktif, ["lembur", "izin-karyawan", "izin-cuti", "presensi"], true)
 ) {
     header("Location: lembur.php");
     exit;
 }
-if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "upah", "lembur", "izin-karyawan", "izin-cuti"], true)) {
+if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "presensi", "upah", "lembur", "izin-karyawan", "izin-cuti"], true)) {
     header("Location: karyawan.php");
     exit;
 }
@@ -143,7 +145,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260820-hidden-fix1">
+    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260820-sticky-after-overlay5">
     <?php if ($cssHalamanAktif !== ""): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= htmlspecialchars($versiCssHalaman); ?>">
     <?php endif; ?>
@@ -169,6 +171,12 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 <span class="sidebar-icon" aria-hidden="true">↗</span>Lembur
             </a>
             <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>presensi.php"
+                class="<?= $halamanAktif === "presensi" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">⏱</span>Presensi
+            </a>
+            <a
                 href="<?= htmlspecialchars(URL_DASAR); ?>izin-karyawan.php"
                 class="<?= $halamanAktif === "izin-karyawan" ? "active" : ""; ?>"
             >
@@ -190,12 +198,19 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
         <?php if (!(function_exists("punyaRole") && punyaRole("pic"))): ?><a
             href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php"
-            class="<?= in_array($halamanAktif, ["karyawan", "analisis", "periode-gaji"], true) ? "active" : ""; ?>"
+            class="<?= in_array($halamanAktif, ["karyawan", "presensi", "analisis", "periode-gaji"], true) ? "active" : ""; ?>"
         >
             <span class="sidebar-icon" aria-hidden="true">♙</span>Data Karyawan
         </a><?php endif; ?>
 
         <div class="sidebar-tree-children">
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>presensi.php"
+                class="<?= $halamanAktif === "presensi" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">⏱</span>Presensi
+            </a>
+
             <?php if (function_exists("punyaRole") && punyaRole("admin", "superadmin")): ?>
                 <a
                     href="<?= htmlspecialchars(URL_DASAR); ?>fungsi/tambah.php"

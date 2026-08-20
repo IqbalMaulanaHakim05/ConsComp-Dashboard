@@ -15,6 +15,11 @@
 :is(.izin-karyawan-page, .izin-cuti-page) .main-content > .data-card {
     border: 1px solid #e2e8f0;
     border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.07);
+}
+
+:is(.izin-karyawan-page, .izin-cuti-page) .izin-entry-form > .form-card {
     overflow: hidden;
 }
 
@@ -107,24 +112,51 @@
     min-height: 42px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-data-card { padding: 0; }
-:is(.izin-karyawan-page, .izin-cuti-page) .data-card-header { padding: 20px 24px 14px; }
-:is(.izin-karyawan-page, .izin-cuti-page) .table-wrapper { padding: 0 20px 20px; }
-:is(.izin-karyawan-page, .izin-cuti-page) table { min-width: 1850px; }
+:is(.izin-karyawan-page, .izin-cuti-page) .izin-data-card {
+    padding: 24px;
+    margin-bottom: 24px;
+}
+:is(.izin-karyawan-page, .izin-cuti-page) .data-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    margin-bottom: 18px;
+    border-bottom: none;
+}
+:is(.izin-karyawan-page, .izin-cuti-page) .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding: 0;
+    margin: 0;
+}
+:is(.izin-karyawan-page, .izin-cuti-page) table {
+    width: 100%;
+    min-width: 1850px;
+    border-collapse: collapse;
+}
 .izin-cuti-page table { min-width: 2100px; }
-:is(.izin-karyawan-page, .izin-cuti-page) table th { padding: 13px 14px; }
-:is(.izin-karyawan-page, .izin-cuti-page) table td { padding: 14px; vertical-align: middle; }
+:is(.izin-karyawan-page, .izin-cuti-page) thead tr th:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+:is(.izin-karyawan-page, .izin-cuti-page) thead tr th:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+:is(.izin-karyawan-page, .izin-cuti-page) table th { padding: 11px 12px; }
+:is(.izin-karyawan-page, .izin-cuti-page) table td { padding: 8px 12px; vertical-align: middle; }
 :is(.izin-karyawan-page, .izin-cuti-page) .izin-description-cell { min-width: 220px; white-space: normal; line-height: 1.5; }
-:is(.izin-karyawan-page, .izin-cuti-page) .empty-table { padding: 28px; color: #64748b; text-align: center; }
+:is(.izin-karyawan-page, .izin-cuti-page) .empty-table { padding: 20px; color: #64748b; text-align: center; }
 
 :is(.izin-karyawan-page, .izin-cuti-page) .status-badge {
     display: inline-flex;
     align-items: center;
-    min-height: 28px;
-    padding: 5px 10px;
+    min-height: 24px;
+    padding: 3px 8px;
     border-radius: 999px;
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: capitalize;
 }
 
@@ -132,43 +164,46 @@
 :is(.izin-karyawan-page, .izin-cuti-page) .status-disetujui { color: #166534; background: #dcfce7; }
 :is(.izin-karyawan-page, .izin-cuti-page) .status-ditolak { color: #991b1b; background: #fee2e2; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions { min-width: 330px; }
+:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions {
+    padding: 6px 12px;
+    white-space: nowrap;
+}
 
-:is(.izin-karyawan-page, .izin-cuti-page) th.izin-actions-header,
-:is(.izin-karyawan-page, .izin-cuti-page) td.izin-actions,
 :is(.izin-karyawan-page, .izin-cuti-page) td.empty-table {
     position: static !important;
     right: auto !important;
     z-index: auto !important;
+    background-color: inherit !important;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) td.izin-actions,
-:is(.izin-karyawan-page, .izin-cuti-page) td.empty-table { background-color: inherit !important; }
-
 :is(.izin-karyawan-page, .izin-cuti-page) .izin-actions form {
-    display: grid;
-    grid-template-columns: minmax(180px, 1fr) auto auto;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    margin: 0;
 }
 
 :is(.izin-karyawan-page, .izin-cuti-page) .izin-actions .delete-izin-form {
     display: inline-flex;
     grid-template-columns: none;
-    margin-top: 10px;
+    margin-top: 0;
+    margin-left: 4px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions .delete-izin-form:first-child { margin-top: 0; }
+:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions .delete-izin-form:first-child { margin-top: 0; margin-left: 0; }
 
 :is(.izin-karyawan-page, .izin-cuti-page) .izin-actions input {
-    min-height: 38px;
-    padding: 7px 10px;
-    border-radius: 8px;
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 13px;
+    border-radius: 6px;
 }
 
 :is(.izin-karyawan-page, .izin-cuti-page) .izin-actions .btn {
-    min-height: 38px;
-    padding: 8px 14px;
+    min-height: 32px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 600;
     white-space: nowrap;
 }
 

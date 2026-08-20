@@ -481,11 +481,32 @@ table {
     border-collapse: collapse;
 }
 
+/* Kolom sticky paling kanan (Aksi) */
 th:last-child,
 td:last-child {
     position: sticky;
     right: 0;
-    z-index: 2;
+    z-index: 5;
+}
+
+/* Pseudo-element penanda batas kiri & bayangan elevasi yang 100% PASTI terlihat di atas tabel collapse */
+.table-wrapper:not(.no-actions) th:last-child::after,
+.table-wrapper:not(.no-actions) td:last-child::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: -1px;
+    left: 0;
+    width: 2px;
+    background-color: #94a3b8;
+    box-shadow: -8px 0 16px rgba(15, 23, 42, 0.28);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.table-wrapper:not(.no-actions) th:last-child::after {
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: -8px 0 16px rgba(0, 0, 0, 0.6);
 }
 
 th:last-child {
@@ -502,6 +523,14 @@ tbody tr:nth-child(even) td:last-child {
 
 tbody tr:hover td:last-child {
     background-color: #eff6ff;
+}
+
+/* Ketika tabel telah digeser sampai batas kanan akhir (seluruh data terlihat) atau tidak memiliki overflow, hilangkan batas border kiri dan bayangan */
+.table-wrapper.is-scrolled-end:not(.no-actions) th:last-child::after,
+.table-wrapper.is-scrolled-end:not(.no-actions) td:last-child::after,
+.table-wrapper.no-scroll:not(.no-actions) th:last-child::after,
+.table-wrapper.no-scroll:not(.no-actions) td:last-child::after {
+    display: none !important;
 }
 
 .table-wrapper td {
@@ -550,6 +579,16 @@ tbody tr:hover td:last-child {
 thead {
     color: #ffffff;
     background-color: #0f172a;
+}
+
+thead tr th:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+thead tr th:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 th,
@@ -978,6 +1017,17 @@ tbody tr:hover {
 }
 :root[data-theme="dark"] td:last-child {
     background-color: #1e293b;
+}
+:root[data-theme="dark"] .table-wrapper:not(.no-actions) th:last-child::after,
+:root[data-theme="dark"] .table-wrapper:not(.no-actions) td:last-child::after {
+    background-color: #64748b;
+    box-shadow: -10px 0 20px rgba(0, 0, 0, 0.85);
+}
+:root[data-theme="dark"] .table-wrapper.is-scrolled-end:not(.no-actions) th:last-child::after,
+:root[data-theme="dark"] .table-wrapper.is-scrolled-end:not(.no-actions) td:last-child::after,
+:root[data-theme="dark"] .table-wrapper.no-scroll:not(.no-actions) th:last-child::after,
+:root[data-theme="dark"] .table-wrapper.no-scroll:not(.no-actions) td:last-child::after {
+    display: none !important;
 }
 :root[data-theme="dark"] .search-form input,
 :root[data-theme="dark"] .search-form select,
