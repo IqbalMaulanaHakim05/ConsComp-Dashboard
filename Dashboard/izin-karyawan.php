@@ -279,6 +279,8 @@ if ($parameterDaftar !== null) {
 mysqli_stmt_execute($stmtDaftar);
 $daftarIzin = mysqli_stmt_get_result($stmtDaftar);
 
+$notifikasiIzinKaryawan = mysqli_query($conn, "SELECT a.dibuat_pada, a.aktivitas, u.username FROM audit_aktivitas a LEFT JOIN users u ON u.id = a.user_id ORDER BY a.id DESC LIMIT 12");
+
 $judulHalaman = "Izin Karyawan";
 $subjudulHalaman = "Pengajuan izin meninggalkan pekerjaan.";
 $halamanAktif = "izin-karyawan";
@@ -289,6 +291,9 @@ require __DIR__ . "/partials/atas.php";
 <?php if ($pesan !== ""): ?>
     <div class="alert-error" role="alert"><?= htmlspecialchars($pesan); ?></div>
 <?php endif; ?>
+
+<div class="overtime-notification-action"><a class="btn btn-primary" href="notifikasi-izin-karyawan.php">🔔 Buka Notifikasi</a></div>
+<section class="data-card overtime-notifications"><div class="data-card-header"><h2>Notifikasi Terbaru</h2><p class="overtime-note">Persetujuan izin karyawan dan perubahan data terbaru.</p></div><div class="notification-list"><?php if ($notifikasiIzinKaryawan && mysqli_num_rows($notifikasiIzinKaryawan) > 0): ?><?php while ($notif = mysqli_fetch_assoc($notifikasiIzinKaryawan)): ?><div class="notification-item"><strong><?= htmlspecialchars($notif["username"] ?: "Sistem"); ?></strong><span><?= htmlspecialchars(labelAktivitas((string) $notif["aktivitas"])); ?></span><small><?= htmlspecialchars($notif["dibuat_pada"]); ?></small></div><?php endwhile; ?><?php else: ?><div class="notification-empty">Belum ada notifikasi.</div><?php endif; ?></div></section>
 
 <?php if ($bolehMenginput): ?>
 <form method="POST" id="izin-karyawan-form" class="izin-entry-form">
@@ -458,13 +463,6 @@ require __DIR__ . "/partials/atas.php";
                                         <button class="btn btn-success" type="submit" name="keputusan" value="disetujui">Setujui</button>
                                         <button class="btn btn-danger" type="submit" name="keputusan" value="ditolak">Tolak</button>
                                     </form>
-                                <?php elseif ($izin["nama_pemroses"]): ?>
-                                    <div class="decision-summary">
-                                        <strong><?= htmlspecialchars((string) $izin["nama_pemroses"]); ?></strong>
-                                        <?php if (trim((string) ($izin["catatan_persetujuan"] ?? "")) !== ""): ?>
-                                            <span><?= htmlspecialchars((string) $izin["catatan_persetujuan"]); ?></span>
-                                        <?php endif; ?>
-                                    </div>
                                 <?php elseif (!$bolehMenghapusData): ?>
                                     -
                                 <?php endif; ?>

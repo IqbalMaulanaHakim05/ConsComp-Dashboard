@@ -302,6 +302,8 @@ if ($parameterDaftar !== null) {
 mysqli_stmt_execute($stmtDaftar);
 $daftarCuti = mysqli_stmt_get_result($stmtDaftar);
 
+$notifikasiIzinCuti = mysqli_query($conn, "SELECT a.dibuat_pada, a.aktivitas, u.username FROM audit_aktivitas a LEFT JOIN users u ON u.id = a.user_id ORDER BY a.id DESC LIMIT 12");
+
 $judulHalaman = "Izin Cuti";
 $subjudulHalaman = "Pengajuan dan pemantauan izin cuti karyawan.";
 $halamanAktif = "izin-cuti";
@@ -312,6 +314,9 @@ require __DIR__ . "/partials/atas.php";
 <?php if ($pesan !== ""): ?>
     <div class="alert-error" role="alert"><?= htmlspecialchars($pesan); ?></div>
 <?php endif; ?>
+
+<div class="overtime-notification-action"><a class="btn btn-primary" href="notifikasi-izin-cuti.php">🔔 Buka Notifikasi</a></div>
+<section class="data-card overtime-notifications"><div class="data-card-header"><h2>Notifikasi Terbaru</h2><p class="overtime-note">Persetujuan izin cuti dan perubahan data terbaru.</p></div><div class="notification-list"><?php if ($notifikasiIzinCuti && mysqli_num_rows($notifikasiIzinCuti) > 0): ?><?php while ($notif = mysqli_fetch_assoc($notifikasiIzinCuti)): ?><div class="notification-item"><strong><?= htmlspecialchars($notif["username"] ?: "Sistem"); ?></strong><span><?= htmlspecialchars(labelAktivitas((string) $notif["aktivitas"])); ?></span><small><?= htmlspecialchars($notif["dibuat_pada"]); ?></small></div><?php endwhile; ?><?php else: ?><div class="notification-empty">Belum ada notifikasi.</div><?php endif; ?></div></section>
 
 <?php if ($bolehMenginput): ?>
 <form method="POST" id="izin-cuti-form" class="izin-entry-form">
@@ -495,13 +500,6 @@ require __DIR__ . "/partials/atas.php";
                                         <button class="btn btn-success" type="submit" name="keputusan" value="disetujui">Setujui</button>
                                         <button class="btn btn-danger" type="submit" name="keputusan" value="ditolak">Tolak</button>
                                     </form>
-                                <?php elseif ($cuti["nama_pemroses"]): ?>
-                                    <div class="decision-summary">
-                                        <strong><?= htmlspecialchars((string) $cuti["nama_pemroses"]); ?></strong>
-                                        <?php if (trim((string) ($cuti["catatan_persetujuan"] ?? "")) !== ""): ?>
-                                            <span><?= htmlspecialchars((string) $cuti["catatan_persetujuan"]); ?></span>
-                                        <?php endif; ?>
-                                    </div>
                                 <?php elseif (!$bolehMenghapusData): ?>
                                     -
                                 <?php endif; ?>

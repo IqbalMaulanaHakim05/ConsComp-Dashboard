@@ -18,6 +18,19 @@ $bulan = max(1, min(12, (int) ($_REQUEST['bulan'] ?? date('n'))));
 $tahun = max(2000, min(2100, (int) ($_REQUEST['tahun'] ?? date('Y'))));
 $departmentId = max(0, (int) ($_REQUEST['department_id'] ?? 0));
 $posisi = trim((string) ($_REQUEST['position'] ?? ''));
+$batasDiizinkan = [25, 50, 100];
+$batasDefault = 25;
+$batasParam = (string) ($_REQUEST['batas'] ?? $batasDefault);
+$tanpaBatas = ($batasParam === 'semua');
+if ($tanpaBatas) {
+    $batas = null;
+} else {
+    $batas = (int) $batasParam;
+    if (!in_array($batas, $batasDiizinkan, true)) {
+        $batas = $batasDefault;
+    }
+}
+$halaman = max(1, (int) ($_REQUEST['hal'] ?? 1));
 $pesan = '';
 $hasilBatch = [];
 
@@ -93,6 +106,32 @@ if ($hasilPosisi) {
 
 $awalPeriode = sprintf('%04d-%02d-01', $tahun, $bulan);
 $akhirPeriode = (new DateTimeImmutable($awalPeriode))->modify('last day of this month')->format('Y-m-d');
+
+$kondisiKaryawan = "({$departmentId} = 0 OR k.department_id = {$departmentId})
+                  AND (? = '' OR k.position = ?)
+                  AND (k.date_of_hire IS NULL OR k.date_of_hire <= '{$akhirPeriode}')
+                  AND (k.date_of_exit IS NULL OR k.date_of_exit >= '{$awalPeriode}')";
+
+$stmtHitung = mysqli_prepare($conn, "SELECT COUNT(*) AS total FROM karyawan k WHERE {$kondisiKaryawan}");
+mysqli_stmt_bind_param($stmtHitung, 'ss', $posisi, $posisi);
+mysqli_stmt_execute($stmtHitung);
+$totalCocok = (int) (mysqli_fetch_assoc(mysqli_stmt_get_result($stmtHitung))['total'] ?? 0);
+mysqli_stmt_close($stmtHitung);
+
+if ($tanpaBatas) {
+    $totalHalaman = 1;
+    $halaman = 1;
+    $offset = 0;
+    $klausaLimit = '';
+} else {
+    $totalHalaman = max(1, (int) ceil($totalCocok / $batas));
+    if ($halaman > $totalHalaman) {
+        $halaman = $totalHalaman;
+    }
+    $offset = ($halaman - 1) * $batas;
+    $klausaLimit = " LIMIT {$batas} OFFSET {$offset}";
+}
+
 $sqlKaryawan = "SELECT k.id, k.emp_id, k.employee_name, k.position, k.department,
                        pg.id AS profil_id, pg.gaji_pokok,
                        (SELECT MAX(s.versi)
@@ -107,11 +146,8 @@ $sqlKaryawan = "SELECT k.id, k.emp_id, k.employee_name, k.position, k.department
                       AND (pg2.berlaku_sampai IS NULL OR pg2.berlaku_sampai >= '{$awalPeriode}')
                     ORDER BY pg2.berlaku_mulai DESC, pg2.id DESC LIMIT 1
                 )
-                WHERE ({$departmentId} = 0 OR k.department_id = {$departmentId})
-                  AND (? = '' OR k.position = ?)
-                  AND (k.date_of_hire IS NULL OR k.date_of_hire <= '{$akhirPeriode}')
-                  AND (k.date_of_exit IS NULL OR k.date_of_exit >= '{$awalPeriode}')
-                ORDER BY k.department, k.position, k.employee_name";
+                WHERE {$kondisiKaryawan}
+                ORDER BY k.department, k.position, k.employee_name{$klausaLimit}";
 $stmtKaryawan = mysqli_prepare($conn, $sqlKaryawan);
 mysqli_stmt_bind_param($stmtKaryawan, 'ss', $posisi, $posisi);
 mysqli_stmt_execute($stmtKaryawan);
@@ -134,6 +170,22 @@ while ($row = mysqli_fetch_assoc($hasilKaryawan)) {
     $karyawan[] = $row;
 }
 mysqli_stmt_close($stmtKaryawan);
+
+$semuaId = [];
+if (!$tanpaBatas && $totalHalaman > 1) {
+    $stmtSemuaId = mysqli_prepare($conn, "SELECT k.id FROM karyawan k WHERE {$kondisiKaryawan} ORDER BY k.id");
+    mysqli_stmt_bind_param($stmtSemuaId, 'ss', $posisi, $posisi);
+    mysqli_stmt_execute($stmtSemuaId);
+    $hasilSemuaId = mysqli_stmt_get_result($stmtSemuaId);
+    while ($row = mysqli_fetch_assoc($hasilSemuaId)) {
+        $semuaId[] = (int) $row['id'];
+    }
+    mysqli_stmt_close($stmtSemuaId);
+}
+
+$idHalamanIni = array_map(static fn (array $item): int => (int) $item['id'], $karyawan);
+$mulai = $totalCocok > 0 ? ($offset + 1) : 0;
+$sampai = $offset + count($karyawan);
 
 $riwayatBatch = mysqli_query(
     $conn,
@@ -180,13 +232,14 @@ require __DIR__ . '/partials/atas.php';
         <label>Tahun<input type="number" name="tahun" min="2000" max="2100" value="<?= $tahun; ?>" required></label>
         <label>Departemen<select name="department_id"><option value="0">Semua departemen</option><?php foreach ($departemen as $item): ?><option value="<?= (int) $item['id']; ?>" <?= $departmentId === (int) $item['id'] ? 'selected' : ''; ?>><?= htmlspecialchars((string) $item['nama']); ?></option><?php endforeach; ?></select></label>
         <label>Posisi<select name="position"><option value="">Semua posisi</option><?php foreach ($daftarPosisi as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= $posisi === $item ? 'selected' : ''; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select></label>
+        <label>Tampilkan<select name="batas"><?php foreach ($batasDiizinkan as $opsiBatas): ?><option value="<?= $opsiBatas; ?>" <?= (!$tanpaBatas && $batas === $opsiBatas) ? 'selected' : ''; ?>><?= $opsiBatas; ?> baris</option><?php endforeach; ?><option value="semua" <?= $tanpaBatas ? 'selected' : ''; ?>>Semua</option></select></label>
         <button class="btn btn-primary" type="submit">Tampilkan Karyawan</button>
         <a class="btn btn-secondary" href="upah.php">Kembali ke Upah</a>
     </form>
 </section>
 
 <section class="data-card batch-employee-card">
-    <div class="data-card-header"><div><h2>Daftar Karyawan</h2><p><?= count($karyawan); ?> karyawan sesuai filter untuk periode <?= htmlspecialchars(namaBulanSlipGaji($bulan) . ' ' . $tahun); ?>.</p></div></div>
+    <div class="data-card-header"><div><h2>Daftar Karyawan</h2><p>Menampilkan baris <strong><?= $mulai; ?>&ndash;<?= $sampai; ?></strong> dari <strong><?= $totalCocok; ?></strong> karyawan untuk periode <?= htmlspecialchars(namaBulanSlipGaji($bulan) . ' ' . $tahun); ?>.</p></div></div>
     <form method="POST" id="batch-slip-form">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
         <input type="hidden" name="bulan" value="<?= $bulan; ?>">
@@ -209,8 +262,32 @@ require __DIR__ . '/partials/atas.php';
             <td class="batch-validation <?= $item['siap'] ? 'is-ready' : 'is-error'; ?>"><?= htmlspecialchars((string) $item['validasi']); ?></td>
         </tr><?php endforeach; ?>
         </tbody></table></div>
+        <div id="hidden-ids-container"></div>
     </form>
 </section>
+
+<?php if (!$tanpaBatas && $totalHalaman > 1): ?>
+    <?php
+    $paramDasar = ['bulan' => $bulan, 'tahun' => $tahun, 'department_id' => $departmentId, 'position' => $posisi, 'batas' => $batas];
+    ?>
+    <div class="pagination" style="max-width:1280px;margin:0 auto 24px;">
+        <div class="pagination-info">
+            Halaman <strong><?= $halaman; ?></strong> dari <strong><?= $totalHalaman; ?></strong>
+        </div>
+        <div class="pagination-nav">
+            <?php if ($halaman > 1): ?>
+                <a href="?<?= htmlspecialchars(http_build_query($paramDasar + ['hal' => $halaman - 1])); ?>">&larr; Sebelumnya</a>
+            <?php else: ?>
+                <span class="disabled">&larr; Sebelumnya</span>
+            <?php endif; ?>
+            <?php if ($halaman < $totalHalaman): ?>
+                <a href="?<?= htmlspecialchars(http_build_query($paramDasar + ['hal' => $halaman + 1])); ?>">Berikutnya &rarr;</a>
+            <?php else: ?>
+                <span class="disabled">Berikutnya &rarr;</span>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>
 
 <section class="data-card batch-history-card">
     <div class="data-card-header"><div><h2>Riwayat Hasil Terbaru</h2><p>Status setiap karyawan dicatat terpisah, termasuk kegagalan.</p></div></div>
@@ -229,8 +306,38 @@ require __DIR__ . '/partials/atas.php';
 </section>
 
 <script>
-document.getElementById('pilih-semua-slip')?.addEventListener('change', function () {
-    document.querySelectorAll('.pilih-slip').forEach(checkbox => { checkbox.checked = this.checked; });
-});
+(() => {
+    const pilihSemua = document.getElementById('pilih-semua-slip');
+    if (!pilihSemua) return;
+
+    const idHalamanIni = <?= json_encode($idHalamanIni, JSON_UNESCAPED_UNICODE); ?>;
+    const semuaId = <?= json_encode($semuaId, JSON_UNESCAPED_UNICODE); ?>;
+    const container = document.getElementById('hidden-ids-container');
+
+    pilihSemua.addEventListener('change', function () {
+        document.querySelectorAll('.pilih-slip').forEach(cb => { cb.checked = this.checked; });
+
+        container.innerHTML = '';
+        if (this.checked && semuaId.length > 0) {
+            const idLainHalaman = semuaId.filter(id => !idHalamanIni.includes(id));
+            idLainHalaman.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'karyawan_ids[]';
+                input.value = id;
+                container.appendChild(input);
+            });
+        }
+    });
+
+    document.querySelectorAll('.pilih-slip').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const semua = document.querySelectorAll('.pilih-slip');
+            const dicentang = document.querySelectorAll('.pilih-slip:checked');
+            pilihSemua.checked = semua.length === dicentang.length;
+            if (!pilihSemua.checked) container.innerHTML = '';
+        });
+    });
+})();
 </script>
 <?php require __DIR__ . '/partials/bawah.php'; ?>
