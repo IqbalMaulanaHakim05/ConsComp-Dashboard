@@ -55,7 +55,7 @@ $versiCssHalaman = match ($halamanAktif) {
     "izin-karyawan", "izin-cuti" => "20260820-izin-export1",
     "master-data" => "20260820-master-reset-btn2",
     "karyawan" => "20260811-karyawan-columns1",
-    "penilaian-performa" => "20260819-performance-form1",
+    "penilaian-performa" => "20260821-performance-font-size",
     "dashboard" => "20260811-dashboard-columns5",
     default => "20260811-layout8",
 };

@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             header(
                 'Location: penilaian-performa.php?id=' . (int) $karyawan['id']
-                . '&pesan=' . rawurlencode('Penilaian performa berhasil disimpan.')
+                    . '&pesan=' . rawurlencode('Penilaian performa berhasil disimpan.')
             );
             exit;
         } catch (InvalidArgumentException | RuntimeException $exception) {
@@ -105,8 +105,7 @@ require __DIR__ . '/partials/atas.php';
                             class="performance-info"
                             aria-label="Pedoman <?= htmlspecialchars($konfigurasi['label']); ?>"
                             data-tooltip="<?= htmlspecialchars($konfigurasi['pedoman']); ?>"
-                            title="<?= htmlspecialchars($konfigurasi['pedoman']); ?>"
-                        >i</button>
+                            title="<?= htmlspecialchars($konfigurasi['pedoman']); ?>">i</button>
                     </div>
                     <input
                         id="<?= htmlspecialchars($kolom); ?>"
@@ -117,17 +116,16 @@ require __DIR__ . '/partials/atas.php';
                         max="100"
                         step="1"
                         value="<?= htmlspecialchars($form[$kolom]); ?>"
-                        placeholder="Belum dinilai"
-                    >
+                        placeholder="Belum dinilai">
                     <p>Masukkan nilai 1–100. Nilai 0 atau kosong disimpan sebagai belum dinilai.</p>
                 </article>
             <?php endforeach; ?>
         </div>
 
-        <aside class="performance-note">
+        <!-- <aside class="performance-note">
             <strong>Catatan</strong>
             <p>Rata-rata indikator yang diisi akan otomatis memperbarui kolom Performa pada tabel karyawan.</p>
-        </aside>
+        </aside> -->
 
         <div class="performance-actions">
             <a class="btn btn-secondary" href="karyawan.php">Kembali</a>
