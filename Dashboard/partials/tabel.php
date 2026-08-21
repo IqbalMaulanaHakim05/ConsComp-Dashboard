@@ -43,6 +43,27 @@ $filterAktif = $kataKunci !== ""
     || $tanpaBatas
     || (!$tanpaBatas && (int) $batas !== $batasDefaultTampilan);
 
+$daftarKolomSort = [
+    "emp_id" => "ID Karyawan",
+    "nama" => "Nama",
+    "posisi" => "Posisi",
+    "departemen" => "Departemen",
+    "gaji" => "Gaji",
+    "tanggal_masuk" => "Tanggal Masuk",
+    "status_kerja" => "Status Kerja",
+    "performa" => "Performa",
+];
+
+$buatTautanSort = function(string $kunciKolom) use ($sort, $arah, $paramDasar): string {
+    $arahBaru = ($sort === $kunciKolom && $arah === "ASC") ? "DESC" : "ASC";
+    $param = array_merge($paramDasar, [
+        "sort" => $kunciKolom,
+        "arah" => $arahBaru,
+        "hal" => 1,
+    ]);
+    return "?" . http_build_query($param);
+};
+
 ?>
     <section class="data-card">
 
@@ -59,16 +80,26 @@ $filterAktif = $kataKunci !== ""
 
                 <input type="hidden" name="filter" value="nama">
 
-                <select name="sort" onchange="this.form.submit()" title="Urutkan berdasarkan">
-                    <?php foreach (["emp_id"=>"ID Karyawan", "nama"=>"Nama", "posisi"=>"Posisi", "departemen"=>"Departemen", "gaji"=>"Gaji", "tanggal_masuk"=>"Tanggal masuk", "status_kerja"=>"Status kerja", "performa"=>"Performa"] as $nilaiSort=>$labelSort): ?>
-                        <option value="<?= $nilaiSort; ?>" <?= $sort === $nilaiSort ? "selected" : ""; ?>>Urut: <?= $labelSort; ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <div class="sort-toggle-wrap">
+                    <select name="sort" onchange="this.form.submit()" title="Kolom yang diurutkan">
+                        <?php foreach ($daftarKolomSort as $nilaiSort=>$labelSort): ?>
+                            <option value="<?= $nilaiSort; ?>" <?= $sort === $nilaiSort ? "selected" : ""; ?>>Urut: <?= $labelSort; ?></option>
+                        <?php endforeach; ?>
+                    </select>
 
-                <select name="arah" onchange="this.form.submit()" title="Arah urutan">
-                    <option value="ASC" <?= $arah === "ASC" ? "selected" : ""; ?>>Naik (A–Z)</option>
-                    <option value="DESC" <?= $arah === "DESC" ? "selected" : ""; ?>>Turun (Z–A)</option>
-                </select>
+                    <input type="hidden" name="arah" id="sortArahInput" value="<?= htmlspecialchars($arah); ?>">
+
+                    <button
+                        type="button"
+                        class="btn-sort-toggle"
+                        onclick="var inp = this.form.querySelector('#sortArahInput'); inp.value = (inp.value === 'ASC' ? 'DESC' : 'ASC'); this.form.submit();"
+                        title="Urutan saat ini: <?= $arah === 'DESC' ? 'Z–A (Turun)' : 'A–Z (Naik)'; ?>. Klik untuk toggle arah urutan."
+                        aria-label="Toggle arah urutan"
+                    >
+                        <span class="sort-toggle-icon" aria-hidden="true"><?= $arah === 'DESC' ? '↓' : '↑'; ?></span>
+                        <span class="sort-toggle-text"><?= $arah === 'DESC' ? 'Turun (Z–A)' : 'Naik (A–Z)'; ?></span>
+                    </button>
+                </div>
 
                 <button
                     type="submit"
@@ -134,14 +165,27 @@ $filterAktif = $kataKunci !== ""
                 <thead>
                 <tr>
                     <th>No.</th>
-                    <th>ID Karyawan</th>
-                    <th>Nama</th>
-                    <th>Posisi</th>
-                    <th>Departemen</th>
-                    <th>Gaji</th>
-                    <th>Tanggal Masuk</th>
-                    <th>Status Kerja</th>
-                    <th>Performa</th>
+                    <?php foreach ($daftarKolomSort as $kunciKolom => $labelKolom): ?>
+                        <?php
+                        $aktif = ($sort === $kunciKolom);
+                        $kelasTh = "th-sortable" . ($aktif ? (" is-active " . ($arah === "DESC" ? "is-desc" : "is-asc")) : "");
+                        $judulTooltip = $aktif
+                            ? ("Diurutkan " . ($arah === "DESC" ? "Z–A (Turun)" : "A–Z (Naik)") . ". Klik untuk beralih ke " . ($arah === "DESC" ? "A–Z (Naik)" : "Z–A (Turun)"))
+                            : ("Klik untuk mengurutkan berdasarkan " . $labelKolom);
+                        ?>
+                        <th class="<?= $kelasTh; ?>">
+                            <a href="<?= htmlspecialchars($buatTautanSort($kunciKolom)); ?>" class="th-sort-link" title="<?= htmlspecialchars($judulTooltip); ?>">
+                                <span><?= htmlspecialchars($labelKolom); ?></span>
+                                <span class="th-sort-indicator" aria-hidden="true">
+                                    <?php if ($aktif): ?>
+                                        <?= $arah === "DESC" ? "▼" : "▲"; ?>
+                                    <?php else: ?>
+                                        ⇅
+                                    <?php endif; ?>
+                                </span>
+                            </a>
+                        </th>
+                    <?php endforeach; ?>
                     <?php if ($bolehAksi): ?>
                         <th>Aksi</th>
                     <?php endif; ?>
