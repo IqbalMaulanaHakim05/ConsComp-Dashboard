@@ -156,7 +156,7 @@ function ambilDataKaryawan(
 ): array {
     $cakupan = roleOperasional() ? "department_id = " . (int) (departmentIdPengguna() ?? 0) : "1=1";
     $kataKunci = trim($_GET["cari"] ?? "");
-    $filterKolom = (string) ($_GET["filter"] ?? "semua");
+    $filterKolom = (string) ($_GET["filter"] ?? "nama");
     $sortPilihan = [
         "emp_id" => "emp_id", "nama" => "employee_name",
         "posisi" => "position", "departemen" => "department", "gaji" => "CAST(salary AS DECIMAL(15,2))",
@@ -169,11 +169,10 @@ function ambilDataKaryawan(
     if (!in_array($arah, ["ASC", "DESC"], true)) $arah = "ASC";
     $klausaUrut = $sortPilihan[$sort] . " " . $arah . ", id ASC";
     $kolomFilter = [
-        "semua" => "employee_name LIKE ? OR emp_id LIKE ? OR position LIKE ? OR department LIKE ? OR salary LIKE ? OR date_of_hire LIKE ? OR employment_status LIKE ? OR performance_score LIKE ?",
-        "nama" => "employee_name LIKE ?", "id" => "emp_id LIKE ?", "posisi" => "position LIKE ?", "departemen" => "department LIKE ?",
-        "gaji" => "salary LIKE ?", "tanggal_masuk" => "date_of_hire LIKE ?", "status_kerja" => "employment_status LIKE ?", "performa" => "performance_score LIKE ?",
+        "semua" => "employee_name LIKE ?",
+        "nama" => "employee_name LIKE ?",
     ];
-    if (!isset($kolomFilter[$filterKolom])) $filterKolom = "semua";
+    if (!isset($kolomFilter[$filterKolom])) $filterKolom = "nama";
     $kondisiFilter = $kolomFilter[$filterKolom];
 
     $batasParam = (string) ($_GET["batas"] ?? $batasDefault);

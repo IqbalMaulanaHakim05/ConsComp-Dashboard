@@ -11,7 +11,7 @@ $filterDepartemen = roleOperasional()
     ? " WHERE department_id = " . (int) ($departmentIdPengguna ?? 0)
     : "";
 $kataKunci = trim((string) ($_GET["cari"] ?? ""));
-$filterKolom = (string) ($_GET["filter"] ?? "semua");
+$filterKolom = (string) ($_GET["filter"] ?? "nama");
 $batasPilihan = [10, 25, 50, 100, 250, "semua"];
 $batasExport = $_GET["batas_export"] ?? "semua";
 if ($batasExport !== "semua") $batasExport = max(1, min(10000, (int) $batasExport));
@@ -38,18 +38,15 @@ if ($kolomDipilih === []) $kolomDipilih = array_keys($kolomExportPilihan);
 $sortSql = ["id" => "id"] + array_combine(array_keys($kolomExportPilihan), array_map(static fn($item) => $item["sql"], $kolomExportPilihan));
 if (!isset($sortSql[$sortExport])) $sortExport = "id";
 $kolomExport = [
-    "semua" => "employee_name,emp_id,position,department,salary,date_of_hire,employment_status,performance_score",
-    "id" => "emp_id", "posisi" => "position", "departemen" => "department",
-    "gaji" => "salary", "tanggal_masuk" => "date_of_hire", "status_kerja" => "employment_status", "performa" => "performance_score"
+    "semua" => "employee_name",
+    "nama" => "employee_name",
 ];
-if (!isset($kolomExport[$filterKolom])) $filterKolom = "semua";
+if (!isset($kolomExport[$filterKolom])) $filterKolom = "nama";
 $kondisiExport = "";
 if ($kataKunci !== "") {
     $safeKunci = mysqli_real_escape_string($conn, $kataKunci);
     $nilaiCari = "'%" . $safeKunci . "%'";
-    $kondisiExport = $filterKolom === "semua"
-        ? "(" . implode(" LIKE $nilaiCari OR ", explode(",", $kolomExport[$filterKolom])) . " LIKE $nilaiCari)"
-        : $kolomExport[$filterKolom] . " LIKE $nilaiCari";
+    $kondisiExport = $kolomExport[$filterKolom] . " LIKE $nilaiCari";
 }
 $filterSql = $filterDepartemen === "" ? " WHERE 1=1" : $filterDepartemen;
 if ($kondisiExport !== "") $filterSql .= " AND " . $kondisiExport;
@@ -76,7 +73,7 @@ $query = mysqli_query(
      $filterSql
      ORDER BY " . $sortSql[$sortExport] . " " . $arahExport . ", id ASC"
      . ($batasExport === "semua" ? "" : " LIMIT " . (int) $batasExport)
- );
+);
 
 if (!$query) {
     http_response_code(500);

@@ -31,7 +31,7 @@ $paramDasar = [];
 if ($kataKunci !== "") {
     $paramDasar["cari"] = $kataKunci;
 }
-$paramDasar["filter"] = "semua";
+$paramDasar["filter"] = "nama";
 $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
 $paramDasar["sort"] = $sort;
 $paramDasar["arah"] = $arah;
@@ -53,11 +53,11 @@ $filterAktif = $kataKunci !== ""
                 <input
                     type="text"
                     name="cari"
-                    placeholder="Cari nama, ID, posisi, atau departemen"
+                    placeholder="Cari nama karyawan"
                     value="<?= htmlspecialchars($kataKunci); ?>"
                 >
 
-                <input type="hidden" name="filter" value="semua">
+                <input type="hidden" name="filter" value="nama">
 
                 <select name="sort" onchange="this.form.submit()" title="Urutkan berdasarkan">
                     <?php foreach (["emp_id"=>"ID Karyawan", "nama"=>"Nama", "posisi"=>"Posisi", "departemen"=>"Departemen", "gaji"=>"Gaji", "tanggal_masuk"=>"Tanggal masuk", "status_kerja"=>"Status kerja", "performa"=>"Performa"] as $nilaiSort=>$labelSort): ?>

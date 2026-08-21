@@ -71,21 +71,13 @@ $parameter = [];
 $tipeParameter = "";
 
 if ($kataKunci !== "") {
-    $sql .= " AND (
-                employee_name LIKE ?
-                OR emp_id LIKE ?
-                OR position LIKE ?
-                OR department LIKE ?
-            )";
+    $sql .= " AND employee_name LIKE ?";
 
     $pencarian = "%" . $kataKunci . "%";
 
     $parameter[] = $pencarian;
-    $parameter[] = $pencarian;
-    $parameter[] = $pencarian;
-    $parameter[] = $pencarian;
 
-    $tipeParameter .= "ssss";
+    $tipeParameter .= "s";
 }
 
 if ($departemen !== "") {
@@ -273,7 +265,7 @@ $parameterHalaman = ["cari" => $kataKunci, "departemen" => $departemen];
             <input
                 type="text"
                 name="cari"
-                placeholder="Cari nama, ID, posisi, atau departemen"
+                placeholder="Cari nama karyawan"
                 value="<?= htmlspecialchars($kataKunci); ?>"
             >
 
