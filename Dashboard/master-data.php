@@ -244,6 +244,12 @@ require __DIR__ . "/partials/atas.php";
     .position-dialog-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.25rem; }
     .position-dialog-pages { display: flex; align-items: center; gap: .75rem; }
     .position-dialog-pages strong { min-width: 110px; text-align: center; color: #111827; }
+    :root[data-theme="dark"] #position-dialog { color: #e2e8f0; background: #1e293b; border-color: #475569; }
+    :root[data-theme="dark"] #position-dialog h2,
+    :root[data-theme="dark"] .position-dialog-pages strong { color: #f8fafc; }
+    :root[data-theme="dark"] .position-dialog-add select { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
+    :root[data-theme="dark"] .position-dialog-add select option { color: #e2e8f0; background: #0f172a; }
+    :root[data-theme="dark"] .position-dialog-list li { color: #e2e8f0; background: #172033; border-color: #475569; }
     @media (max-width: 640px) { #position-dialog { padding: 1.25rem; } .position-dialog-add, .position-dialog-list { grid-template-columns: 1fr; } .position-dialog-add { display: grid; } }
 </style>
 <dialog id="position-dialog">
