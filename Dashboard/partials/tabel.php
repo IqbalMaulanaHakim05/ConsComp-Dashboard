@@ -53,17 +53,6 @@ $daftarKolomSort = [
     "status_kerja" => "Status Kerja",
     "performa" => "Performa",
 ];
-
-$buatTautanSort = function(string $kunciKolom) use ($sort, $arah, $paramDasar): string {
-    $arahBaru = ($sort === $kunciKolom && $arah === "ASC") ? "DESC" : "ASC";
-    $param = array_merge($paramDasar, [
-        "sort" => $kunciKolom,
-        "arah" => $arahBaru,
-        "hal" => 1,
-    ]);
-    return "?" . http_build_query($param);
-};
-
 ?>
     <section class="data-card">
 
@@ -174,7 +163,12 @@ $buatTautanSort = function(string $kunciKolom) use ($sort, $arah, $paramDasar): 
                             : ("Klik untuk mengurutkan berdasarkan " . $labelKolom);
                         ?>
                         <th class="<?= $kelasTh; ?>">
-                            <a href="<?= htmlspecialchars($buatTautanSort($kunciKolom)); ?>" class="th-sort-link" title="<?= htmlspecialchars($judulTooltip); ?>">
+                            <button
+                                type="button"
+                                class="th-sort-btn"
+                                onclick="urutkanKolomTabel('<?= $kunciKolom; ?>', '<?= ($aktif && $arah === 'ASC') ? 'DESC' : 'ASC'; ?>')"
+                                title="<?= htmlspecialchars($judulTooltip); ?>"
+                            >
                                 <span><?= htmlspecialchars($labelKolom); ?></span>
                                 <span class="th-sort-indicator" aria-hidden="true">
                                     <?php if ($aktif): ?>
@@ -183,7 +177,7 @@ $buatTautanSort = function(string $kunciKolom) use ($sort, $arah, $paramDasar): 
                                         ⇅
                                     <?php endif; ?>
                                 </span>
-                            </a>
+                            </button>
                         </th>
                     <?php endforeach; ?>
                     <?php if ($bolehAksi): ?>
@@ -363,5 +357,33 @@ $buatTautanSort = function(string $kunciKolom) use ($sort, $arah, $paramDasar): 
                 </div>
             </div>
         <?php endif; ?>
+
+        <script>
+            function urutkanKolomTabel(kunciKolom, arahBaru) {
+                const form = document.querySelector('.search-form');
+                if (!form) return;
+                let inputSort = form.querySelector('select[name="sort"], input[name="sort"]');
+                let inputArah = form.querySelector('input[name="arah"], select[name="arah"]');
+                if (inputSort) {
+                    inputSort.value = kunciKolom;
+                } else {
+                    const el = document.createElement('input');
+                    el.type = 'hidden';
+                    el.name = 'sort';
+                    el.value = kunciKolom;
+                    form.appendChild(el);
+                }
+                if (inputArah) {
+                    inputArah.value = arahBaru;
+                } else {
+                    const el = document.createElement('input');
+                    el.type = 'hidden';
+                    el.name = 'arah';
+                    el.value = arahBaru;
+                    form.appendChild(el);
+                }
+                form.submit();
+            }
+        </script>
 
     </section>

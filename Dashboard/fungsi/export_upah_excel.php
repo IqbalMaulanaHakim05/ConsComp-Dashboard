@@ -109,7 +109,7 @@ if (roleOperasional()) {
 }
 if ($cari !== "") {
     $safe = mysqli_real_escape_string($conn, $cari);
-    $where[] = "(k.employee_name LIKE '%$safe%' OR k.emp_id LIKE '%$safe%')";
+    $where[] = "k.employee_name LIKE '%$safe%'";
 }
 if ($department > 0) {
     $where[] = "k.department_id = $department";
