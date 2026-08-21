@@ -414,6 +414,18 @@ require __DIR__ . "/partials/atas.php";
 
         <div class="form-body replacement-form-body">
             <div class="form-group">
+                <label for="cuti-pengganti-department">Departemen</label>
+                <select id="cuti-pengganti-department" disabled>
+                    <option value="">Pilih departemen</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cuti-pengganti-position">Posisi</label>
+                <select id="cuti-pengganti-position" disabled>
+                    <option value="">Pilih departemen terlebih dahulu</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="cuti-pengganti">Karyawan Pengganti</label>
                 <select id="cuti-pengganti" name="karyawan_pengganti_id" data-selected="<?= (int) $form["karyawan_pengganti_id"]; ?>" required disabled>
                     <option value="">Pilih departemen dan karyawan terlebih dahulu</option>
@@ -422,7 +434,7 @@ require __DIR__ . "/partials/atas.php";
                 <p class="field-note">Pilihan hanya menampilkan karyawan lain dari departemen yang sama.</p>
             </div>
 
-            <button class="btn btn-success" type="submit">Simpan Izin Cuti</button>
+            <button class="btn btn-success replacement-submit" type="submit">Simpan Izin Cuti</button>
         </div>
     </section>
 </form>
@@ -537,6 +549,8 @@ require __DIR__ . "/partials/atas.php";
     const position = document.getElementById("cuti-position");
     const employee = document.getElementById("cuti-karyawan");
     const replacement = document.getElementById("cuti-pengganti");
+    const replacementDepartment = document.getElementById("cuti-pengganti-department");
+    const replacementPosition = document.getElementById("cuti-pengganti-position");
     const replacementInfo = document.getElementById("cuti-pengganti-info");
     const startDate = document.getElementById("cuti-tanggal-mulai");
     const endDate = document.getElementById("cuti-tanggal-selesai");
@@ -601,9 +615,24 @@ require __DIR__ . "/partials/atas.php";
 
     const updateReplacements = (restoreSelection = false) => {
         const selectedId = restoreSelection ? replacement.dataset.selected : "";
+        const selectedReplacementPosition = replacementPosition.value;
         replacement.replaceChildren();
         replacementInfo.hidden = true;
         replacementInfo.replaceChildren();
+        replacementDepartment.replaceChildren(createOption("", "Pilih departemen"));
+        replacementPosition.replaceChildren(createOption("", "Pilih departemen terlebih dahulu"));
+        replacementDepartment.disabled = !department.value;
+        replacementPosition.disabled = true;
+        if (department.value) {
+            replacementDepartment.append(createOption(department.value, department.options[department.selectedIndex].text));
+            replacementDepartment.value = department.value;
+            replacementPosition.replaceChildren(createOption("", "Posisi karyawan pengganti"));
+            (positionsByDepartment[department.value] || []).forEach(item => replacementPosition.append(createOption(item, item)));
+            replacementPosition.disabled = false;
+            if ((positionsByDepartment[department.value] || []).includes(selectedReplacementPosition)) {
+                replacementPosition.value = selectedReplacementPosition;
+            }
+        }
 
         if (!department.value || !employee.value) {
             replacement.append(createOption("", "Pilih departemen dan karyawan terlebih dahulu"));
@@ -613,7 +642,9 @@ require __DIR__ . "/partials/atas.php";
         }
 
         const matching = employees.filter(item =>
-            String(item.department_id) === department.value && String(item.id) !== employee.value
+            String(item.department_id) === department.value
+            && (!replacementPosition.value || item.posisi === replacementPosition.value)
+            && String(item.id) !== employee.value
         );
         replacement.append(createOption("", matching.length ? "Pilih karyawan pengganti" : "Tidak ada karyawan pengganti"));
         matching.forEach(item => replacement.append(createOption(item.id, `${item.emp_id} - ${item.nama}`)));
@@ -629,6 +660,7 @@ require __DIR__ . "/partials/atas.php";
         replacementInfo.replaceChildren();
         replacementInfo.hidden = !selected;
         if (!selected) return;
+        replacementPosition.value = selected.posisi || "";
         const positionInfo = document.createElement("span");
         positionInfo.textContent = `Posisi: ${selected.posisi || "-"}`;
         const departmentInfo = document.createElement("span");
@@ -710,6 +742,7 @@ require __DIR__ . "/partials/atas.php";
     position.addEventListener("change", () => updateEmployees(false));
     employee.addEventListener("change", () => updateReplacements(false));
     replacement.addEventListener("change", renderReplacementInfo);
+    replacementPosition.addEventListener("change", () => updateReplacements(false));
     startDate.addEventListener("change", updateDuration);
     endDate.addEventListener("change", updateDuration);
     leaveType.addEventListener("change", updateDuration);
