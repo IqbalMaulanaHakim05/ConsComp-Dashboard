@@ -72,7 +72,7 @@ foreach ($indikator as $kolom => $konfigurasi) {
 $rataRata = rataRataPenilaianPerforma($nilaiRataRata);
 
 $judulHalaman = 'Penilaian Performa';
-$subjudulHalaman = 'Penilaian terstruktur tanpa mengubah skor performa manual.';
+$subjudulHalaman = 'Nilai rata-rata indikator akan menjadi skor performa karyawan.';
 $halamanAktif = 'penilaian-performa';
 require __DIR__ . '/partials/atas.php';
 ?>
@@ -124,10 +124,10 @@ require __DIR__ . '/partials/atas.php';
             <?php endforeach; ?>
         </div>
 
-        <!-- <aside class="performance-note">
+        <aside class="performance-note">
             <strong>Catatan</strong>
-            <p>Nilai pada halaman ini berdiri sendiri dan tidak mengubah kolom Skor Performa manual pada data karyawan.</p>
-        </aside> -->
+            <p>Rata-rata indikator yang diisi akan otomatis memperbarui kolom Performa pada tabel karyawan.</p>
+        </aside>
 
         <div class="performance-actions">
             <a class="btn btn-secondary" href="karyawan.php">Kembali</a>

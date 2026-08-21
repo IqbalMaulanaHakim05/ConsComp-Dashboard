@@ -113,6 +113,12 @@ function simpanPenilaianPerformaKaryawan(mysqli $conn, int $karyawanId, array $n
     $kualitas = $nilai['kualitas'];
     $ketepatanWaktu = $nilai['ketepatan_waktu'];
     $efisiensi = $nilai['efisiensi'];
+    $rataRata = rataRataPenilaianPerforma($nilai);
+    // Kolom Performa pada tabel karyawan menyimpan rata-rata indikator.
+    // Dibulatkan ke bilangan terdekat agar konsisten dengan tampilan tabel.
+    $skorPerforma = $rataRata === null ? null : (int) round($rataRata);
+
+    mysqli_begin_transaction($conn);
 
     $stmt = mysqli_prepare(
         $conn,
@@ -128,6 +134,7 @@ function simpanPenilaianPerformaKaryawan(mysqli $conn, int $karyawanId, array $n
             updated_at = CURRENT_TIMESTAMP"
     );
     if (!$stmt) {
+        mysqli_rollback($conn);
         return false;
     }
     mysqli_stmt_bind_param(
@@ -140,8 +147,24 @@ function simpanPenilaianPerformaKaryawan(mysqli $conn, int $karyawanId, array $n
         $efisiensi,
         $penilaiId
     );
-    mysqli_stmt_execute($stmt);
-    $berhasil = mysqli_stmt_affected_rows($stmt) >= 0;
+    $berhasil = mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
+
+    if ($berhasil) {
+        $update = mysqli_prepare($conn, "UPDATE karyawan SET performance_score = NULLIF(?, 0) WHERE id = ?");
+        if (!$update) {
+            $berhasil = false;
+        } else {
+            mysqli_stmt_bind_param($update, 'ii', $skorPerforma, $karyawanId);
+            $berhasil = mysqli_stmt_execute($update);
+            mysqli_stmt_close($update);
+        }
+    }
+
+    if ($berhasil) {
+        mysqli_commit($conn);
+    } else {
+        mysqli_rollback($conn);
+    }
     return $berhasil;
 }
