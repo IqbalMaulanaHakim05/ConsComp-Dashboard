@@ -69,26 +69,12 @@ $daftarKolomSort = [
 
                 <input type="hidden" name="filter" value="nama">
 
-                <div class="sort-toggle-wrap">
-                    <select name="sort" onchange="this.form.submit()" title="Kolom yang diurutkan">
-                        <?php foreach ($daftarKolomSort as $nilaiSort=>$labelSort): ?>
-                            <option value="<?= $nilaiSort; ?>" <?= $sort === $nilaiSort ? "selected" : ""; ?>>Urut: <?= $labelSort; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-
-                    <input type="hidden" name="arah" id="sortArahInput" value="<?= htmlspecialchars($arah); ?>">
-
-                    <button
-                        type="button"
-                        class="btn-sort-toggle"
-                        onclick="var inp = this.form.querySelector('#sortArahInput'); inp.value = (inp.value === 'ASC' ? 'DESC' : 'ASC'); this.form.submit();"
-                        title="Urutan saat ini: <?= $arah === 'DESC' ? 'Z–A (Turun)' : 'A–Z (Naik)'; ?>. Klik untuk toggle arah urutan."
-                        aria-label="Toggle arah urutan"
-                    >
-                        <span class="sort-toggle-icon" aria-hidden="true"><?= $arah === 'DESC' ? '↓' : '↑'; ?></span>
-                        <span class="sort-toggle-text"><?= $arah === 'DESC' ? 'Turun (Z–A)' : 'Naik (A–Z)'; ?></span>
-                    </button>
-                </div>
+                <?php if ($sort !== "emp_id"): ?>
+                    <input type="hidden" name="sort" value="<?= htmlspecialchars($sort); ?>">
+                <?php endif; ?>
+                <?php if ($arah !== "ASC"): ?>
+                    <input type="hidden" name="arah" value="<?= htmlspecialchars($arah); ?>">
+                <?php endif; ?>
 
                 <button
                     type="submit"

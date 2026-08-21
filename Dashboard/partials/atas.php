@@ -50,11 +50,11 @@ $cssPerHalaman = [
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
 $kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
 $versiCssHalaman = match ($halamanAktif) {
-    "upah" => "20260820-upah-pdf-link3",
+    "upah" => "20260821-upah-sort-btn2",
     "lembur" => "20260818-lembur-department-flow1",
     "izin-karyawan", "izin-cuti" => "20260820-izin-export1",
     "master-data" => "20260820-master-reset-btn2",
-    "karyawan" => "20260811-karyawan-columns1",
+    "karyawan" => "20260821-karyawan-sort-btn2",
     "penilaian-performa" => "20260821-performance-font-size",
     "dashboard" => "20260811-dashboard-columns5",
     default => "20260811-layout8",
@@ -143,7 +143,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260820-hidden-fix1">
+    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260821-sort-btn-fix2">
     <?php if ($cssHalamanAktif !== ""): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= htmlspecialchars($versiCssHalaman); ?>">
     <?php endif; ?>

@@ -1603,28 +1603,37 @@ tbody tr:hover {
     padding: 0 !important;
     user-select: none;
     transition: background-color 0.2s ease;
+    vertical-align: middle;
 }
 
+button.th-sort-btn,
 .th-sort-btn,
 .th-sort-link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 12px 14px;
-    color: inherit;
-    text-decoration: none;
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: 700;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    outline: none;
-    box-sizing: border-box;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 12px 10px !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: inherit !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    text-align: left !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
 }
 
 .th-sort-indicator {
@@ -1632,74 +1641,56 @@ tbody tr:hover {
     align-items: center;
     justify-content: center;
     font-size: 11px;
-    opacity: 0.35;
+    opacity: 0.45;
     transition: all 0.2s ease;
 }
 
 .th-sortable:hover {
-    background-color: #e2e8f0;
+    background-color: #1e293b !important;
 }
 
 .th-sortable:hover .th-sort-indicator {
-    opacity: 0.8;
+    opacity: 0.9;
     transform: scale(1.15);
 }
 
 .th-sortable.is-active.is-asc {
-    background-color: #eff6ff !important;
-    border-bottom: 2.5px solid #2563eb !important;
+    background-color: #1e293b !important;
+    border-bottom: 2.5px solid #38bdf8 !important;
 }
 
+.th-sortable.is-active.is-asc button.th-sort-btn,
 .th-sortable.is-active.is-asc .th-sort-btn,
 .th-sortable.is-active.is-asc .th-sort-link {
-    color: #1d4ed8;
+    color: #ffffff !important;
 }
 
 .th-sortable.is-active.is-asc .th-sort-indicator {
     opacity: 1;
-    color: #2563eb;
+    color: #38bdf8;
     font-weight: 900;
 }
 
 .th-sortable.is-active.is-desc {
-    background-color: #faf5ff !important;
-    border-bottom: 2.5px solid #9333ea !important;
+    background-color: #1e293b !important;
+    border-bottom: 2.5px solid #c084fc !important;
 }
 
+.th-sortable.is-active.is-desc button.th-sort-btn,
 .th-sortable.is-active.is-desc .th-sort-btn,
 .th-sortable.is-active.is-desc .th-sort-link {
-    color: #7e22ce;
+    color: #ffffff !important;
 }
 
 .th-sortable.is-active.is-desc .th-sort-indicator {
     opacity: 1;
-    color: #9333ea;
+    color: #c084fc;
     font-weight: 900;
 }
 
 /* Dark Mode Theme */
-:root[data-theme="dark"] .btn-sort-toggle {
-    background-color: #1e293b;
-    border-color: #334155;
-    color: #e2e8f0;
-}
-
-:root[data-theme="dark"] .btn-sort-toggle:hover {
-    background-color: #334155;
-    border-color: #475569;
-    color: #ffffff;
-}
-
-:root[data-theme="dark"] .btn-sort-toggle .sort-toggle-icon {
-    color: #94a3b8;
-}
-
-:root[data-theme="dark"] .btn-sort-toggle:hover .sort-toggle-icon {
-    color: #f8fafc;
-}
-
 :root[data-theme="dark"] .th-sortable:hover {
-    background-color: #334155;
+    background-color: #334155 !important;
 }
 
 :root[data-theme="dark"] .th-sortable.is-active.is-asc {
@@ -1707,9 +1698,10 @@ tbody tr:hover {
     border-bottom-color: #60a5fa !important;
 }
 
+:root[data-theme="dark"] .th-sortable.is-active.is-asc button.th-sort-btn,
 :root[data-theme="dark"] .th-sortable.is-active.is-asc .th-sort-btn,
 :root[data-theme="dark"] .th-sortable.is-active.is-asc .th-sort-link {
-    color: #93c5fd;
+    color: #ffffff !important;
 }
 
 :root[data-theme="dark"] .th-sortable.is-active.is-asc .th-sort-indicator {
@@ -1721,9 +1713,10 @@ tbody tr:hover {
     border-bottom-color: #c084fc !important;
 }
 
+:root[data-theme="dark"] .th-sortable.is-active.is-desc button.th-sort-btn,
 :root[data-theme="dark"] .th-sortable.is-active.is-desc .th-sort-btn,
 :root[data-theme="dark"] .th-sortable.is-active.is-desc .th-sort-link {
-    color: #d8b4fe;
+    color: #ffffff !important;
 }
 
 :root[data-theme="dark"] .th-sortable.is-active.is-desc .th-sort-indicator {
