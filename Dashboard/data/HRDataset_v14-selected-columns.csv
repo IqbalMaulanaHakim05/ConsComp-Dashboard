@@ -1,9 +1,8 @@
 ﻿Employee_Name,EmpID,Position,Department,Salary,Sex,MaritalDesc,DateofHire,EmploymentStatus,PerformanceScore
-"Andi Pratama",EMP001,Admin,FINANCE,30000000.00,F,,2018-01-01,Kontrak,72
-"Budi Pratama",EMP002,"Manager Keuangan",FINANCE,15250000.00,M,"Belum Menikah",2019-02-02,Aktif,79
-"Citra Pratama",EMP003,"Staff Keuangan",FINANCE,6500000.00,F,"Belum Menikah",2020-03-03,Aktif,86
+"Andi Pratama",EMP001,Admin,FINANCE,30000000.00,F,,2018-01-01,Kontrak,80
+"Budi Pratama",EMP002,"Manager Keuangan",FINANCE,15250000.00,M,,2019-02-02,Aktif,79
+"Citra Pratama",EMP003,"Staff Keuangan",FINANCE,6500000.00,F,,2020-03-03,Aktif,86
 "Dedi Pratama",EMP004,"Staff Keuangan",FINANCE,6750000.00,M,Menikah,2021-04-04,Aktif,93
-"Eka Pratama",EMP005,"Staff Keuangan",FINANCE,6000000.00,F,"Belum Menikah",2022-05-05,Aktif,73
 "Fajar Pratama",EMP006,"Staff Keuangan",FINANCE,6250000.00,M,"Belum Menikah",2023-06-06,Aktif,80
 "Hendra Pratama",EMP008,Admin,FINANCE,6750000.00,F,"Belum Menikah",2025-08-08,Aktif,94
 "Indah Pratama",EMP009,Admin,FINANCE,6000000.00,F,"Belum Menikah",2026-09-09,Aktif,74
@@ -217,5 +216,3 @@
 "Rizky Ramadhan",EMP218,"Supervisor Mekanik HEM","OPERATIONAL & COMMERCIAL",9750000.00,F,"Belum Menikah",2019-02-02,Aktif,79
 "Sari Ramadhan",EMP219,"Leader FABA","OPERATIONAL & COMMERCIAL",8500000.00,M,"Belum Menikah",2020-03-03,Aktif,86
 "Taufik Ramadhan",EMP220,"Leader FABA","OPERATIONAL & COMMERCIAL",8750000.00,M,Single,2021-04-04,Aktif,93
-a,EMP221,Driver,HRGA,12.00,M,,2026-08-19,Kontrak,12
-b,EMP222,Pengadaan,FINANCE,11.00,M,,2026-08-19,Nonaktif,1

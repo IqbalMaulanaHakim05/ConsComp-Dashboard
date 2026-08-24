@@ -277,7 +277,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         catatAktivitas($conn, "Percobaan mengubah departemen atau posisi melalui formulir edit umum pada karyawan ID " . $id . ".");
     } elseif (
         $employeeName === ""
-        || $nik === ""
         || $form["salary"] === ""
         || $gender === ""
         || $employmentStatus === ""
@@ -285,7 +284,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $pesan = "Semua kolom wajib diisi.";
     } elseif ($pesanPerforma !== "") {
         $pesan = $pesanPerforma;
-    } elseif (nikKaryawanSudahDigunakan($conn, $nik, $id)) {
+    } elseif ($nik !== "" && nikKaryawanSudahDigunakan($conn, $nik, $id)) {
         $pesan = "NIK sudah digunakan oleh karyawan lain. Gunakan NIK yang berbeda.";
     } elseif ($salary < 0) {
         $pesan = "Gaji tidak boleh bernilai negatif.";
@@ -313,7 +312,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($pesan === "") {
             $sql = "UPDATE karyawan SET
                         employee_name = ?,
-                        nik = ?, alamat = ?, biografi = ?, keahlian = ?, riwayat_pekerjaan = ?, tanggal_riwayat_pekerjaan = ?, riwayat_pendidikan = ?, tanggal_riwayat_pendidikan = ?, tanggal_lahir = ?, tanggal_mcu_terakhir = ?, agama = ?, marital_status = ?, kontak = ?, email = ?,
+                        nik = NULLIF(?, ''), alamat = ?, biografi = ?, keahlian = ?, riwayat_pekerjaan = ?, tanggal_riwayat_pekerjaan = ?, riwayat_pendidikan = ?, tanggal_riwayat_pendidikan = ?, tanggal_lahir = ?, tanggal_mcu_terakhir = ?, agama = ?, marital_status = ?, kontak = ?, email = ?,
                         salary = ?,
                         gender = ?,
                         employment_status = ?,
@@ -472,7 +471,7 @@ require __DIR__ . "/../partials/atas.php";
                         >
                     </div>
 
-                    <div class="form-group"><label for="nik">NIK <span class="required">*</span></label><input type="text" id="nik" name="nik" value="<?= htmlspecialchars($form["nik"]); ?>" maxlength="50" required><p class="field-note">Wajib diisi dan tidak boleh sama dengan NIK karyawan lain.</p></div>
+                    <div class="form-group"><label for="nik">NIK</label><input type="text" id="nik" name="nik" value="<?= htmlspecialchars($form["nik"]); ?>" maxlength="50"><p class="field-note">Data lama boleh belum memiliki NIK. Jika diisi, NIK tidak boleh sama dengan karyawan lain.</p></div>
                     <div class="form-group"><label for="tanggal_lahir">Tanggal Lahir</label><input type="date" id="tanggal_lahir" name="tanggal_lahir" value="<?= htmlspecialchars($form["tanggal_lahir"]); ?>"></div>
                     <div class="form-group"><label for="tanggal_mcu_terakhir">Tanggal MCU Terakhir</label><input type="date" id="tanggal_mcu_terakhir" name="tanggal_mcu_terakhir" value="<?= htmlspecialchars($form["tanggal_mcu_terakhir"]); ?>"></div>
                     <div class="form-group"><label for="agama">Agama</label><select id="agama" name="agama"><option value="">Pilih agama</option><?php foreach ($masterAgama as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= $form["agama"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select></div>

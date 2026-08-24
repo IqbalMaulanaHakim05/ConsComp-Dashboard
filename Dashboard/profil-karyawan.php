@@ -149,7 +149,7 @@ require __DIR__ . "/partials/atas.php";
                         $type = str_starts_with($field, "tanggal_") ? "date" : ($field === "email" ? "email" : ($field === "salary" || $field === "performance_score" ? "number" : "text"));
                     ?>
                         <div class="form-group">
-                            <label for="profile_<?= $field; ?>"><?= $label; ?><?= $field === "nik" ? ' <span class="required">*</span>' : ""; ?></label>
+                            <label for="profile_<?= $field; ?>"><?= $label; ?></label>
                             <?php if ($field === "employment_status" || $field === "agama"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>" <?= $field === "agama" ? "" : "required"; ?>><option value="">Pilih</option><?php foreach (($field === "employment_status" ? $masterStatus : $masterAgama) as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                             <?php elseif ($field === "alamat" || $field === "biografi" || $field === "keahlian"): ?>
@@ -159,7 +159,7 @@ require __DIR__ . "/partials/atas.php";
                             <?php elseif ($field === "marital_status"): ?>
                                 <select id="profile_<?= $field; ?>" name="<?= $field; ?>"><option value="">Pilih status</option><option <?= ($karyawan[$field] ?? "") === "Single" ? "selected" : ""; ?>>Single</option><option <?= ($karyawan[$field] ?? "") === "Married" ? "selected" : ""; ?>>Married</option></select>
                             <?php else: ?>
-                                <input id="profile_<?= $field; ?>" type="<?= $type; ?>" name="<?= $field; ?>" value="<?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?>" <?= in_array($field, ["employee_name", "emp_id", "nik", "salary", "gender", "employment_status"], true) ? "required" : ""; ?> <?= $field === "performance_score" ? 'min="0" max="100" step="1"' : ""; ?>>
+                                <input id="profile_<?= $field; ?>" type="<?= $type; ?>" name="<?= $field; ?>" value="<?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?>" <?= in_array($field, ["employee_name", "emp_id", "salary", "gender", "employment_status"], true) ? "required" : ""; ?> <?= $field === "performance_score" ? 'min="0" max="100" step="1"' : ""; ?>>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
@@ -602,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const labels = {
         employee_name:'Nama Karyawan', emp_id:'ID Karyawan', nik:'NIK', alamat:'Alamat', tanggal_lahir:'Tanggal Lahir', tanggal_mcu_terakhir:'Tanggal MCU Terakhir', riwayat_pekerjaan:'Riwayat Pekerjaan', tanggal_riwayat_pekerjaan:'Tanggal Riwayat Pekerjaan', riwayat_pendidikan:'Riwayat Pendidikan', tanggal_riwayat_pendidikan:'Tanggal Riwayat Pendidikan', agama:'Agama',
         marital_status:'Status Kawin', kontak:'Kontak', email:'Email', salary:'Gaji',
-        gender:'Jenis Kelamin', employment_status:'Status Kerja', performance_score:'Skor Performa', biografi:'Biodata', keahlian:'Keahlian'
+        gender:'Jenis Kelamin', employment_status:'Status Kerja', performance_score:'Skor Performa', biografi:'Biografi', keahlian:'Keahlian'
     };
     const detailRows = [...document.querySelectorAll('.profile-details > div')];
     const actionBox = document.querySelector('.profile-actions');
@@ -612,13 +612,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!row || !source) return;
         const input = source.cloneNode(true);
         input.removeAttribute('id');
+        input.setAttribute('form', sourceForm.id);
         input.classList.add('profile-inline-input');
         input.value = source.value;
+        source.disabled = true;
         const valueCell = row.querySelector('dd');
         valueCell.replaceChildren(input);
         if (field === 'biografi' || field === 'alamat' || field === 'riwayat_pekerjaan' || field === 'riwayat_pendidikan') input.rows = field === 'biografi' ? 5 : 3;
-        input.addEventListener('input', () => { source.value = input.value; });
-        input.addEventListener('change', () => { source.value = input.value; });
     });
 });
 </script>
