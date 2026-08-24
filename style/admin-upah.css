@@ -86,7 +86,7 @@ html {
     flex: 0 0 auto;
 }
 
-.upah-page .batch-selection-bar {
+.batch-selection-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -95,14 +95,21 @@ html {
     flex-wrap: wrap;
 }
 
-.upah-page .batch-selection-controls {
+.batch-selection-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.batch-selection-controls {
     display: flex;
     flex-direction: column;
     gap: 6px;
     align-items: flex-start;
 }
 
-.upah-page .batch-live-count {
+.batch-live-count {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -111,7 +118,7 @@ html {
     font-weight: 600;
 }
 
-.upah-page .batch-count-badge {
+.batch-count-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -126,30 +133,52 @@ html {
     line-height: 1;
 }
 
-.upah-page .batch-live-count.has-selection .batch-count-badge {
+.batch-live-count.has-selection .batch-count-badge {
     background-color: #dcfce7;
     color: #15803d;
 }
 
-:root[data-theme="dark"] .upah-page .batch-live-count {
+:root[data-theme="dark"] .batch-live-count {
     color: #cbd5e1;
 }
 
-:root[data-theme="dark"] .upah-page .batch-count-badge {
+:root[data-theme="dark"] .batch-count-badge {
     background-color: #334155;
     color: #cbd5e1;
 }
 
-:root[data-theme="dark"] .upah-page .batch-live-count.has-selection .batch-count-badge {
+:root[data-theme="dark"] .batch-live-count.has-selection .batch-count-badge {
     background-color: #14532d;
     color: #bbf7d0;
 }
 
-.upah-page .batch-selection-bar label {
+.batch-selection-bar label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     font-weight: 700;
+}
+
+.batch-name-search {
+    align-items: center;
+    gap: 9px;
+}
+
+.batch-name-search label {
+    color: #475569;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.batch-name-search span {
+    color: #64748b;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+:root[data-theme="dark"] .batch-name-search label,
+:root[data-theme="dark"] .batch-name-search span {
+    color: #cbd5e1;
 }
 
 .upah-page .batch-validation { max-width: 320px; white-space: normal; }
@@ -272,8 +301,20 @@ html {
         grid-template-columns: 1fr;
     }
 
-    .upah-page .batch-selection-bar {
+    .batch-selection-bar {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .batch-name-search {
+        width: 100%;
+    }
+
+    .batch-selection-area {
+        width: 100%;
+    }
+
+    .batch-selection-controls {
+        width: 100%;
     }
 }

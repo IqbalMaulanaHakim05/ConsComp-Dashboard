@@ -299,18 +299,25 @@ require __DIR__ . '/partials/atas.php';
         <input type="hidden" name="department_id" value="<?= $departmentId; ?>">
         <input type="hidden" name="position" value="<?= htmlspecialchars($posisi); ?>">
         <div class="batch-selection-bar">
-            <div class="batch-selection-controls">
-                <div class="batch-live-count" id="batch-live-count">
-                    <span class="batch-count-badge" id="batch-count-number">0</span>
-                    <span class="batch-count-label">karyawan dipilih</span>
+            <div class="batch-selection-area">
+                <div class="batch-name-search search-form">
+                    <label for="batch-employee-search">Cari nama karyawan</label>
+                    <input type="search" id="batch-employee-search" placeholder="Ketik nama karyawan" autocomplete="off">
+                    <span id="batch-name-search-count" aria-live="polite"></span>
                 </div>
-                <label><input type="checkbox" id="pilih-semua-slip"> Pilih semua</label>
+                <div class="batch-selection-controls">
+                    <div class="batch-live-count" id="batch-live-count">
+                        <span class="batch-count-badge" id="batch-count-number">0</span>
+                        <span class="batch-count-label">karyawan dipilih</span>
+                    </div>
+                    <label><input type="checkbox" id="pilih-semua-slip"> Pilih semua</label>
+                </div>
             </div>
             <button class="btn btn-success" type="submit" id="btn-proses-batch">Proses Slip Terpilih</button>
         </div>
         <div class="table-wrapper"><table><thead><tr><th>Pilih</th><th>ID</th><th>Nama</th><th>Posisi</th><th>Departemen</th><th>Revisi Terakhir</th><th>Validasi Upah</th></tr></thead><tbody>
         <?php if ($karyawan === []): ?><tr><td colspan="7" class="empty-data">Tidak ada karyawan sesuai filter.</td></tr><?php endif; ?>
-        <?php foreach ($karyawan as $item): ?><tr>
+        <?php foreach ($karyawan as $item): ?><tr data-employee-name="<?= htmlspecialchars((string) $item['employee_name'], ENT_QUOTES, 'UTF-8'); ?>">
             <td><input class="pilih-slip" type="checkbox" name="karyawan_ids[]" value="<?= (int) $item['id']; ?>"></td>
             <td><?= htmlspecialchars((string) $item['emp_id']); ?></td>
             <td><?= htmlspecialchars((string) $item['employee_name']); ?></td>
@@ -319,6 +326,7 @@ require __DIR__ . '/partials/atas.php';
             <td><?= (int) ($item['versi_terakhir'] ?? 0) > 0 ? 'v' . (int) $item['versi_terakhir'] : '-'; ?></td>
             <td class="batch-validation <?= $item['siap'] ? 'is-ready' : 'is-error'; ?>"><?= htmlspecialchars((string) $item['validasi']); ?></td>
         </tr><?php endforeach; ?>
+        <?php if ($karyawan !== []): ?><tr id="batch-name-no-result" hidden><td colspan="7" class="empty-data">Tidak ada karyawan dengan nama tersebut.</td></tr><?php endif; ?>
         </tbody></table></div>
         <div id="hidden-ids-container"></div>
     </form>
@@ -404,6 +412,10 @@ $queryTanpaRiwayat = htmlspecialchars(http_build_query($paramTanpaRiwayat));
     const container = document.getElementById('hidden-ids-container');
     const countNumber = document.getElementById('batch-count-number');
     const countLiveWrap = document.getElementById('batch-live-count');
+    const nameSearch = document.getElementById('batch-employee-search');
+    const nameSearchCount = document.getElementById('batch-name-search-count');
+    const nameSearchRows = Array.from(document.querySelectorAll('tr[data-employee-name]'));
+    const nameSearchNoResult = document.getElementById('batch-name-no-result');
 
     if (!pilihSemua || !formBatch) return;
 
@@ -416,6 +428,26 @@ $queryTanpaRiwayat = htmlspecialchars(http_build_query($paramTanpaRiwayat));
     const idHalamanIni = <?= json_encode($idHalamanIni, JSON_UNESCAPED_UNICODE); ?>;
     const semuaId = <?= json_encode($semuaId, JSON_UNESCAPED_UNICODE); ?>;
     const hasilBatchDiproses = <?= !empty($hasilBatch) ? 'true' : 'false'; ?>;
+
+    const applyNameSearch = () => {
+        if (!nameSearch) return;
+
+        const query = nameSearch.value.trim().toLocaleLowerCase();
+        let jumlahCocok = 0;
+
+        nameSearchRows.forEach(row => {
+            const cocok = query === '' || row.dataset.employeeName.toLocaleLowerCase().includes(query);
+            row.hidden = !cocok;
+            if (cocok) jumlahCocok++;
+        });
+
+        if (nameSearchNoResult) {
+            nameSearchNoResult.hidden = query === '' || jumlahCocok > 0;
+        }
+        if (nameSearchCount) {
+            nameSearchCount.textContent = query === '' ? '' : `${jumlahCocok} karyawan ditemukan`;
+        }
+    };
 
     if (hasilBatchDiproses) {
         try {
@@ -509,6 +541,11 @@ $queryTanpaRiwayat = htmlspecialchars(http_build_query($paramTanpaRiwayat));
         saveSelected(selectedSet);
         updateUI();
     });
+
+    if (nameSearch) {
+        nameSearch.addEventListener('input', applyNameSearch);
+        applyNameSearch();
+    }
 
     formBatch.addEventListener('submit', function (e) {
         if (selectedSet.size === 0) {
