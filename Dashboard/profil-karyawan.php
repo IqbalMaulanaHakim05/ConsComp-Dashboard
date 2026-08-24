@@ -127,6 +127,7 @@ require __DIR__ . "/partials/atas.php";
         <article class="profile-card profile-inline-edit">
             <h3>Edit Data Karyawan</h3>
             <form id="inline-edit-form" method="POST" action="fungsi/edit.php?id=<?= (int) $karyawan["id"]; ?>" enctype="multipart/form-data" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                 <input type="hidden" name="return_to_profile" value="1">
                 <div class="profile-edit-grid">
                     <?php
@@ -183,7 +184,7 @@ require __DIR__ . "/partials/atas.php";
                 <?php else: ?>
                     <div class="profile-photo profile-photo-empty">Belum ada foto</div>
                 <?php endif; ?>
-                <?php if ($modeEdit && punyaRole("superadmin")): ?>
+                <?php if ($modeEdit && punyaRole("admin", "superadmin")): ?>
                     <div class="profile-photo-edit"><label for="inline_foto_profil">Ganti Foto Profil</label><input id="inline_foto_profil" type="file" name="foto_profil" form="inline-edit-form" accept=".jpg,.jpeg,image/jpeg"><p class="field-note">JPG/JPEG, maksimal 2 MB.</p></div>
                 <?php endif; ?>
             </div>
@@ -270,7 +271,7 @@ require __DIR__ . "/partials/atas.php";
 
         <article class="profile-card profile-documents-card" id="dokumen">
             <h3>Dokumen Pendukung</h3>
-            <?php if ($modeEdit && punyaRole("superadmin")): ?>
+            <?php if ($modeEdit && punyaRole("admin", "superadmin")): ?>
                 <div class="profile-document-edit-grid">
                     <div class="form-group"><label for="inline_file_cv">Ganti CV</label><input id="inline_file_cv" type="file" name="file_cv" form="inline-edit-form" accept=".pdf,application/pdf"><p class="field-note">PDF, maksimal 5 MB.</p></div>
                     <div class="form-group"><label for="inline_file_ijazah">Ganti Ijazah</label><input id="inline_file_ijazah" type="file" name="file_ijazah" form="inline-edit-form" accept=".pdf,application/pdf"><p class="field-note">PDF, maksimal 5 MB.</p></div>

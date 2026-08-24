@@ -54,6 +54,11 @@ $form = [
 
 $adminHrga = rolePengguna() === "admin";
 
+if ($_SERVER["REQUEST_METHOD"] === "POST" && !csrfValid($_POST["csrf_token"] ?? null)) {
+    header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Token keamanan tidak valid."));
+    exit;
+}
+
 if ($_SERVER["REQUEST_METHOD"] !== "POST" && $adminHrga) {
     header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1");
     exit;
@@ -111,16 +116,54 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
         exit;
     }
 
+    $fileCv = $data["file_cv"] ?? null;
+    $fotoProfil = $data["foto_profil"] ?? null;
+    $fileIjazah = $data["file_ijazah"] ?? null;
+    $fileMcu = $data["file_mcu"] ?? null;
+    $fileBaru = [];
+
+    foreach (["foto_profil" => "foto", "file_cv" => "cv", "file_ijazah" => "ijazah", "file_mcu" => "mcu"] as $fieldFile => $jenisFile) {
+        $hasilUnggah = unggahMediaKaryawan($_FILES[$fieldFile] ?? [], $jenisFile, $errorAdmin);
+        if ($hasilUnggah !== null) {
+            $fileBaru[$fieldFile] = $hasilUnggah;
+        }
+        if ($errorAdmin !== "") {
+            break;
+        }
+    }
+
+    if ($errorAdmin !== "") {
+        foreach ($fileBaru as $fieldFile => $namaFileBaru) {
+            $folderFile = match ($fieldFile) {
+                "foto_profil" => "foto",
+                "file_cv" => "cv",
+                "file_ijazah" => "ijazah",
+                default => "mcu",
+            };
+            $pathFileBaru = dirname(__DIR__) . "/uploads/" . $folderFile . "/" . basename($namaFileBaru);
+            if (is_file($pathFileBaru)) {
+                @unlink($pathFileBaru);
+            }
+        }
+        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode($errorAdmin));
+        exit;
+    }
+
+    $fileCv = $fileBaru["file_cv"] ?? $fileCv;
+    $fotoProfil = $fileBaru["foto_profil"] ?? $fotoProfil;
+    $fileIjazah = $fileBaru["file_ijazah"] ?? $fileIjazah;
+    $fileMcu = $fileBaru["file_mcu"] ?? $fileMcu;
+
     mysqli_begin_transaction($conn);
     try {
         $stmtAdmin = mysqli_prepare(
             $conn,
-            "UPDATE karyawan SET alamat = ?, tanggal_lahir = NULLIF(?, ''), agama = NULLIF(?, ''), gender = ?, marital_status = NULLIF(?, ''), kontak = NULLIF(?, ''), email = NULLIF(?, ''), biografi = ?, keahlian = ?, riwayat_pendidikan = ?, tanggal_riwayat_pendidikan = NULLIF(?, ''), riwayat_pekerjaan = ?, tanggal_riwayat_pekerjaan = NULLIF(?, '') WHERE id = ?"
+            "UPDATE karyawan SET alamat = ?, tanggal_lahir = NULLIF(?, ''), agama = NULLIF(?, ''), gender = ?, marital_status = NULLIF(?, ''), kontak = NULLIF(?, ''), email = NULLIF(?, ''), biografi = ?, keahlian = ?, riwayat_pendidikan = ?, tanggal_riwayat_pendidikan = NULLIF(?, ''), riwayat_pekerjaan = ?, tanggal_riwayat_pekerjaan = NULLIF(?, ''), file_cv = ?, foto_profil = ?, file_ijazah = ?, file_mcu = ? WHERE id = ?"
         );
         if (!$stmtAdmin) throw new RuntimeException(mysqli_error($conn));
         mysqli_stmt_bind_param(
             $stmtAdmin,
-            "sssssssssssssi",
+            "sssssssssssssssssi",
             $alamat,
             $tanggalLahir,
             $agama,
@@ -134,6 +177,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
             $tanggalRiwayatPendidikan,
             $riwayatPekerjaan,
             $tanggalRiwayatPekerjaan,
+            $fileCv,
+            $fotoProfil,
+            $fileIjazah,
+            $fileMcu,
             $id
         );
         if (!mysqli_stmt_execute($stmtAdmin)) throw new RuntimeException(mysqli_stmt_error($stmtAdmin));
@@ -168,6 +215,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
         mysqli_commit($conn);
     } catch (Throwable $exception) {
         mysqli_rollback($conn);
+        foreach ($fileBaru as $fieldFile => $namaFileBaru) {
+            $folderFile = match ($fieldFile) {
+                "foto_profil" => "foto",
+                "file_cv" => "cv",
+                "file_ijazah" => "ijazah",
+                default => "mcu",
+            };
+            $pathFileBaru = dirname(__DIR__) . "/uploads/" . $folderFile . "/" . basename($namaFileBaru);
+            if (is_file($pathFileBaru)) {
+                @unlink($pathFileBaru);
+            }
+        }
         error_log("Edit Biodata Admin gagal: " . $exception->getMessage());
         header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Perubahan Biodata dan Informasi gagal disimpan."));
         exit;
@@ -368,6 +427,7 @@ require __DIR__ . "/../partials/atas.php";
             <?php endif; ?>
 
             <form method="POST" autocomplete="off" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="emp_id">

@@ -137,6 +137,7 @@ function fieldRequestEditKaryawanAdminHrga(): array
 function fieldTerlarangEditKaryawanAdminHrga(array $post, array $files, array $dataKaryawan): array
 {
     $fieldDiizinkan = fieldRequestEditKaryawanAdminHrga();
+    $fileDiizinkan = ['foto_profil', 'file_cv', 'file_ijazah', 'file_mcu'];
     $fieldTerlarang = [];
 
     foreach ($post as $field => $nilai) {
@@ -154,7 +155,10 @@ function fieldTerlarangEditKaryawanAdminHrga(array $post, array $files, array $d
     }
 
     foreach ($files as $field => $file) {
-        if ((int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+        if (
+            !in_array((string) $field, $fileDiizinkan, true)
+            && (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE
+        ) {
             $fieldTerlarang[] = (string) $field;
         }
     }
