@@ -4,8 +4,18 @@ require_once __DIR__ . "/auth.php";
 require_once __DIR__ . "/audit.php";
 require_once __DIR__ . "/sinkronisasi.php";
 require_once __DIR__ . "/performa-karyawan.php";
+require_once __DIR__ . "/xlsx-builder.php";
 
 wajibRole("superadmin");
+
+if (isset($_GET['template'])) {
+    unduhSpreadsheetXlsx(
+        'template-data-karyawan-' . date('Y-m-d'),
+        'Data Karyawan',
+        ['ID Karyawan', 'Nama Karyawan', 'Posisi', 'Departemen', 'Gaji', 'Jenis Kelamin', 'Status Pernikahan', 'Tanggal Masuk', 'Status Kerja', 'Skor Performa'],
+        []
+    );
+}
 
 $pesan = "";
 $tipePesan = "error";
@@ -481,6 +491,9 @@ require __DIR__ . "/../partials/atas.php";
                 <div class="form-actions">
                     <a href="<?= htmlspecialchars(URL_DASAR); ?>karyawan.php" class="btn btn-secondary">
                         Batal
+                    </a>
+                    <a href="?template=1" class="btn btn-primary">
+                        Unduh Template Data
                     </a>
                     <button type="submit" class="btn btn-warning">
                         Import dan Ganti Data
