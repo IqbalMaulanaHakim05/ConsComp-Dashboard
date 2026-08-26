@@ -27,6 +27,47 @@
 .lembur-page .data-card { padding: 0; }
 .lembur-page .data-card-header { padding: 20px 24px 14px; }
 .lembur-page .data-card-header h2 { margin: 0; font-size: 20px; }
+
+/* Tabel absensi hanya tiga kolom dan tidak memakai kolom sticky. */
+.absensi-page .main-content > .absensi-import-card,
+.absensi-page .main-content > .data-card {
+    width: 100%; max-width: 1200px; margin-right: auto; margin-left: auto;
+    border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;
+}
+.absensi-page .absensi-import-card { margin-bottom: 24px; }
+.absensi-page .absensi-import-card .form-card-header {
+    padding: 24px 30px 20px; background: linear-gradient(135deg, #f8fafc, #eef4ff); border-bottom: 1px solid #e2e8f0;
+}
+.absensi-page .absensi-import-card .form-card-header h2 { margin: 0; font-size: 22px; }
+.absensi-page .absensi-import-card .form-card-header p { max-width: 760px; margin: 8px 0 0; color: #64748b; line-height: 1.55; }
+.absensi-page .absensi-import-card .form-body { padding: 24px 30px 28px; }
+.absensi-page .absensi-import-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 20px; align-items: end; }
+.absensi-page .absensi-file-field { display: grid; gap: 8px; margin: 0; color: #334155; font-weight: 700; }
+.absensi-page .absensi-file-field input[type="file"] { width: 100%; min-height: 48px; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #ffffff; color: #334155; font: inherit; font-weight: 500; }
+.absensi-page .absensi-import-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.absensi-page .absensi-import-actions .btn { min-height: 44px; padding: 10px 18px; white-space: nowrap; }
+.absensi-page .absensi-table-wrapper { padding: 0 20px 20px; }
+.absensi-page .absensi-table-wrapper table { min-width: 720px; table-layout: auto; }
+.absensi-page .absensi-table-wrapper th,
+.absensi-page .absensi-table-wrapper td { position: static !important; right: auto !important; left: auto !important; z-index: auto !important; padding: 14px 16px; }
+.absensi-page .absensi-table-wrapper td:last-child,
+.absensi-page .absensi-table-wrapper tbody tr:nth-child(even) td:last-child,
+.absensi-page .absensi-table-wrapper tbody tr:hover td:last-child { background-color: inherit; }
+
+:root[data-theme="dark"] .absensi-page .main-content > .absensi-import-card,
+:root[data-theme="dark"] .absensi-page .main-content > .data-card { border-color: #334155; }
+:root[data-theme="dark"] .absensi-page .absensi-import-card .form-card-header { background: linear-gradient(135deg, #1e293b, #172554); border-color: #334155; }
+:root[data-theme="dark"] .absensi-page .absensi-import-card .form-card-header p { color: #94a3b8; }
+:root[data-theme="dark"] .absensi-page .absensi-file-field { color: #e2e8f0; }
+:root[data-theme="dark"] .absensi-page .absensi-file-field input[type="file"] { color: #cbd5e1; background: #0f172a; border-color: #475569; }
+
+@media (max-width: 700px) {
+    .absensi-page .absensi-import-card .form-card-header,
+    .absensi-page .absensi-import-card .form-body { padding-right: 20px; padding-left: 20px; }
+    .absensi-page .absensi-import-form { grid-template-columns: 1fr; }
+    .absensi-page .absensi-import-actions { justify-content: stretch; }
+    .absensi-page .absensi-import-actions .btn { flex: 1; }
+}
 .lembur-page .overtime-note { margin: 6px 0 0; color: #64748b; font-size: 13px; }
 .lembur-page .overtime-notification-action,
 .denda-page .overtime-notification-action { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 0 0 16px; }

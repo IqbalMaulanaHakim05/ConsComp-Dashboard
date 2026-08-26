@@ -56,6 +56,7 @@ $versiCssHalaman = match ($halamanAktif) {
     "upah" => "20260824-batch-name-search-layout3",
     "denda" => "20260826-action-buttons3",
     "lembur" => "20260826-action-buttons3",
+    "absensi" => "20260826-absensi-import-card1",
     "izin-karyawan", "izin-cuti", "izin-sakit" => "20260826-izin-darkmode1",
     "master-data" => "20260820-master-reset-btn2",
     "karyawan" => "20260821-karyawan-sort-btn2",

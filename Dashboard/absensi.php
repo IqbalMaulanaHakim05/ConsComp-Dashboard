@@ -12,16 +12,46 @@ function siapkanTabelAbsensi(mysqli $conn): bool
 {
     return mysqli_query($conn, "CREATE TABLE IF NOT EXISTS absensi_karyawan (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        karyawan_id INT NOT NULL,
+        karyawan_id INT NULL,
+        nama_karyawan VARCHAR(255) NOT NULL,
         jam_fingerprint_masuk DATETIME NOT NULL,
         jam_fingerprint_keluar DATETIME NOT NULL,
         diimpor_oleh INT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY uniq_absensi_fingerprint (karyawan_id, jam_fingerprint_masuk, jam_fingerprint_keluar),
+        UNIQUE KEY uniq_absensi_nama_fingerprint (nama_karyawan, jam_fingerprint_masuk, jam_fingerprint_keluar),
         KEY idx_absensi_karyawan (karyawan_id),
         CONSTRAINT fk_absensi_karyawan FOREIGN KEY (karyawan_id) REFERENCES karyawan(id) ON DELETE CASCADE,
         CONSTRAINT fk_absensi_pengimpor FOREIGN KEY (diimpor_oleh) REFERENCES users(id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4") === true;
+}
+
+function kolomTabelAbsensiAda(mysqli $conn, string $namaKolom): bool
+{
+    $namaKolom = mysqli_real_escape_string($conn, $namaKolom);
+    $hasil = mysqli_query($conn, "SHOW COLUMNS FROM absensi_karyawan LIKE '{$namaKolom}'");
+    return $hasil !== false && mysqli_num_rows($hasil) > 0;
+}
+
+function indeksTabelAbsensiAda(mysqli $conn, string $namaIndeks): bool
+{
+    $namaIndeks = mysqli_real_escape_string($conn, $namaIndeks);
+    $hasil = mysqli_query($conn, "SHOW INDEX FROM absensi_karyawan WHERE Key_name = '{$namaIndeks}'");
+    return $hasil !== false && mysqli_num_rows($hasil) > 0;
+}
+
+function siapkanKolomNamaAbsensi(mysqli $conn): bool
+{
+    if (!kolomTabelAbsensiAda($conn, 'nama_karyawan')
+        && !mysqli_query($conn, 'ALTER TABLE absensi_karyawan ADD COLUMN nama_karyawan VARCHAR(255) NULL AFTER karyawan_id')) {
+        return false;
+    }
+    if (!mysqli_query($conn, 'ALTER TABLE absensi_karyawan MODIFY karyawan_id INT NULL')) return false;
+    mysqli_query($conn, 'UPDATE absensi_karyawan a INNER JOIN karyawan k ON k.id = a.karyawan_id SET a.nama_karyawan = k.employee_name WHERE a.nama_karyawan IS NULL OR a.nama_karyawan = \'\'');
+    if (!indeksTabelAbsensiAda($conn, 'uniq_absensi_nama_fingerprint')
+        && !mysqli_query($conn, 'ALTER TABLE absensi_karyawan ADD UNIQUE KEY uniq_absensi_nama_fingerprint (nama_karyawan, jam_fingerprint_masuk, jam_fingerprint_keluar)')) {
+        return false;
+    }
+    return true;
 }
 
 function normalisasiHeaderAbsensi(string $nilai): string
@@ -97,7 +127,7 @@ function waktuAbsensi(string $nilai): ?string
     return $timestamp === false ? null : date('Y-m-d H:i:s', $timestamp);
 }
 
-if (!siapkanTabelAbsensi($conn)) exit('Tabel absensi tidak dapat disiapkan.');
+if (!siapkanTabelAbsensi($conn) || !siapkanKolomNamaAbsensi($conn)) exit('Tabel absensi tidak dapat disiapkan.');
 $pesan = '';
 $cakupanDepartemen = departmentIdPengguna();
 
@@ -114,27 +144,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'impor')
             if (count($kolom) !== 3) throw new RuntimeException('Header wajib: Nama Karyawan, Jam Fingerprint Masuk, Jam Fingerprint Keluar.');
             $berhasil = 0; $barisKe = 1;
             mysqli_begin_transaction($conn);
-            $cari = mysqli_prepare($conn, 'SELECT id, department_id FROM karyawan WHERE employee_name = ? LIMIT 2');
-            $simpan = mysqli_prepare($conn, 'INSERT IGNORE INTO absensi_karyawan (karyawan_id, jam_fingerprint_masuk, jam_fingerprint_keluar, diimpor_oleh) VALUES (?, ?, ?, ?)');
+            $simpan = mysqli_prepare($conn, 'INSERT IGNORE INTO absensi_karyawan (nama_karyawan, jam_fingerprint_masuk, jam_fingerprint_keluar, diimpor_oleh) VALUES (?, ?, ?, ?)');
             foreach (array_slice($baris, 1) as $row) {
                 $barisKe++; $namaKaryawan = trim((string) ($row[$kolom['nama']] ?? '')); $masuk = waktuAbsensi((string) ($row[$kolom['masuk']] ?? '')); $keluar = waktuAbsensi((string) ($row[$kolom['keluar']] ?? ''));
                 if ($namaKaryawan === '' && $masuk === null && $keluar === null) continue;
                 if ($namaKaryawan === '' || $masuk === null || $keluar === null || $keluar <= $masuk) throw new RuntimeException("Baris {$barisKe} tidak valid. Pastikan nama dan kedua jam fingerprint terisi, dengan jam keluar setelah masuk.");
-                mysqli_stmt_bind_param($cari, 's', $namaKaryawan); mysqli_stmt_execute($cari); $ditemukan = mysqli_stmt_get_result($cari);
-                if (mysqli_num_rows($ditemukan) !== 1) throw new RuntimeException("Baris {$barisKe}: nama karyawan '{$namaKaryawan}' tidak ditemukan atau tidak unik.");
-                $karyawan = mysqli_fetch_assoc($ditemukan);
-                if (roleOperasional() && (int) $karyawan['department_id'] !== (int) $cakupanDepartemen) throw new RuntimeException("Baris {$barisKe}: karyawan berada di luar cakupan departemen Anda.");
-                $karyawanId = (int) $karyawan['id']; $pengimpor = (int) $_SESSION['user']['id']; mysqli_stmt_bind_param($simpan, 'issi', $karyawanId, $masuk, $keluar, $pengimpor); mysqli_stmt_execute($simpan); $berhasil += mysqli_stmt_affected_rows($simpan);
+                $pengimpor = (int) $_SESSION['user']['id']; mysqli_stmt_bind_param($simpan, 'sssi', $namaKaryawan, $masuk, $keluar, $pengimpor); mysqli_stmt_execute($simpan); $berhasil += mysqli_stmt_affected_rows($simpan);
             }
-            mysqli_stmt_close($cari); mysqli_stmt_close($simpan); mysqli_commit($conn);
+            mysqli_stmt_close($simpan); mysqli_commit($conn);
             catatAktivitas($conn, "Mengimpor {$berhasil} data absensi.");
             header('Location: absensi.php?pesan=' . urlencode("{$berhasil} data absensi berhasil diimpor.")); exit;
         } catch (Throwable $e) { mysqli_rollback($conn); $pesan = $e->getMessage(); }
     }
 }
 
-$where = roleOperasional() ? 'k.department_id = ' . (int) $cakupanDepartemen : '1=1';
-$hasil = mysqli_query($conn, "SELECT a.id, k.employee_name, a.jam_fingerprint_masuk, a.jam_fingerprint_keluar FROM absensi_karyawan a INNER JOIN karyawan k ON k.id = a.karyawan_id WHERE {$where} ORDER BY a.jam_fingerprint_masuk DESC, a.id DESC");
+$hasil = mysqli_query($conn, "SELECT a.id, COALESCE(NULLIF(a.nama_karyawan, ''), k.employee_name) AS employee_name, a.jam_fingerprint_masuk, a.jam_fingerprint_keluar FROM absensi_karyawan a LEFT JOIN karyawan k ON k.id = a.karyawan_id ORDER BY a.jam_fingerprint_masuk DESC, a.id DESC");
 if (isset($_GET['export'])) {
     $barisExport = []; while ($row = mysqli_fetch_assoc($hasil)) $barisExport[] = [$row['employee_name'], $row['jam_fingerprint_masuk'], $row['jam_fingerprint_keluar']];
     unduhSpreadsheetXlsx('absensi-' . date('Y-m-d'), 'Absensi', ['Nama Karyawan', 'Jam Fingerprint Masuk', 'Jam Fingerprint Keluar'], $barisExport);
@@ -143,6 +167,6 @@ $judulHalaman = 'Absensi'; $subjudulHalaman = 'Impor dan ekspor data fingerprint
 require __DIR__ . '/partials/atas.php';
 ?>
 <?php if ($pesan !== ''): ?><div class="alert alert-error"><?= htmlspecialchars($pesan); ?></div><?php endif; ?>
-<section class="form-card"><div class="form-card-header"><h2>Impor Absensi</h2><p>Gunakan Excel (.xlsx) atau CSV dengan tiga kolom: Nama Karyawan, Jam Fingerprint Masuk, dan Jam Fingerprint Keluar.</p></div><div class="form-body"><form method="POST" enctype="multipart/form-data" class="form-actions"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="impor"><input type="file" name="file_absensi" accept=".xlsx,.csv" required><button class="btn btn-primary" type="submit">Impor File</button><a class="btn btn-success" href="absensi.php?export=1">Export Excel</a></form></div></section>
-<section class="data-card"><div class="data-card-header"><h2>Data Absensi</h2></div><div class="table-wrapper"><table><thead><tr><th>Nama Karyawan</th><th>Jam Fingerprint Masuk</th><th>Jam Fingerprint Keluar</th></tr></thead><tbody><?php if ($hasil && mysqli_num_rows($hasil) > 0): while ($row = mysqli_fetch_assoc($hasil)): ?><tr><td><?= htmlspecialchars($row['employee_name']); ?></td><td><?= htmlspecialchars($row['jam_fingerprint_masuk']); ?></td><td><?= htmlspecialchars($row['jam_fingerprint_keluar']); ?></td></tr><?php endwhile; else: ?><tr><td colspan="3" class="empty-table">Belum ada data absensi.</td></tr><?php endif; ?></tbody></table></div></section>
+<section class="form-card absensi-import-card"><div class="form-card-header"><h2>Impor Absensi</h2><p>Gunakan Excel (.xlsx) atau CSV dengan tiga kolom: Nama Karyawan, Jam Fingerprint Masuk, dan Jam Fingerprint Keluar. Nama dari file dapat diimpor langsung tanpa harus terdaftar di Data Karyawan.</p></div><div class="form-body"><form method="POST" enctype="multipart/form-data" class="absensi-import-form"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="impor"><label class="absensi-file-field"><span>Pilih file absensi</span><input type="file" name="file_absensi" accept=".xlsx,.csv" required></label><div class="absensi-import-actions"><button class="btn btn-primary" type="submit">Impor File</button><a class="btn btn-success" href="absensi.php?export=1">Export Excel</a></div></form></div></section>
+<section class="data-card"><div class="data-card-header"><h2>Data Absensi</h2></div><div class="table-wrapper no-actions absensi-table-wrapper"><table><thead><tr><th>Nama Karyawan</th><th>Jam Fingerprint Masuk</th><th>Jam Fingerprint Keluar</th></tr></thead><tbody><?php if ($hasil && mysqli_num_rows($hasil) > 0): while ($row = mysqli_fetch_assoc($hasil)): ?><tr><td><?= htmlspecialchars($row['employee_name']); ?></td><td><?= htmlspecialchars($row['jam_fingerprint_masuk']); ?></td><td><?= htmlspecialchars($row['jam_fingerprint_keluar']); ?></td></tr><?php endwhile; else: ?><tr><td colspan="3" class="empty-table">Belum ada data absensi.</td></tr><?php endif; ?></tbody></table></div></section>
 <?php require __DIR__ . '/partials/bawah.php'; ?>
