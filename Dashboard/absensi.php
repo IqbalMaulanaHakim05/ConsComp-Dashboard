@@ -130,9 +130,11 @@ function waktuAbsensi(string $nilai): ?string
 if (!siapkanTabelAbsensi($conn) || !siapkanKolomNamaAbsensi($conn)) exit('Tabel absensi tidak dapat disiapkan.');
 $pesan = '';
 $cakupanDepartemen = departmentIdPengguna();
+$bolehKelolaAbsensi = in_array(rolePengguna(), ['admin', 'superadmin'], true);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'impor') {
-    if (!csrfValid($_POST['csrf_token'] ?? null)) $pesan = 'Token keamanan tidak valid.';
+    if (!$bolehKelolaAbsensi) $pesan = 'Hanya Admin dan Superadmin yang dapat mengimpor data absensi.';
+    elseif (!csrfValid($_POST['csrf_token'] ?? null)) $pesan = 'Token keamanan tidak valid.';
     elseif (!isset($_FILES['file_absensi']) || ($_FILES['file_absensi']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) $pesan = 'Pilih file Excel atau CSV yang valid.';
     else {
         try {
@@ -159,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'impor')
 }
 
 $hasil = mysqli_query($conn, "SELECT a.id, COALESCE(NULLIF(a.nama_karyawan, ''), k.employee_name) AS employee_name, a.jam_fingerprint_masuk, a.jam_fingerprint_keluar FROM absensi_karyawan a LEFT JOIN karyawan k ON k.id = a.karyawan_id ORDER BY a.jam_fingerprint_masuk DESC, a.id DESC");
-if (isset($_GET['export'])) {
+if (isset($_GET['export']) && $bolehKelolaAbsensi) {
     $barisExport = []; while ($row = mysqli_fetch_assoc($hasil)) $barisExport[] = [$row['employee_name'], $row['jam_fingerprint_masuk'], $row['jam_fingerprint_keluar']];
     unduhSpreadsheetXlsx('absensi-' . date('Y-m-d'), 'Absensi', ['Nama Karyawan', 'Jam Fingerprint Masuk', 'Jam Fingerprint Keluar'], $barisExport);
 }
@@ -167,6 +169,6 @@ $judulHalaman = 'Absensi'; $subjudulHalaman = 'Impor dan ekspor data fingerprint
 require __DIR__ . '/partials/atas.php';
 ?>
 <?php if ($pesan !== ''): ?><div class="alert alert-error"><?= htmlspecialchars($pesan); ?></div><?php endif; ?>
-<section class="form-card absensi-import-card"><div class="form-card-header"><h2>Impor Absensi</h2><p>Gunakan Excel (.xlsx) atau CSV dengan tiga kolom: Nama Karyawan, Jam Fingerprint Masuk, dan Jam Fingerprint Keluar. Nama dari file dapat diimpor langsung tanpa harus terdaftar di Data Karyawan.</p></div><div class="form-body"><form method="POST" enctype="multipart/form-data" class="absensi-import-form"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="impor"><label class="absensi-file-field"><span>Pilih file absensi</span><input type="file" name="file_absensi" accept=".xlsx,.csv" required></label><div class="absensi-import-actions"><button class="btn btn-primary" type="submit">Impor File</button><a class="btn btn-success" href="absensi.php?export=1">Export Excel</a></div></form></div></section>
+<?php if ($bolehKelolaAbsensi): ?><section class="form-card absensi-import-card"><div class="form-card-header"><h2>Impor Absensi</h2><p>Gunakan Excel (.xlsx) atau CSV dengan tiga kolom: Nama Karyawan, Jam Fingerprint Masuk, dan Jam Fingerprint Keluar. Nama dari file dapat diimpor langsung tanpa harus terdaftar di Data Karyawan.</p></div><div class="form-body"><form method="POST" enctype="multipart/form-data" class="absensi-import-form"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="impor"><label class="absensi-file-field"><span>Pilih file absensi</span><input type="file" name="file_absensi" accept=".xlsx,.csv" required></label><div class="absensi-import-actions"><button class="btn btn-primary" type="submit">Impor File</button><a class="btn btn-success" href="absensi.php?export=1">Export Excel</a></div></form></div></section><?php endif; ?>
 <section class="data-card"><div class="data-card-header"><h2>Data Absensi</h2></div><div class="table-wrapper no-actions absensi-table-wrapper"><table><thead><tr><th>Nama Karyawan</th><th>Jam Fingerprint Masuk</th><th>Jam Fingerprint Keluar</th></tr></thead><tbody><?php if ($hasil && mysqli_num_rows($hasil) > 0): while ($row = mysqli_fetch_assoc($hasil)): ?><tr><td><?= htmlspecialchars($row['employee_name']); ?></td><td><?= htmlspecialchars($row['jam_fingerprint_masuk']); ?></td><td><?= htmlspecialchars($row['jam_fingerprint_keluar']); ?></td></tr><?php endwhile; else: ?><tr><td colspan="3" class="empty-table">Belum ada data absensi.</td></tr><?php endif; ?></tbody></table></div></section>
 <?php require __DIR__ . '/partials/bawah.php'; ?>

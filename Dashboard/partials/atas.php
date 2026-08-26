@@ -174,6 +174,12 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 <span class="sidebar-icon" aria-hidden="true">↗</span>Lembur
             </a>
             <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>denda.php"
+                class="<?= $halamanAktif === "denda" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">−</span>Denda
+            </a>
+            <a
                 href="<?= htmlspecialchars(URL_DASAR); ?>izin-karyawan.php"
                 class="<?= $halamanAktif === "izin-karyawan" ? "active" : ""; ?>"
             >
