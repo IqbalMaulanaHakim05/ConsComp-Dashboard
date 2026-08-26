@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 function tabelPersetujuanIzinDiizinkan(string $tabel): bool
 {
-    return in_array($tabel, ['izin_meninggalkan_pekerjaan', 'izin_cuti'], true);
+    return in_array($tabel, ['izin_meninggalkan_pekerjaan', 'izin_cuti', 'izin_sakit'], true);
 }
 
 function siapkanTahapPersetujuanIzin(mysqli $conn, string $tabel): bool

@@ -7,8 +7,8 @@ require_once __DIR__ . "/fungsi/izin-cuti.php";
 wajibRole("pic", "koordinator", "manager", "admin", "superadmin");
 siapkanAudit($conn);
 
-$judulHalaman = "Notifikasi Izin Cuti";
-$subjudulHalaman = "Persetujuan izin cuti dan perubahan data terbaru.";
+$judulHalaman = "Notifikasi Cuti Tahunan";
+$subjudulHalaman = "Persetujuan cuti tahunan dan perubahan data terbaru.";
 $halamanAktif = "izin-cuti";
 $pengajuan = mysqli_query($conn, "SELECT ic.id, ic.deskripsi, ic.status, ic.tahap_persetujuan, ic.catatan_persetujuan, ic.created_at, k.emp_id, k.employee_name, u.nama AS nama_pemroses FROM izin_cuti ic INNER JOIN karyawan k ON k.id = ic.karyawan_id LEFT JOIN users u ON u.id = ic.diproses_oleh_user_id ORDER BY ic.created_at DESC LIMIT 100");
 $aktivitas = mysqli_query($conn, "SELECT a.dibuat_pada, a.aktivitas, u.username FROM audit_aktivitas a LEFT JOIN users u ON u.id = a.user_id ORDER BY a.id DESC LIMIT 100");

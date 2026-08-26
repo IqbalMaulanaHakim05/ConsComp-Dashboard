@@ -167,7 +167,7 @@ require __DIR__ . "/partials/atas.php";
 <section class="data-card">
     <div class="data-card-header">
         <div>
-            <h2>Data Upah Karyawan</h2>
+            <h2 id="denda">Data Upah Karyawan</h2>
             <p>Profil gaji aktif yang tersimpan pada sistem.</p>
         </div>
         <form method="GET" class="search-form">

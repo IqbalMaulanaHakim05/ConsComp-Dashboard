@@ -1723,3 +1723,71 @@ button.th-sort-btn,
     color: #c084fc;
 }
 
+/* Tampilan yang sama untuk seluruh halaman notifikasi pengajuan. */
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-page-card {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto 24px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-page-card .data-card-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 1fr);
+    align-items: center;
+    gap: 24px;
+    padding: 24px 46px;
+    border-bottom: 0;
+    background: transparent;
+}
+
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-page-card .data-card-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-page-card .data-card-header p {
+    margin: 0;
+    color: #475569;
+    line-height: 1.5;
+}
+
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-list {
+    padding: 0 46px 14px;
+}
+
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item {
+    display: grid;
+    gap: 4px;
+    padding: 14px;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item:last-child { border-bottom: 0; }
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item strong { font-size: 16px; }
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item span { color: #475569; }
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item small { color: #64748b; }
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-empty { padding: 18px 14px; color: #64748b; }
+
+:root[data-theme="dark"] :is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-page-card {
+    border-color: #334155;
+    background: #1e293b;
+}
+:root[data-theme="dark"] :is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-page-card .data-card-header p,
+:root[data-theme="dark"] :is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item span,
+:root[data-theme="dark"] :is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item small,
+:root[data-theme="dark"] :is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-empty { color: #94a3b8; }
+:root[data-theme="dark"] :is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item { border-color: #334155; }
+
+@media (max-width: 700px) {
+    :is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-page-card .data-card-header {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 20px 22px;
+    }
+    :is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-list { padding: 0 22px 12px; }
+}
+

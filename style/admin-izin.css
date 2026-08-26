@@ -1,92 +1,92 @@
-:is(.izin-karyawan-page, .izin-cuti-page) .main-content > .izin-entry-form,
-:is(.izin-karyawan-page, .izin-cuti-page) .main-content > .data-card {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .main-content > .izin-entry-form,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .main-content > .data-card {
     width: 100%;
     max-width: 1280px;
     margin-right: auto;
     margin-left: auto;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-entry-form > .form-card {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-entry-form > .form-card {
     width: 100%;
     max-width: none;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-entry-form > .form-card,
-:is(.izin-karyawan-page, .izin-cuti-page) .main-content > .data-card {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-entry-form > .form-card,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .main-content > .data-card {
     border: 1px solid #e2e8f0;
     border-radius: 16px;
     overflow: hidden;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-form-card { margin-bottom: 24px; }
-:is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-card { margin-bottom: 24px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-form-card { margin-bottom: 24px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-card { margin-bottom: 24px; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-card-header {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-card-header {
     padding: 20px 26px;
     background: linear-gradient(135deg, #f8fafc, #eef4ff);
     border-bottom: 1px solid #e2e8f0;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-card-header h2,
-:is(.izin-karyawan-page, .izin-cuti-page) .data-card-header h2 { margin: 0; font-size: 20px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-card-header h2,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .data-card-header h2 { margin: 0; font-size: 20px; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-card-header p {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-card-header p {
     margin: 6px 0 0;
     color: #64748b;
     font-size: 13px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-body { padding: 24px 26px 26px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-body { padding: 24px 26px 26px; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-form-fields {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-form-fields {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px 20px;
     align-items: start;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px 20px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-group { margin: 0; }
-:is(.izin-karyawan-page, .izin-cuti-page) .form-group.full-width { grid-column: 1 / -1; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group { margin: 0; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group.full-width { grid-column: 1 / -1; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-group label {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group label {
     display: block;
     margin-bottom: 7px;
     font-weight: 700;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-group input,
-:is(.izin-karyawan-page, .izin-cuti-page) .form-group select,
-:is(.izin-karyawan-page, .izin-cuti-page) .form-group textarea {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group input,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group select,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group textarea {
     width: 100%;
     min-height: 44px;
     border-radius: 10px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-group textarea { min-height: 96px; resize: vertical; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group textarea { min-height: 96px; resize: vertical; }
 .izin-karyawan-page #izin-jam-mulai,
 .izin-cuti-page #cuti-tanggal-mulai,
 .izin-cuti-page #cuti-tanggal-selesai { cursor: pointer; }
 .izin-cuti-page #cuti-tanggal-selesai[readonly] { cursor: default; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .form-group input[readonly] {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group input[readonly] {
     color: #475569;
     background: #f8fafc;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .field-note {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .field-note {
     margin: 7px 0 0;
     color: #64748b;
     font-size: 13px;
     line-height: 1.4;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .replacement-employee-info {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-employee-info {
     display: flex;
     flex-wrap: wrap;
     gap: 6px 18px;
@@ -95,39 +95,39 @@
     font-size: 13px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .replacement-employee-info strong {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-employee-info strong {
     color: #334155;
     font-weight: 700;
 }
 
 .izin-karyawan-page #izin-durasi-note { color: #9a6700; font-weight: 700; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body > .btn {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body > .btn {
     justify-self: end;
     min-width: 150px;
     min-height: 42px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body > .form-group:nth-child(3),
-:is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body > .replacement-submit { grid-column: 1 / -1; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body > .form-group:nth-child(3),
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body > .replacement-submit { grid-column: 1 / -1; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body select:disabled {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body select:disabled {
     opacity: 1;
     color: #64748b;
     background: #f8fafc;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-data-card { padding: 0; }
-:is(.izin-karyawan-page, .izin-cuti-page) .data-card-header { padding: 20px 24px 14px; }
-:is(.izin-karyawan-page, .izin-cuti-page) .table-wrapper { padding: 0 20px 20px; }
-:is(.izin-karyawan-page, .izin-cuti-page) table { min-width: 1850px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card { padding: 0; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .data-card-header { padding: 20px 24px 14px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { padding: 0 20px 20px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) table { min-width: 1850px; }
 .izin-cuti-page table { min-width: 2100px; }
-:is(.izin-karyawan-page, .izin-cuti-page) table th { padding: 13px 14px; }
-:is(.izin-karyawan-page, .izin-cuti-page) table td { padding: 14px; vertical-align: middle; }
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-description-cell { min-width: 220px; white-space: normal; line-height: 1.5; }
-:is(.izin-karyawan-page, .izin-cuti-page) .empty-table { padding: 28px; color: #64748b; text-align: center; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) table th { padding: 13px 14px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) table td { padding: 14px; vertical-align: middle; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-description-cell { min-width: 220px; white-space: normal; line-height: 1.5; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .empty-table { padding: 28px; color: #64748b; text-align: center; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .status-badge {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .status-badge {
     display: inline-flex;
     align-items: center;
     min-height: 28px;
@@ -138,55 +138,55 @@
     text-transform: capitalize;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .status-menunggu { color: #92400e; background: #fef3c7; }
-:is(.izin-karyawan-page, .izin-cuti-page) .status-disetujui { color: #166534; background: #dcfce7; }
-:is(.izin-karyawan-page, .izin-cuti-page) .status-ditolak { color: #991b1b; background: #fee2e2; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .status-menunggu { color: #92400e; background: #fef3c7; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .status-disetujui { color: #166534; background: #dcfce7; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .status-ditolak { color: #991b1b; background: #fee2e2; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions { min-width: 330px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions { min-width: 330px; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) th.izin-actions-header,
-:is(.izin-karyawan-page, .izin-cuti-page) td.izin-actions,
-:is(.izin-karyawan-page, .izin-cuti-page) td.empty-table {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) th.izin-actions-header,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.izin-actions,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.empty-table {
     position: static !important;
     right: auto !important;
     z-index: auto !important;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) td.izin-actions,
-:is(.izin-karyawan-page, .izin-cuti-page) td.empty-table { background-color: inherit !important; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.izin-actions,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.empty-table { background-color: inherit !important; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions form {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions form {
     display: grid;
     grid-template-columns: minmax(180px, 1fr) auto auto;
     align-items: center;
     gap: 8px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions .delete-izin-form {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions .delete-izin-form {
     display: inline-flex;
     grid-template-columns: none;
     margin-top: 10px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions .delete-izin-form:first-child { margin-top: 0; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions .delete-izin-form:first-child { margin-top: 0; }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions input {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions input {
     min-height: 38px;
     padding: 7px 10px;
     border-radius: 8px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .izin-actions .btn {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions .btn {
     min-height: 38px;
     padding: 8px 14px;
     white-space: nowrap;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .decision-summary { display: grid; gap: 4px; }
-:is(.izin-karyawan-page, .izin-cuti-page) .decision-summary span { color: #64748b; font-size: 13px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .decision-summary { display: grid; gap: 4px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .decision-summary span { color: #64748b; font-size: 13px; }
 
 /* Tombol notifikasi dan ekspor */
-:is(.izin-karyawan-page, .izin-cuti-page) .overtime-notification-action {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .overtime-notification-action {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -194,7 +194,7 @@
     gap: 10px;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .export-excel-btn {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .export-excel-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -209,59 +209,71 @@
     white-space: nowrap;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page) .export-excel-btn:hover {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .export-excel-btn:hover {
     background: #e8dcff;
     color: #5b35b5;
 }
 
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .export-excel-btn {
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .export-excel-btn {
     color: #c4b5fd;
     background: #2e1065;
     border-color: #5b21b6;
 }
 
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .export-excel-btn:hover {
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .export-excel-btn:hover {
     background: #3b0764;
 }
 
 /* Sembunyikan section notifikasi inline di halaman utama;
    notifikasi lengkap tersedia di halaman terpisah. */
-:is(.izin-karyawan-page, .izin-cuti-page) .overtime-notifications {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .overtime-notifications {
     display: none;
 }
 
 /* Halaman notifikasi terpisah */
-:is(.izin-karyawan-page, .izin-cuti-page) .notification-page-card { margin-bottom: 24px; }
-:is(.izin-karyawan-page, .izin-cuti-page) .notification-list { padding: 0 24px 20px; }
-:is(.izin-karyawan-page, .izin-cuti-page) .notification-item {
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-page-card { margin-bottom: 24px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-list { padding: 0 24px 20px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item {
     display: grid;
     gap: 4px;
     padding: 12px 14px;
     border-bottom: 1px solid #e2e8f0;
 }
-:is(.izin-karyawan-page, .izin-cuti-page) .notification-item span { color: #475569; }
-:is(.izin-karyawan-page, .izin-cuti-page) .notification-item small { color: #94a3b8; }
-:is(.izin-karyawan-page, .izin-cuti-page) .notification-empty { padding: 12px 0; color: #64748b; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item span { color: #475569; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item small { color: #94a3b8; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-empty { padding: 12px 0; color: #64748b; }
 
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .izin-entry-form > .form-card,
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .main-content > .data-card { border-color: #334155; }
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .form-card-header { background: linear-gradient(135deg, #1e293b, #172554); border-color: #334155; }
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .form-card-header p,
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .field-note,
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .decision-summary span { color: #94a3b8; }
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .notification-item { border-color: #334155; }
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .notification-item span { color: #94a3b8; }
-:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page) .form-group input[readonly] { color: #cbd5e1; background: #0f172a; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-entry-form > .form-card,
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .main-content > .data-card { border-color: #334155; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-card-header { background: linear-gradient(135deg, #1e293b, #172554); border-color: #334155; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-card-header p,
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .field-note,
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .decision-summary span { color: #94a3b8; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item { border-color: #334155; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .notification-item span { color: #94a3b8; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group input[readonly] { color: #cbd5e1; background: #0f172a; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group input,
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group select,
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group textarea,
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions input {
+    color: #e2e8f0;
+    background: #0f172a;
+    border-color: #475569;
+}
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group input::placeholder,
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group textarea::placeholder,
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions input::placeholder { color: #94a3b8; }
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group select:disabled { color: #94a3b8; background: #172033; }
 
 @media screen and (max-width: 760px) {
-    :is(.izin-karyawan-page, .izin-cuti-page) .izin-form-fields { grid-template-columns: 1fr; }
-    :is(.izin-karyawan-page, .izin-cuti-page) .form-group,
-    :is(.izin-karyawan-page, .izin-cuti-page) .form-group.full-width { grid-column: 1; }
-    :is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body > .btn { width: 100%; }
-    :is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body { grid-template-columns: 1fr; }
-    :is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body > .form-group:nth-child(3),
-    :is(.izin-karyawan-page, .izin-cuti-page) .replacement-form-body > .replacement-submit { grid-column: 1; }
-    :is(.izin-karyawan-page, .izin-cuti-page) .form-card-header,
-    :is(.izin-karyawan-page, .izin-cuti-page) .form-body { padding-right: 18px; padding-left: 18px; }
-    :is(.izin-karyawan-page, .izin-cuti-page) .table-wrapper { padding-right: 12px; padding-left: 12px; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-form-fields { grid-template-columns: 1fr; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group,
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-group.full-width { grid-column: 1; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body > .btn { width: 100%; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body { grid-template-columns: 1fr; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body > .form-group:nth-child(3),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body > .replacement-submit { grid-column: 1; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-card-header,
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-body { padding-right: 18px; padding-left: 18px; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { padding-right: 12px; padding-left: 12px; }
 }

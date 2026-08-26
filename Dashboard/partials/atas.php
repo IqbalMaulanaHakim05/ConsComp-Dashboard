@@ -44,15 +44,19 @@ $cssPerHalaman = [
     "audit" => "admin-settings.css",
     "pengaturan-publik" => "admin-settings.css",
     "lembur" => "admin-overtime.css",
+    "absensi" => "admin-overtime.css",
+    "denda" => "admin-overtime.css",
     "izin-karyawan" => "admin-izin.css",
     "izin-cuti" => "admin-izin.css",
+    "izin-sakit" => "admin-izin.css",
 ];
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
-$kelasHalaman = preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
+$kelasHalaman = $kelasHalaman ?? preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
 $versiCssHalaman = match ($halamanAktif) {
     "upah" => "20260824-batch-name-search-layout3",
-    "lembur" => "20260818-lembur-department-flow1",
-    "izin-karyawan", "izin-cuti" => "20260820-izin-export1",
+    "denda" => "20260826-action-buttons3",
+    "lembur" => "20260826-action-buttons3",
+    "izin-karyawan", "izin-cuti", "izin-sakit" => "20260826-izin-darkmode1",
     "master-data" => "20260820-master-reset-btn2",
     "karyawan" => "20260821-karyawan-sort-btn2",
     "penilaian-performa" => "20260821-performance-font-size",
@@ -62,12 +66,12 @@ $versiCssHalaman = match ($halamanAktif) {
 if (
     function_exists("rolePengguna")
     && rolePengguna() === "pic"
-    && !in_array($halamanAktif, ["lembur", "izin-karyawan", "izin-cuti"], true)
+    && !in_array($halamanAktif, ["lembur", "denda", "absensi", "izin-karyawan", "izin-cuti", "izin-sakit"], true)
 ) {
     header("Location: lembur.php");
     exit;
 }
-if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "upah", "lembur", "izin-karyawan", "izin-cuti"], true)) {
+if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "upah", "lembur", "denda", "absensi", "izin-karyawan", "izin-cuti", "izin-sakit"], true)) {
     header("Location: karyawan.php");
     exit;
 }
@@ -178,7 +182,14 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 href="<?= htmlspecialchars(URL_DASAR); ?>izin-cuti.php"
                 class="<?= $halamanAktif === "izin-cuti" ? "active" : ""; ?>"
             >
-                <span class="sidebar-icon" aria-hidden="true">2</span>Izin Cuti
+                <span class="sidebar-icon" aria-hidden="true">2</span>Cuti Tahunan
+            </a>
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>izin-sakit.php" class="<?= $halamanAktif === "izin-sakit" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">3</span>Sakit</a>
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>absensi.php"
+                class="<?= $halamanAktif === "absensi" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">◷</span>Absensi
             </a>
         <?php else: ?>
         <?php if (!(function_exists("punyaRole") && punyaRole("pic", "koordinator"))): ?><a
@@ -228,7 +239,20 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
             >
                 <span class="sidebar-icon" aria-hidden="true">↗</span>Lembur
             </a>
+            <a
+                href="<?= htmlspecialchars(URL_DASAR); ?>denda.php"
+                class="<?= $halamanAktif === "denda" ? "active" : ""; ?>"
+            >
+                <span class="sidebar-icon" aria-hidden="true">−</span>Denda
+            </a>
         </div>
+
+        <a
+            href="<?= htmlspecialchars(URL_DASAR); ?>absensi.php"
+            class="<?= $halamanAktif === "absensi" ? "active" : ""; ?>"
+        >
+            <span class="sidebar-icon" aria-hidden="true">◷</span>Absensi
+        </a>
 
         <a
             href="<?= htmlspecialchars(URL_DASAR); ?>izin-karyawan.php"
@@ -249,8 +273,9 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 href="<?= htmlspecialchars(URL_DASAR); ?>izin-cuti.php"
                 class="<?= $halamanAktif === "izin-cuti" ? "active" : ""; ?>"
             >
-                <span class="sidebar-icon" aria-hidden="true">2</span>Izin Cuti
+                <span class="sidebar-icon" aria-hidden="true">2</span>Cuti Tahunan
             </a>
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>izin-sakit.php" class="<?= $halamanAktif === "izin-sakit" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">3</span>Sakit</a>
         </div>
 
         <?php if (function_exists("punyaRole") && punyaRole("superadmin")): ?>

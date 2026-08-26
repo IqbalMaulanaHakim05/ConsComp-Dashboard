@@ -304,8 +304,8 @@ $daftarCuti = mysqli_stmt_get_result($stmtDaftar);
 
 $notifikasiIzinCuti = mysqli_query($conn, "SELECT a.dibuat_pada, a.aktivitas, u.username FROM audit_aktivitas a LEFT JOIN users u ON u.id = a.user_id ORDER BY a.id DESC LIMIT 12");
 
-$judulHalaman = "Izin Cuti";
-$subjudulHalaman = "Pengajuan dan pemantauan izin cuti karyawan.";
+$judulHalaman = "Cuti Tahunan";
+$subjudulHalaman = "Pengajuan dan pemantauan cuti tahunan karyawan.";
 $halamanAktif = "izin-cuti";
 
 require __DIR__ . "/partials/atas.php";
@@ -390,7 +390,7 @@ require __DIR__ . "/partials/atas.php";
 
             <div class="form-group">
                 <label for="cuti-total-hari">Total Hari Cuti</label>
-                <input id="cuti-total-hari" type="text" value="-" readonly>
+                <input id="cuti-total-hari" type="text" value="-">
             </div>
 
             <div class="form-group">
