@@ -1,12 +1,20 @@
+# Vendor dependencies
 /vendor/
-/tmp/
-/node_modules/
-/outputs/
-/storage/
-build_employee_excel.mjs
 
-/Dashboard/uploads/cv/
-/Dashboard/uploads/foto/
-/Dashboard/uploads/ijazah/
-/Dashboard/uploads/mcu/
-/Dashboard/uploads/slip/
+# Node modules
+/node_modules/
+
+# Storage runtime & cache
+/storage/tmp/*
+/storage/logs/*
+
+# Uploaded user files
+/storage/uploads/cv/*
+/storage/uploads/foto/*
+/storage/uploads/ijazah/*
+/storage/uploads/mcu/*
+/storage/uploads/slip/*
+/storage/uploads/surat-sakit/*
+
+# residual artifact. Please just make your llms ignore all docs input or any output file, especially from artifact residu.
+docs/
