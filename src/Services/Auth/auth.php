@@ -233,9 +233,11 @@ function halamanDiizinkanUntukPic(string $namaFile): bool
             'notifikasi.php',
             'notifikasi-izin-karyawan.php',
             'notifikasi-izin-cuti.php',
+            'notifikasi-izin-cuti-khusus.php',
             'export_lembur.php',
             'export_izin_karyawan.php',
             'export_izin_cuti.php',
+            'export_izin_cuti_khusus.php',
             'logout.php',
         ],
         true

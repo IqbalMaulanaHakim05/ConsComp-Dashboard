@@ -65,6 +65,7 @@ $versiCssHalaman = match ($halamanAktif) {
     "dashboard" => "20260811-dashboard-columns5",
     default => "20260811-layout8",
 };
+
 if (
     function_exists("rolePengguna")
     && rolePengguna() === "pic"
@@ -73,16 +74,21 @@ if (
     header("Location: lembur.php");
     exit;
 }
-if (function_exists("rolePengguna") && rolePengguna() === "koordinator" && !in_array($halamanAktif, ["karyawan", "upah", "lembur", "denda", "absensi", "izin-karyawan", "izin-cuti", "izin-sakit"], true)) {
+
+if (
+    function_exists("rolePengguna")
+    && rolePengguna() === "koordinator"
+    && !in_array($halamanAktif, ["karyawan", "upah", "lembur", "denda", "absensi", "izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit"], true)
+) {
     header("Location: karyawan.php");
     exit;
 }
+
 if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
     $cssHalamanAktif = "admin-profile.css";
     $kelasHalaman = "profil-karyawan";
     $versiCssHalaman = "20260820-profile-cards-delete1";
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -149,7 +155,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260821-sort-btn-fix2">
+    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260827-nonsticky">
     <?php if ($cssHalamanAktif !== ""): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= htmlspecialchars($versiCssHalaman); ?>">
     <?php endif; ?>

@@ -483,25 +483,9 @@ table {
 
 th:last-child,
 td:last-child {
-    position: sticky;
-    right: 0;
-    z-index: 2;
-}
-
-th:last-child {
-    background-color: #0f172a;
-}
-
-td:last-child {
-    background-color: #ffffff;
-}
-
-tbody tr:nth-child(even) td:last-child {
-    background-color: #f8fafc;
-}
-
-tbody tr:hover td:last-child {
-    background-color: #eff6ff;
+    position: static;
+    right: auto;
+    z-index: auto;
 }
 
 .table-wrapper td {

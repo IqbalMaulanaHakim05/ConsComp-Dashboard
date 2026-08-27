@@ -186,7 +186,7 @@ $parameterHalaman = ["cari" => $kataKunci, "departemen" => $departemen];
     </script>
     <script>const savedTheme = localStorage.getItem('employee-theme'); document.documentElement.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
 
-    <link rel="stylesheet" href="public/assets/css/publik.css?v=20260811-3">
+    <link rel="stylesheet" href="public/assets/css/publik.css?v=20260827-nonsticky">
 
     <style>
         .navbar { background-color: <?= $warnaHero; ?>; }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Services/Auth/auth.php';
-require_once __DIR__ . '/izin-cuti.php';
+require_once __DIR__ . '/../Services/Leave/izin-cuti.php';
 require_once __DIR__ . '/../Utils/xlsx-builder.php';
 
 wajibRole("pic", "koordinator", "manager", "admin", "superadmin");
@@ -245,10 +245,6 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 <?php endif; ?>
             </tbody>
         </table>
-    </div>
-    <div class="export-preview-actions">
-        <a class="btn btn-secondary" href="izin-cuti.php">Kembali</a>
-        <a class="btn btn-success" href="export_izin_cuti.php?download=1&amp;<?= htmlspecialchars(http_build_query($_GET)); ?>">Unduh Excel</a>
     </div>
 </section>
 
