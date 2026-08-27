@@ -26,6 +26,13 @@ $halamanAktif = $halamanAktif ?? "dashboard";
 $judulHalaman = $judulHalaman ?? "Dashboard Admin";
 $subjudulHalaman = $subjudulHalaman ?? "";
 
+// Identitas sidebar mengikuti role pengguna yang sedang login.
+$roleSidebar = function_exists("rolePengguna") ? rolePengguna() : "";
+$judulSidebar = $roleSidebar !== ""
+    ? labelRole($roleSidebar)
+    : "Admin";
+$subjudulSidebar = "Sistem pengelolaan data karyawan";
+
 // Path partial action bar; kosong berarti halaman tidak punya action bar.
 $aksiTopbar = $aksiTopbar ?? "";
 
@@ -100,7 +107,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Dashboard Admin</title>
+    <title><?= htmlspecialchars($judulHalaman); ?></title>
 
     <script>
         (() => {
@@ -165,10 +172,10 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-        <h2>Admin</h2>
+        <h2><?= htmlspecialchars($judulSidebar); ?></h2>
 
         <p>
-            Sistem pengelolaan dataset
+            <?= htmlspecialchars($subjudulSidebar); ?>
         </p>
     </div>
 

@@ -50,8 +50,18 @@ $halaman = $data["halaman"];
 $totalHalaman = $data["totalHalaman"];
 $offset = $data["offset"];
 
-$judulHalaman = "Dashboard Admin";
-$subjudulHalaman = "Ringkasan dan pantauan data karyawan perusahaan.";
+$roleDashboard = rolePengguna();
+$labelRoleDashboard = labelRole($roleDashboard);
+
+if ($roleDashboard !== "") {
+    $judulHalaman = "Dashboard " . $labelRoleDashboard;
+    $subjudulHalaman = in_array($roleDashboard, ["manager", "direktur"], true)
+        ? "Ringkasan dan pantauan data karyawan departemen Anda."
+        : "Ringkasan dan pantauan data karyawan perusahaan.";
+} else {
+    $judulHalaman = "Dashboard Admin";
+    $subjudulHalaman = "Ringkasan dan pantauan data karyawan perusahaan.";
+}
 $halamanAktif = "dashboard";
 
 require __DIR__ . '/../../resources/views/layouts/atas.php';
