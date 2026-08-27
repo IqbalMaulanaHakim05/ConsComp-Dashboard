@@ -119,7 +119,7 @@
 
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card { padding: 0; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .data-card-header { padding: 20px 24px 14px; }
-:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { padding: 0 20px 20px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { width: calc(100% - 40px); max-width: none; margin: 0 20px; padding: 0 0 20px; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) table { min-width: 1850px; }
 .izin-cuti-page table { min-width: 2100px; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) table th { padding: 13px 14px; }
@@ -275,5 +275,5 @@
     :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body > .replacement-submit { grid-column: 1; }
     :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-card-header,
     :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-body { padding-right: 18px; padding-left: 18px; }
-    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { padding-right: 12px; padding-left: 12px; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { width: calc(100% - 24px); max-width: none; margin-right: 12px; margin-left: 12px; padding-right: 0; padding-left: 0; }
 }

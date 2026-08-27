@@ -475,6 +475,18 @@ body {
     overflow-x: auto;
 }
 
+/* Keep only overtime, fine, and leave tables inside their data cards. */
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper {
+    max-width: 100%;
+    min-width: 0;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+}
+
+:is(.lembur-page, .denda-page, .izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .data-card:has(.table-wrapper) {
+    overflow: hidden;
+}
+
 table {
     width: 100%;
     min-width: 1600px;

@@ -103,11 +103,11 @@
 .lembur-page .export-preview-card .table-wrapper th:last-child,
 .lembur-page .export-preview-card .table-wrapper td:last-child { position: static !important; right: auto !important; left: auto !important; z-index: auto !important; background-color: inherit !important; }
 .lembur-page .export-preview-card .table-wrapper td { white-space: nowrap; }
-.lembur-page .export-preview-card .table-wrapper { width: 100% !important; max-width: 100%; overflow-x: auto !important; overflow-y: hidden; }
+.lembur-page .export-preview-card .table-wrapper { width: calc(100% - 40px) !important; max-width: none; margin: 0 20px; padding: 0 0 20px; overflow-x: auto !important; overflow-y: hidden; }
 .lembur-page .export-preview-card .table-wrapper table { width: max-content !important; min-width: 1500px !important; table-layout: auto !important; }
 .lembur-page .export-preview-card .table-wrapper th,
 .lembur-page .export-preview-card .table-wrapper td { min-width: 120px; white-space: nowrap; }
-.lembur-page .table-wrapper { padding: 0 20px 20px; }
+.lembur-page .table-wrapper { width: calc(100% - 40px); max-width: none; margin: 0 20px; padding: 0 0 20px; }
 .lembur-page table { min-width: 1500px; }
 .lembur-page table th { padding: 13px 14px; }
 .lembur-page table td { padding: 14px; vertical-align: middle; }
@@ -225,5 +225,6 @@
     .lembur-page .form-body > form > .btn { width: 100%; }
     .lembur-page .form-card-header,
     .lembur-page .form-body { padding-right: 18px; padding-left: 18px; }
-    .lembur-page .table-wrapper { padding-right: 12px; padding-left: 12px; }
+    .lembur-page .table-wrapper { width: calc(100% - 24px); max-width: none; margin-right: 12px; margin-left: 12px; padding-right: 0; padding-left: 0; }
+    .lembur-page .export-preview-card .table-wrapper { width: calc(100% - 24px) !important; margin-right: 12px; margin-left: 12px; }
 }
