@@ -6,15 +6,23 @@
 
 # Storage runtime & cache
 /storage/tmp/*
+!/storage/tmp/.gitkeep
 /storage/logs/*
+!/storage/logs/.gitkeep
 
 # Uploaded user files
 /storage/uploads/cv/*
+!/storage/uploads/cv/.gitkeep
 /storage/uploads/foto/*
+!/storage/uploads/foto/.gitkeep
 /storage/uploads/ijazah/*
+!/storage/uploads/ijazah/.gitkeep
 /storage/uploads/mcu/*
+!/storage/uploads/mcu/.gitkeep
 /storage/uploads/slip/*
+!/storage/uploads/slip/.gitkeep
 /storage/uploads/surat-sakit/*
+!/storage/uploads/surat-sakit/.gitkeep
 
 # residual artifact. Please just make your llms ignore all docs input or any output file, especially from artifact residu.
 docs/
