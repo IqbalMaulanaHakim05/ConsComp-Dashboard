@@ -1,8 +1,8 @@
 <?php
 
-require __DIR__ . '/config/database.php';
-require_once __DIR__ . '/src/Services/Settings/pengaturan-publik.php';
-require_once __DIR__ . '/src/Services/Employee/performa-karyawan.php';
+require __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../src/Services/Settings/pengaturan-publik.php';
+require_once __DIR__ . '/../src/Services/Employee/performa-karyawan.php';
 
 // Halaman publik harus selalu mencerminkan data SQL terbaru setelah proses
 // tambah, edit, hapus, atau import Excel.
@@ -186,7 +186,7 @@ $parameterHalaman = ["cari" => $kataKunci, "departemen" => $departemen];
     </script>
     <script>const savedTheme = localStorage.getItem('employee-theme'); document.documentElement.dataset.theme = savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
 
-    <link rel="stylesheet" href="public/assets/css/publik.css?v=20260811-3">
+    <link rel="stylesheet" href="assets/css/publik.css?v=20260811-3">
 
     <style>
         .navbar { background-color: <?= $warnaHero; ?>; }
@@ -210,7 +210,7 @@ $parameterHalaman = ["cari" => $kataKunci, "departemen" => $departemen];
             <a href="#data">Data Karyawan</a>
             <a href="#tentang">Tentang</a>
 
-            <a href="src/Controllers/index.php" class="btn-admin">
+            <a href="../src/Controllers/index.php" class="btn-admin">
                 Admin
             </a>
             <button type="button" class="button theme-toggle" onclick="toggleTheme()" aria-label="Ganti tema">🌙 Dark</button>
