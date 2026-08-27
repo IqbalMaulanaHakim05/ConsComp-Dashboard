@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../Auth/auth.php';
-require_once __DIR__ . '/../../Utils/xlsx-builder.php';
+require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../Services/Auth/auth.php';
+require_once __DIR__ . '/../Utils/xlsx-builder.php';
 
 wajibRole("admin", "superadmin", "pic", "koordinator", "manager");
 
@@ -218,7 +218,7 @@ if (isset($_GET["download"])) {
 $judulHalaman = "Pratinjau Export Upah";
 $subjudulHalaman = "Periksa data upah sebelum mengunduh Excel.";
 $halamanAktif = "upah";
-require __DIR__ . '/../../../resources/views/layouts/atas.php';
+require __DIR__ . '/../../resources/views/layouts/atas.php';
 ?>
 
 <section class="form-card export-options-card">
@@ -268,7 +268,7 @@ require __DIR__ . '/../../../resources/views/layouts/atas.php';
                 <?php endforeach; ?>
             </fieldset>
             <div class="form-actions">
-                <a class="btn btn-secondary" href="../upah.php">Batal</a>
+                <a class="btn btn-secondary" href="upah.php">Batal</a>
                 <button class="btn btn-success" type="submit">Terapkan Opsi</button>
                 <button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button>
             </div>
@@ -326,4 +326,4 @@ require __DIR__ . '/../../../resources/views/layouts/atas.php';
 })();
 </script>
 
-<?php require __DIR__ . '/../../../resources/views/layouts/bawah.php'; ?>
+<?php require __DIR__ . '/../../resources/views/layouts/bawah.php'; ?>

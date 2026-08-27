@@ -267,7 +267,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             <td><?= htmlspecialchars((string) $hasil['pesan']); ?></td>
             <td>
                 <?php if (!empty($hasil['berhasil']) && !empty($hasil['slip_id'])): ?>
-                    <a class="btn btn-primary" target="_blank" rel="noopener noreferrer" href="fungsi/lihat-slip-gaji.php?id=<?= (int) $hasil['slip_id']; ?>">Buka Slip PDF ↗</a>
+                    <a class="btn btn-primary" target="_blank" rel="noopener noreferrer" href="lihat-slip-gaji.php?id=<?= (int) $hasil['slip_id']; ?>">Buka Slip PDF ↗</a>
                 <?php else: ?>
                     -
                 <?php endif; ?>
@@ -374,7 +374,7 @@ $queryTanpaRiwayat = htmlspecialchars(http_build_query($paramTanpaRiwayat));
             <td><?= htmlspecialchars((string) ($item['pesan_error'] ?: 'Slip tersimpan pada profil karyawan.')); ?></td>
             <td>
                 <?php if ($item['status'] === 'berhasil'): ?>
-                    <a class="btn btn-primary" target="_blank" rel="noopener noreferrer" href="fungsi/lihat-slip-gaji.php?id=<?= (int) $item['id']; ?>">Buka Slip PDF ↗</a>
+                    <a class="btn btn-primary" target="_blank" rel="noopener noreferrer" href="lihat-slip-gaji.php?id=<?= (int) $item['id']; ?>">Buka Slip PDF ↗</a>
                 <?php else: ?>
                     -
                 <?php endif; ?>

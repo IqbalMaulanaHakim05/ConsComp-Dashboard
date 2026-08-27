@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../Auth/auth.php';
-require_once __DIR__ . '/../Audit/audit.php';
-require_once __DIR__ . '/promosi-karyawan.php';
+require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../Services/Auth/auth.php';
+require_once __DIR__ . '/../Services/Audit/audit.php';
+require_once __DIR__ . '/../Services/Employee/promosi-karyawan.php';
 
 wajibRole('admin', 'superadmin');
 

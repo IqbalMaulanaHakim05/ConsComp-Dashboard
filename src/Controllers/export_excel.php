@@ -1,8 +1,8 @@
 <?php
 
-require __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../Auth/auth.php';
-require_once __DIR__ . '/../Employee/performa-karyawan.php';
+require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../Services/Auth/auth.php';
+require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
 
 wajibRole("admin", "superadmin", "manager");
 
@@ -84,7 +84,7 @@ if (!isset($_GET["download"])) {
     $judulHalaman = "Opsi Export Karyawan";
     $subjudulHalaman = "Pilih jumlah data, urutan, dan kolom sebelum mengunduh Excel.";
     $halamanAktif = "karyawan";
-    require __DIR__ . '/../../../resources/views/layouts/atas.php';
+    require __DIR__ . '/../../resources/views/layouts/atas.php';
     ?>
     <section class="form-card export-options-card">
         <div class="form-card-header"><h2>Opsi Export Data Karyawan</h2><p><?= mysqli_num_rows($query); ?> data akan diekspor sesuai cakupan akses.</p></div>
@@ -95,7 +95,7 @@ if (!isset($_GET["download"])) {
                 <div class="form-group"><label for="arah_export">Arah urutan</label><select id="arah_export" name="arah_export"><option value="ASC" <?= $arahExport === "ASC" ? "selected" : ""; ?>>Naik (A–Z / kecil ke besar)</option><option value="DESC" <?= $arahExport === "DESC" ? "selected" : ""; ?>>Turun (Z–A / besar ke kecil)</option></select></div>
                 <?php foreach (["cari" => $kataKunci, "filter" => $filterKolom] as $nama => $nilai): ?><input type="hidden" name="<?= $nama; ?>" value="<?= htmlspecialchars($nilai); ?>"><?php endforeach; ?>
                 <fieldset class="export-columns-fieldset"><legend>Kolom yang diekspor</legend><?php foreach ($kolomExportPilihan as $kunci => $kolom): ?><label><input type="checkbox" name="kolom[]" value="<?= $kunci; ?>" <?= in_array($kunci, $kolomDipilih, true) ? "checked" : ""; ?>> <?= htmlspecialchars($kolom["label"]); ?></label><?php endforeach; ?></fieldset>
-                <div class="form-actions"><a class="btn btn-secondary" href="../karyawan.php">Batal</a><button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button></div>
+                <div class="form-actions"><a class="btn btn-secondary" href="karyawan.php">Batal</a><button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button></div>
             </form>
         </div>
     </section>
@@ -120,7 +120,7 @@ if (!isset($_GET["download"])) {
         })();
     </script>
     <?php
-    require __DIR__ . '/../../../resources/views/layouts/bawah.php';
+    require __DIR__ . '/../../resources/views/layouts/bawah.php';
     exit;
 }
 

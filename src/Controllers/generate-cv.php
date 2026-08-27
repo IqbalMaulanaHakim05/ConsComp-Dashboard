@@ -6,7 +6,7 @@ require __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
 require_once __DIR__ . '/../Services/Employee/media-karyawan.php';
-require_once __DIR__ . '/cv-generator.php';
+require_once __DIR__ . '/../Utils/cv-generator.php';
 
 wajibRole("admin", "superadmin");
 

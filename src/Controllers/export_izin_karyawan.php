@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../Auth/auth.php';
-require_once __DIR__ . '/../Leave/izin-karyawan.php';
-require_once __DIR__ . '/../../Utils/xlsx-builder.php';
+require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../Services/Auth/auth.php';
+require_once __DIR__ . '/izin-karyawan.php';
+require_once __DIR__ . '/../Utils/xlsx-builder.php';
 
 wajibRole("pic", "koordinator", "manager", "admin", "superadmin");
 siapkanTabelIzinKaryawan($conn);
@@ -158,7 +158,7 @@ if (isset($_GET["download"])) {
 
 $judulHalaman = "Opsi Export Izin Karyawan";
 $subjudulHalaman = "Pilih jumlah data, urutan, dan kolom sebelum mengunduh Excel.";
-require __DIR__ . '/../../../resources/views/layouts/atas.php';
+require __DIR__ . '/../../resources/views/layouts/atas.php';
 ?>
 
 <section class="form-card export-options-card">
@@ -205,7 +205,7 @@ require __DIR__ . '/../../../resources/views/layouts/atas.php';
                 <?php endforeach; ?>
             </fieldset>
             <div class="form-actions">
-                <a class="btn btn-secondary" href="../izin-karyawan.php">Batal</a>
+                <a class="btn btn-secondary" href="izin-karyawan.php">Batal</a>
                 <button class="btn btn-success" type="submit">Terapkan Opsi</button>
                 <button class="btn btn-primary" type="submit" name="download" value="1">Unduh Excel</button>
             </div>
@@ -244,7 +244,7 @@ require __DIR__ . '/../../../resources/views/layouts/atas.php';
         </table>
     </div>
     <div class="export-preview-actions">
-        <a class="btn btn-secondary" href="../izin-karyawan.php">Kembali</a>
+        <a class="btn btn-secondary" href="izin-karyawan.php">Kembali</a>
         <a class="btn btn-success" href="export_izin_karyawan.php?download=1&amp;<?= htmlspecialchars(http_build_query($_GET)); ?>">Unduh Excel</a>
     </div>
 </section>
@@ -268,4 +268,4 @@ require __DIR__ . '/../../../resources/views/layouts/atas.php';
 })();
 </script>
 
-<?php require __DIR__ . '/../../../resources/views/layouts/bawah.php'; ?>
+<?php require __DIR__ . '/../../resources/views/layouts/bawah.php'; ?>

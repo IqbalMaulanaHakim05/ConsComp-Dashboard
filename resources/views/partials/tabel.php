@@ -280,7 +280,7 @@ $daftarKolomSort = [
                                     </a>
 
                                     <a
-                                        href="fungsi/hapus.php?id=<?= (int) $row["id"]; ?>"
+                                        href="hapus.php?id=<?= (int) $row["id"]; ?>"
                                         class="btn btn-danger"
                                         onclick="return confirm(
                                             'Yakin ingin menghapus data karyawan ini?'

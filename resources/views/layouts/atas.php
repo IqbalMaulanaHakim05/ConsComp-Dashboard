@@ -218,7 +218,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
         <div class="sidebar-tree-children">
             <?php if (function_exists("punyaRole") && punyaRole("admin", "superadmin")): ?>
                 <a
-                    href="<?= htmlspecialchars(URL_DASAR); ?>fungsi/tambah.php"
+                    href="<?= htmlspecialchars(URL_DASAR); ?>tambah.php"
                     class="<?= $halamanAktif === "tambah" ? "active" : ""; ?>"
                 >
                     <span class="sidebar-icon" aria-hidden="true">+</span>Tambah Karyawan

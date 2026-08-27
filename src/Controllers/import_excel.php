@@ -1,10 +1,10 @@
 <?php
-require __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../Auth/auth.php';
-require_once __DIR__ . '/../Audit/audit.php';
-require_once __DIR__ . '/../Settings/sinkronisasi.php';
-require_once __DIR__ . '/../Employee/performa-karyawan.php';
-require_once __DIR__ . '/../../Utils/xlsx-builder.php';
+require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../Services/Auth/auth.php';
+require_once __DIR__ . '/../Services/Audit/audit.php';
+require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
+require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
+require_once __DIR__ . '/../Utils/xlsx-builder.php';
 
 wajibRole("superadmin");
 
@@ -444,7 +444,7 @@ $judulHalaman = "Import Excel";
 $subjudulHalaman = "Ganti seluruh data karyawan menggunakan file Excel.";
 $halamanAktif = "karyawan";
 
-require __DIR__ . '/../../../resources/views/layouts/atas.php';
+require __DIR__ . '/../../resources/views/layouts/atas.php';
 
 ?>
     <section class="form-card">
@@ -503,4 +503,4 @@ require __DIR__ . '/../../../resources/views/layouts/atas.php';
         </div>
     </section>
 <?php
-require __DIR__ . '/../../../resources/views/layouts/bawah.php';
+require __DIR__ . '/../../resources/views/layouts/bawah.php';

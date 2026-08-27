@@ -1,13 +1,13 @@
 <?php
 
-require __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../Auth/auth.php';
-require_once __DIR__ . '/../Audit/audit.php';
-require_once __DIR__ . '/media-karyawan.php';
-require_once __DIR__ . '/../Settings/sinkronisasi.php';
-require_once __DIR__ . '/../Settings/master-data.php';
-require_once __DIR__ . '/nik-karyawan.php';
-require_once __DIR__ . '/performa-karyawan.php';
+require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../Services/Auth/auth.php';
+require_once __DIR__ . '/../Services/Audit/audit.php';
+require_once __DIR__ . '/../Services/Employee/media-karyawan.php';
+require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
+require_once __DIR__ . '/../Services/Settings/master-data.php';
+require_once __DIR__ . '/../Services/Employee/nik-karyawan.php';
+require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
 
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
@@ -224,7 +224,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         }
                         catatAktivitas($conn, "Menambahkan karyawan " . $employeeName . " (" . $empId . ").");
                         mysqli_stmt_close($stmt);
-                        header("Location: ../karyawan.php?pesan=tambah-berhasil");
+                        header('Location: karyawan.php?pesan=tambah-berhasil');
                         exit;
                     }
                 }
@@ -251,7 +251,7 @@ $judulHalaman = "Tambah Karyawan";
 $subjudulHalaman = "Masukkan informasi karyawan baru ke dalam database.";
 $halamanAktif = "tambah";
 
-require __DIR__ . '/../../../resources/views/layouts/atas.php';
+require __DIR__ . '/../../resources/views/layouts/atas.php';
 
 ?>
 <section class="form-card">
@@ -536,4 +536,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <?php
-require __DIR__ . '/../../../resources/views/layouts/bawah.php';
+require __DIR__ . '/../../resources/views/layouts/bawah.php';

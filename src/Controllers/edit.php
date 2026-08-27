@@ -1,14 +1,14 @@
 <?php
 
-require __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../Auth/auth.php';
-require_once __DIR__ . '/../Audit/audit.php';
-require_once __DIR__ . '/media-karyawan.php';
-require_once __DIR__ . '/../Settings/sinkronisasi.php';
-require_once __DIR__ . '/../Settings/master-data.php';
-require_once __DIR__ . '/tanggal-keluar-karyawan.php';
-require_once __DIR__ . '/nik-karyawan.php';
-require_once __DIR__ . '/performa-karyawan.php';
+require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../Services/Auth/auth.php';
+require_once __DIR__ . '/../Services/Audit/audit.php';
+require_once __DIR__ . '/../Services/Employee/media-karyawan.php';
+require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
+require_once __DIR__ . '/../Services/Settings/master-data.php';
+require_once __DIR__ . '/../Services/Employee/tanggal-keluar-karyawan.php';
+require_once __DIR__ . '/../Services/Employee/nik-karyawan.php';
+require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
 
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
@@ -383,7 +383,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     if (($_POST["return_to_profile"] ?? "") === "1") {
                         header("Location: ../profil-karyawan.php?id=" . $id . "&pesan=edit-berhasil");
                     } else {
-                        header("Location: ../karyawan.php?pesan=edit-berhasil");
+                        header('Location: karyawan.php?pesan=edit-berhasil');
                     }
                     exit;
                 }
@@ -406,7 +406,7 @@ $judulHalaman = "Edit Karyawan";
 $subjudulHalaman = "Perbarui informasi karyawan yang tersimpan dalam database.";
 $halamanAktif = "karyawan";
 
-require __DIR__ . '/../../../resources/views/layouts/atas.php';
+require __DIR__ . '/../../resources/views/layouts/atas.php';
 
 ?>
     <section class="form-card">
@@ -570,4 +570,4 @@ require __DIR__ . '/../../../resources/views/layouts/atas.php';
         </div>
 </section>
 <?php
-require __DIR__ . '/../../../resources/views/layouts/bawah.php';
+require __DIR__ . '/../../resources/views/layouts/bawah.php';

@@ -126,7 +126,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     <?php if ($modeEdit): ?>
         <article class="profile-card profile-inline-edit">
             <h3>Edit Data Karyawan</h3>
-            <form id="inline-edit-form" method="POST" action="fungsi/edit.php?id=<?= (int) $karyawan["id"]; ?>" enctype="multipart/form-data" autocomplete="off">
+            <form id="inline-edit-form" method="POST" action="edit.php?id=<?= (int) $karyawan["id"]; ?>" enctype="multipart/form-data" autocomplete="off">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                 <input type="hidden" name="return_to_profile" value="1">
                 <div class="profile-edit-grid">
@@ -315,7 +315,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             <?php if ($errorPromosi !== ""): ?><div class="alert-error" role="alert"><?= htmlspecialchars($errorPromosi); ?></div><?php endif; ?>
 
             <?php if ($modeEdit): ?>
-                <form class="profile-promotion-form" method="POST" action="fungsi/proses-promosi-karyawan.php">
+                <form class="profile-promotion-form" method="POST" action="proses-promosi-karyawan.php">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                     <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">
                     <label>Departemen Baru
@@ -356,7 +356,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                                     <small>Perubahan <?= htmlspecialchars(date("d-m-Y", strtotime((string) $histori["tanggal_perubahan"]))); ?> · Mulai jabatan <?= htmlspecialchars(date("d-m-Y", strtotime((string) $histori["tanggal_mulai_jabatan"]))); ?> · Oleh <?= htmlspecialchars((string) $histori["nama_pengubah"]); ?></small>
                                 </div>
                                 <?php if ($modeEdit): ?>
-                                    <form method="POST" action="fungsi/hapus-promosi-karyawan.php" class="promotion-delete-form" onsubmit="return confirm('Hapus riwayat promosi ini?');">
+                                    <form method="POST" action="hapus-promosi-karyawan.php" class="promotion-delete-form" onsubmit="return confirm('Hapus riwayat promosi ini?');">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                                         <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">
                                         <input type="hidden" name="histori_id" value="<?= (int) $histori["id"]; ?>">
@@ -392,13 +392,13 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                             <div class="profile-payslip-actions">
                                 <?php if ($bolehLihatDetailSlipGaji): ?>
                                     <?php if (trim((string) ($slip["nama_file"] ?? "")) !== ""): ?>
-                                        <a class="btn btn-primary" target="_blank" rel="noopener" href="fungsi/lihat-slip-gaji.php?id=<?= (int) $slip["id"]; ?>">Lihat/Unduh</a>
+                                        <a class="btn btn-primary" target="_blank" rel="noopener" href="lihat-slip-gaji.php?id=<?= (int) $slip["id"]; ?>">Lihat/Unduh</a>
                                     <?php else: ?>
                                         <em>File tidak tersedia</em>
                                     <?php endif; ?>
                                 <?php endif; ?>
                                 <?php if ($modeEdit): ?>
-                                    <form method="POST" action="fungsi/hapus-slip-gaji.php" class="payslip-delete-form" onsubmit="return confirm('Hapus slip gaji periode <?= htmlspecialchars(namaBulanSlipGaji((int) $slip["bulan"]) . " " . (int) $slip["tahun"]); ?> ini?');">
+                                    <form method="POST" action="hapus-slip-gaji.php" class="payslip-delete-form" onsubmit="return confirm('Hapus slip gaji periode <?= htmlspecialchars(namaBulanSlipGaji((int) $slip["bulan"]) . " " . (int) $slip["tahun"]); ?> ini?');">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                                         <input type="hidden" name="karyawan_id" value="<?= (int) $karyawan["id"]; ?>">
                                         <input type="hidden" name="slip_id" value="<?= (int) $slip["id"]; ?>">
@@ -424,7 +424,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             <?php endif; ?>
         <?php endif; ?>
         <?php if (punyaRole("admin", "superadmin")): ?>
-            <form class="profile-export-form" method="POST" action="fungsi/generate-cv.php">
+            <form class="profile-export-form" method="POST" action="generate-cv.php">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
                 <input type="hidden" name="id" value="<?= (int) $karyawan["id"]; ?>">
                 <button class="btn btn-primary profile-export-button" type="submit">Export PDF</button>

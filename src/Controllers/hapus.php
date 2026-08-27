@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../Auth/auth.php';
-require_once __DIR__ . '/../Audit/audit.php';
+require __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../Services/Auth/auth.php';
+require_once __DIR__ . '/../Services/Audit/audit.php';
 
 wajibRole("admin", "superadmin");
 
@@ -25,7 +25,7 @@ $karyawan = mysqli_fetch_assoc(mysqli_stmt_get_result($stmtAmbil));
 mysqli_stmt_close($stmtAmbil);
 
 if (!$karyawan) {
-    header("Location: ../karyawan.php");
+    header('Location: karyawan.php');
     exit;
 }
 
@@ -101,5 +101,5 @@ $empId = trim((string) ($karyawan["emp_id"] ?? ""));
 $keterangan = "Menghapus data karyawan " . ($namaKaryawan !== "" ? $namaKaryawan : ("ID " . $id)) . ($empId !== "" ? " ({$empId})" : "") . ".";
 catatAktivitas($conn, $keterangan);
 
-header("Location: ../karyawan.php");
+header('Location: karyawan.php');
 exit;

@@ -10,7 +10,7 @@
 ?>
 <?php if (punyaRole("superadmin")): ?>
     <a
-        href="fungsi/import_excel.php"
+        href="import_excel.php"
         class="btn btn-warning"
         title="Ganti data SQL menggunakan file Excel"
     >
@@ -19,7 +19,7 @@
 <?php endif; ?>
 
 <a
-    href="fungsi/export_excel.php?<?= htmlspecialchars(http_build_query(["cari" => $_GET["cari"] ?? "", "filter" => $_GET["filter"] ?? "semua", "sort" => $_GET["sort"] ?? "id", "arah" => $_GET["arah"] ?? "DESC"])); ?>"
+    href="export_excel.php?<?= htmlspecialchars(http_build_query(["cari" => $_GET["cari"] ?? "", "filter" => $_GET["filter"] ?? "semua", "sort" => $_GET["sort"] ?? "id", "arah" => $_GET["arah"] ?? "DESC"])); ?>"
     class="btn btn-primary"
     title="Export data karyawan sesuai cakupan akses"
 >

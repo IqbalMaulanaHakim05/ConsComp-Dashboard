@@ -230,7 +230,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             <?php endif; ?>
 
             <?php if (punyaRole("admin", "superadmin", "pic", "koordinator", "manager")): ?>
-                <a class="btn btn-primary export-excel-btn" href="fungsi/export_upah_excel.php?<?= htmlspecialchars(http_build_query(["cari" => $kataKunci, "department" => $departemen, "bulan" => $bulanFilter, "tahun" => $tahunFilter, "position" => $posisiFilter])); ?>">Export Excel</a>
+                <a class="btn btn-primary export-excel-btn" href="export_upah_excel.php?<?= htmlspecialchars(http_build_query(["cari" => $kataKunci, "department" => $departemen, "bulan" => $bulanFilter, "tahun" => $tahunFilter, "position" => $posisiFilter])); ?>">Export Excel</a>
             <?php endif; ?>
             <?php if (punyaRole("admin", "superadmin")): ?>
                 <a class="btn btn-success" href="batch-slip-gaji.php?<?= htmlspecialchars(http_build_query(["department_id" => $departemen, "position" => $posisiFilter, "bulan" => $bulanFilter > 0 ? $bulanFilter : (int) date("n"), "tahun" => $tahunFilter > 0 ? $tahunFilter : (int) date("Y")])); ?>">Proses Slip Batch</a>
@@ -375,7 +375,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                         <td><?= htmlspecialchars((string) ($baris["berlaku_mulai"] ?? "-")); ?></td>
                         <td>
                             <?php if (punyaRole("superadmin")): ?><a class="btn btn-warning" href="edit-upah.php?<?= htmlspecialchars(http_build_query(array_merge(["id" => (int) $baris["id"]], $parameterFilterDaftar)), ENT_QUOTES, "UTF-8"); ?>">Edit</a><?php endif; ?>
-                            <?php if (punyaRole("admin", "superadmin")): ?><form method="POST" action="fungsi/generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="bulan" value="<?= $bulanFilter > 0 ? $bulanFilter : (int) date("n"); ?>"><input type="hidden" name="tahun" value="<?= $tahunFilter > 0 ? $tahunFilter : (int) date("Y"); ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php else: ?>-<?php endif; ?>
+                            <?php if (punyaRole("admin", "superadmin")): ?><form method="POST" action="generate-slip-gaji.php" style="display:inline"><input type="hidden" name="id" value="<?= (int) $baris["id"]; ?>"><input type="hidden" name="bulan" value="<?= $bulanFilter > 0 ? $bulanFilter : (int) date("n"); ?>"><input type="hidden" name="tahun" value="<?= $tahunFilter > 0 ? $tahunFilter : (int) date("Y"); ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><button class="btn btn-secondary" type="submit">PDF</button></form><?php else: ?>-<?php endif; ?>
                         </td>
                     </tr>
                 <?php endwhile; ?>
