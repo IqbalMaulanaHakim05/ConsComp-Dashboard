@@ -55,10 +55,10 @@ $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
 $kelasHalaman = $kelasHalaman ?? preg_replace("/[^a-z0-9-]/i", "-", $halamanAktif);
 $versiCssHalaman = match ($halamanAktif) {
     "upah" => "20260824-batch-name-search-layout3",
-    "denda" => "20260827-table-card-inset1",
-    "lembur" => "20260827-table-card-inset1",
+    "denda" => "20260827-table-actions-narrow1",
+    "lembur" => "20260827-table-actions-narrow1",
     "absensi" => "20260826-absensi-import-card1",
-    "izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit" => "20260827-table-card-inset1",
+    "izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit" => "20260827-table-actions-narrow1",
     "master-data" => "20260820-master-reset-btn2",
     "karyawan" => "20260821-karyawan-sort-btn2",
     "penilaian-performa" => "20260821-performance-font-size",
@@ -155,7 +155,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260827-table-card-overflow1">
+    <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle); ?>admin.css?v=20260827-table-actions-sticky7">
     <?php if ($cssHalamanAktif !== ""): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($urlStyle . $cssHalamanAktif); ?>?v=<?= htmlspecialchars($versiCssHalaman); ?>">
     <?php endif; ?>

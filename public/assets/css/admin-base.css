@@ -536,6 +536,71 @@ td:last-child {
     background-color: inherit;
 }
 
+/* Kolom Aksi tetap terlihat ketika tabel digeser secara horizontal. */
+:is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) th:last-child,
+:is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 2;
+    border-left: 2px solid transparent;
+    box-shadow: inset 2px 0 transparent;
+}
+
+:is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) thead th:last-child {
+    z-index: 3;
+    background-color: #0f172a;
+}
+
+:is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) tbody td:last-child {
+    background-color: #ffffff;
+}
+
+:is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) tbody tr:nth-child(even) td:last-child {
+    background-color: #f8fafc;
+}
+
+:is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) tbody tr:hover td:last-child {
+    background-color: #eff6ff;
+}
+
+:is(
+    .table-wrapper.has-actions:not(.is-scroll-end),
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table):not(.is-scroll-end),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper:not(.is-scroll-end)
+) th:last-child,
+:is(
+    .table-wrapper.has-actions:not(.is-scroll-end),
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table):not(.is-scroll-end),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper:not(.is-scroll-end)
+) td:last-child {
+    border-left-color: #94a3b8;
+    box-shadow: inset 2px 0 #94a3b8;
+}
+
 .profile-history-description {
     margin: 8px 0 0;
     color: #64748b;
@@ -974,6 +1039,47 @@ tbody tr:hover {
 }
 :root[data-theme="dark"] td:last-child {
     background-color: #1e293b;
+}
+:root[data-theme="dark"] :is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) thead th:last-child {
+    background-color: #0f172a;
+}
+:root[data-theme="dark"] :is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) tbody td:last-child {
+    background-color: #1e293b;
+}
+:root[data-theme="dark"] :is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) tbody tr:nth-child(even) td:last-child {
+    background-color: #263449;
+}
+:root[data-theme="dark"] :is(
+    .table-wrapper.has-actions,
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper
+) tbody tr:hover td:last-child {
+    background-color: #1e3a8a;
+}
+:root[data-theme="dark"] :is(
+    .table-wrapper.has-actions:not(.is-scroll-end),
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table):not(.is-scroll-end),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper:not(.is-scroll-end)
+) th:last-child,
+:root[data-theme="dark"] :is(
+    .table-wrapper.has-actions:not(.is-scroll-end),
+    :is(.lembur-page, .denda-page) .table-wrapper:has(> table.overtime-report-table):not(.is-scroll-end),
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper:not(.is-scroll-end)
+) td:last-child {
+    border-left-color: #64748b;
+    box-shadow: inset 2px 0 #64748b;
 }
 :root[data-theme="dark"] .search-form input,
 :root[data-theme="dark"] .search-form select,

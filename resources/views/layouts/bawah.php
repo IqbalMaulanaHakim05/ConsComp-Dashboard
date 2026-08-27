@@ -39,6 +39,46 @@
             button.setAttribute("aria-pressed", String(!terlihat));
         });
     });
+
+    (() => {
+        const wrappers = document.querySelectorAll(".table-wrapper");
+
+        wrappers.forEach((wrapper) => {
+            const table = wrapper.querySelector("table");
+            if (!table) return;
+
+            const header = table.querySelector("thead th:last-child");
+            const hasActionHeader = /aksi/i.test(header?.textContent?.trim() || "");
+            const hasActionCell = Boolean(table.querySelector(
+                "tbody td:last-child button, tbody td:last-child form, tbody td:last-child .btn, tbody td:last-child .action-buttons"
+            ));
+            const hasActionStructure = table.matches(".overtime-report-table") || Boolean(wrapper.closest(".izin-data-card"));
+
+            if (!wrapper.classList.contains("has-actions") && !hasActionHeader && !hasActionCell && !hasActionStructure) return;
+
+            wrapper.classList.add("has-actions");
+
+            const updateActionColumnBorder = () => {
+                const maxScrollLeft = Math.max(0, wrapper.scrollWidth - wrapper.clientWidth);
+                const atRight = maxScrollLeft <= 1 || wrapper.scrollLeft >= maxScrollLeft - 2;
+                wrapper.classList.toggle("is-scroll-end", atRight);
+            };
+
+            wrapper.addEventListener("scroll", updateActionColumnBorder, { passive: true });
+            window.addEventListener("resize", updateActionColumnBorder, { passive: true });
+            requestAnimationFrame(() => {
+                updateActionColumnBorder();
+                requestAnimationFrame(updateActionColumnBorder);
+            });
+
+            if (window.ResizeObserver) {
+                const observer = new ResizeObserver(updateActionColumnBorder);
+                observer.observe(wrapper);
+                observer.observe(table);
+            }
+        });
+    })();
+
     function toggleSidebar() {
         const sidebar = document.getElementById("sidebar");
         sidebar.classList.toggle("show");

@@ -111,10 +111,50 @@
 .lembur-page table { min-width: 1500px; }
 .lembur-page table th { padding: 13px 14px; }
 .lembur-page table td { padding: 14px; vertical-align: middle; }
-.lembur-page table td:last-child { min-width: 300px; }
+.lembur-page table td:last-child { width: 1% !important; min-width: 0 !important; white-space: nowrap; }
 .lembur-page table td:last-child > form { display: inline-flex !important; align-items: center; flex-wrap: wrap; gap: 8px; margin: 2px 6px 2px 0 !important; }
 .lembur-page table td:last-child input { min-width: 155px; min-height: 38px; padding: 7px 10px; border-radius: 8px; }
 .lembur-page table td:last-child .btn { min-height: 38px; padding: 8px 14px; white-space: nowrap; }
+
+/* Paksa kolom Aksi laporan Lembur dan Denda tetap sticky. */
+:is(.lembur-page, .denda-page) .overtime-report-table > thead > tr > th:last-child,
+:is(.lembur-page, .denda-page) .overtime-report-table > tbody > tr > td:last-child {
+    position: sticky !important;
+    right: 0 !important;
+    z-index: 5 !important;
+    border-left: 2px solid transparent;
+    box-shadow: inset 2px 0 transparent;
+}
+
+:is(.lembur-page, .denda-page) .overtime-report-table > tbody > tr > td:last-child {
+    background-color: #ffffff !important;
+}
+
+:is(.lembur-page, .denda-page) .overtime-report-table > tbody > tr:nth-child(even) > td:last-child {
+    background-color: #f8fafc !important;
+}
+
+:is(.lembur-page, .denda-page) .overtime-report-table > tbody > tr:hover > td:last-child {
+    background-color: #eff6ff !important;
+}
+
+:root[data-theme="dark"] :is(.lembur-page, .denda-page) .overtime-report-table > tbody > tr > td:last-child {
+    background-color: #1e293b !important;
+}
+
+:root[data-theme="dark"] :is(.lembur-page, .denda-page) .overtime-report-table > tbody > tr:nth-child(even) > td:last-child {
+    background-color: #263449 !important;
+}
+
+:root[data-theme="dark"] :is(.lembur-page, .denda-page) .overtime-report-table > tbody > tr:hover > td:last-child {
+    background-color: #1e3a8a !important;
+}
+
+:is(.lembur-page, .denda-page) .table-wrapper:not(.is-scroll-end) > .overtime-report-table > thead > tr > th:last-child,
+:is(.lembur-page, .denda-page) .table-wrapper:not(.is-scroll-end) > .overtime-report-table > tbody > tr > td:last-child {
+    border-left-color: #94a3b8;
+    box-shadow: inset 2px 0 #94a3b8;
+}
 
 .lembur-page .status-badge,
 .denda-page .status-badge {
