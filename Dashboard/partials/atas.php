@@ -48,6 +48,7 @@ $cssPerHalaman = [
     "denda" => "admin-overtime.css",
     "izin-karyawan" => "admin-izin.css",
     "izin-cuti" => "admin-izin.css",
+    "izin-cuti-khusus" => "admin-izin.css",
     "izin-sakit" => "admin-izin.css",
 ];
 $cssHalamanAktif = $cssPerHalaman[$halamanAktif] ?? "";
@@ -57,7 +58,7 @@ $versiCssHalaman = match ($halamanAktif) {
     "denda" => "20260826-action-buttons3",
     "lembur" => "20260826-action-buttons3",
     "absensi" => "20260826-absensi-import-card1",
-    "izin-karyawan", "izin-cuti", "izin-sakit" => "20260826-izin-darkmode1",
+    "izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit" => "20260827-cuti-khusus1",
     "master-data" => "20260820-master-reset-btn2",
     "karyawan" => "20260821-karyawan-sort-btn2",
     "penilaian-performa" => "20260821-performance-font-size",
@@ -67,7 +68,7 @@ $versiCssHalaman = match ($halamanAktif) {
 if (
     function_exists("rolePengguna")
     && rolePengguna() === "pic"
-    && !in_array($halamanAktif, ["lembur", "denda", "absensi", "izin-karyawan", "izin-cuti", "izin-sakit"], true)
+    && !in_array($halamanAktif, ["lembur", "denda", "absensi", "izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit"], true)
 ) {
     header("Location: lembur.php");
     exit;
@@ -192,6 +193,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 <span class="sidebar-icon" aria-hidden="true">2</span>Cuti Tahunan
             </a>
             <a href="<?= htmlspecialchars(URL_DASAR); ?>izin-sakit.php" class="<?= $halamanAktif === "izin-sakit" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">3</span>Sakit</a>
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>izin-cuti-khusus.php" class="<?= $halamanAktif === "izin-cuti-khusus" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">4</span>Cuti Khusus</a>
             <a
                 href="<?= htmlspecialchars(URL_DASAR); ?>absensi.php"
                 class="<?= $halamanAktif === "absensi" ? "active" : ""; ?>"
@@ -263,7 +265,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
 
         <a
             href="<?= htmlspecialchars(URL_DASAR); ?>izin-karyawan.php"
-            class="<?= in_array($halamanAktif, ["izin-karyawan", "izin-cuti"], true) ? "active" : ""; ?>"
+            class="<?= in_array($halamanAktif, ["izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit"], true) ? "active" : ""; ?>"
         >
             <span class="sidebar-icon" aria-hidden="true">I</span>Izin
         </a>
@@ -283,6 +285,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 <span class="sidebar-icon" aria-hidden="true">2</span>Cuti Tahunan
             </a>
             <a href="<?= htmlspecialchars(URL_DASAR); ?>izin-sakit.php" class="<?= $halamanAktif === "izin-sakit" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">3</span>Sakit</a>
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>izin-cuti-khusus.php" class="<?= $halamanAktif === "izin-cuti-khusus" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">4</span>Cuti Khusus</a>
         </div>
 
         <?php if (function_exists("punyaRole") && punyaRole("superadmin")): ?>

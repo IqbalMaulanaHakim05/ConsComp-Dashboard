@@ -223,6 +223,7 @@ function halamanDiizinkanUntukPic(string $namaFile): bool
             'absensi.php',
             'izin-karyawan.php',
             'izin-cuti.php',
+            'izin-cuti-khusus.php',
             'izin-sakit.php',
             'surat-sakit.php',
             'notifikasi-izin-sakit.php',
