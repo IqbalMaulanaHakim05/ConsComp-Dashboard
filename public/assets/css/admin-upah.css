@@ -198,12 +198,12 @@ html {
     min-width: 980px;
 }
 
-.upah-page .batch-result-card th:last-child,
-.upah-page .batch-result-card td:last-child,
-.upah-page .batch-employee-card th:last-child,
-.upah-page .batch-employee-card td:last-child,
-.upah-page .batch-history-card th:last-child,
-.upah-page .batch-history-card td:last-child {
+.upah-page .batch-result-card .table-wrapper.no-actions th:last-child,
+.upah-page .batch-result-card .table-wrapper.no-actions td:last-child,
+.upah-page .batch-employee-card .table-wrapper.no-actions th:last-child,
+.upah-page .batch-employee-card .table-wrapper.no-actions td:last-child,
+.upah-page .batch-history-card .table-wrapper.no-actions th:last-child,
+.upah-page .batch-history-card .table-wrapper.no-actions td:last-child {
     position: static !important;
     right: auto !important;
     z-index: auto !important;

@@ -119,13 +119,58 @@
 
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card { padding: 0; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .data-card-header { padding: 20px 24px 14px; }
-:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { padding: 0 20px 20px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { width: calc(100% - 40px); max-width: none; margin: 0 20px; padding: 0 0 20px; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) table { min-width: 1850px; }
 .izin-cuti-page table { min-width: 2100px; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) table th { padding: 13px 14px; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) table td { padding: 14px; vertical-align: middle; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-description-cell { min-width: 220px; white-space: normal; line-height: 1.5; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .empty-table { padding: 28px; color: #64748b; text-align: center; }
+
+/* Paksa kolom Aksi tabel utama seluruh halaman Izin tetap menempel di kanan. */
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table > thead > tr > th:last-child,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table > tbody > tr > td:last-child {
+    position: sticky !important;
+    right: 0 !important;
+    z-index: 5 !important;
+    border-left: 2px solid transparent;
+    box-shadow: inset 2px 0 transparent;
+}
+
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper:not(.is-scroll-end) > table > thead > tr > th:last-child,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper:not(.is-scroll-end) > table > tbody > tr > td:last-child {
+    border-left-color: #94a3b8;
+    box-shadow: inset 2px 0 #94a3b8;
+}
+
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table > tbody > tr > td:last-child {
+    background-color: #ffffff !important;
+}
+
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table > tbody > tr:nth-child(even) > td:last-child {
+    background-color: #f8fafc !important;
+}
+
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table > tbody > tr:hover > td:last-child {
+    background-color: #eff6ff !important;
+}
+
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table > tbody > tr > td:last-child {
+    background-color: #1e293b !important;
+}
+
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table > tbody > tr:nth-child(even) > td:last-child {
+    background-color: #263449 !important;
+}
+
+:root[data-theme="dark"] :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-data-card > .table-wrapper > table > tbody > tr:hover > td:last-child {
+    background-color: #1e3a8a !important;
+}
 
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .status-badge {
     display: inline-flex;
@@ -142,18 +187,28 @@
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .status-disetujui { color: #166534; background: #dcfce7; }
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .status-ditolak { color: #991b1b; background: #fee2e2; }
 
-:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions { min-width: 330px; }
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) th.izin-actions-header {
+    width: 1% !important;
+    min-width: 0 !important;
+    white-space: nowrap;
+}
 
-:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) th.izin-actions-header,
-:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.izin-actions,
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.empty-table {
     position: static !important;
     right: auto !important;
     z-index: auto !important;
 }
 
-:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.izin-actions,
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.empty-table { background-color: inherit !important; }
+
+/* Jangan biarkan aturan umum empty-table membatalkan sticky pada kolom aksi. */
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) th.izin-actions-header,
+:is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) td.izin-actions {
+    position: sticky !important;
+    right: 0 !important;
+    z-index: 5 !important;
+}
 
 :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .izin-actions form {
     display: grid;
@@ -275,5 +330,5 @@
     :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .replacement-form-body > .replacement-submit { grid-column: 1; }
     :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-card-header,
     :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .form-body { padding-right: 18px; padding-left: 18px; }
-    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { padding-right: 12px; padding-left: 12px; }
+    :is(.izin-karyawan-page, .izin-cuti-page, .izin-sakit-page) .table-wrapper { width: calc(100% - 24px); max-width: none; margin-right: 12px; margin-left: 12px; padding-right: 0; padding-left: 0; }
 }
