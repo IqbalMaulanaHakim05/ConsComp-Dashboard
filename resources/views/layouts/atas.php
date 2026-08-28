@@ -349,7 +349,7 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
                 Logout
             </a>
 
-            <a href="<?= htmlspecialchars(URL_DASAR); ?>../index.php" class="btn-publik">
+            <a href="<?= htmlspecialchars(URL_DASAR); ?>../../index.php" class="btn-publik">
                 Halaman Publik
             </a>
         </div>
