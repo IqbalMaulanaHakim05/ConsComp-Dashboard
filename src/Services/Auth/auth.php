@@ -130,7 +130,7 @@ function fieldRequestEditKaryawanAdminHrga(): array
 {
     return array_merge(
         fieldKaryawanAdminHrga(),
-        ['pendidikan', 'pekerjaan', 'return_to_profile', 'csrf_token']
+        ['pendidikan', 'pekerjaan', 'shift_nama', 'shift_mulai', 'shift_selesai', 'shift_hari', 'return_to_profile', 'csrf_token']
     );
 }
 

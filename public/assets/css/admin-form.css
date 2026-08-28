@@ -82,6 +82,8 @@
 .tambah-page .tambah-history-card { grid-template-columns: 1fr; }
 .tambah-page .tambah-history-card .form-group textarea { min-height: 125px; font-size: 16px; }
 .tambah-page .history-section { min-width: 0; padding-top: 6px; }
+.tambah-page .tambah-main-card .shift-section { grid-column: 1 / -1; margin-top: 6px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+.tambah-page .shift-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .tambah-page .history-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
 .tambah-page .history-heading h4 { margin: 0; color: #111827; font-size: 18px; }
 .tambah-page .history-add { padding: 7px 11px; color: #64748b; background: #fff; border: 1px solid #94a3b8; border-radius: 9px; cursor: pointer; font-size: 15px; }
@@ -223,6 +225,7 @@
     }
 
     .tambah-page .history-section { overflow-x: auto; padding-bottom: 8px; }
+    .tambah-page .shift-fields { min-width: 700px; }
     .tambah-page .history-heading { position: sticky; left: 0; }
     .tambah-page .history-entry { min-width: 940px; }
 }

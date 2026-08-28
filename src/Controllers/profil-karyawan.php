@@ -7,11 +7,13 @@ require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Employee/media-karyawan.php';
 require_once __DIR__ . '/../Services/Settings/master-data.php';
 require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
+require_once __DIR__ . '/../Services/Employee/jadwal-cuti.php';
 require_once __DIR__ . '/../Services/Payroll/slip-gaji.php';
 require_once __DIR__ . '/../Services/Employee/promosi-karyawan.php';
 
 wajibRole("admin", "superadmin", "koordinator", "manager");
 siapkanMasterData($conn);
+siapkanJadwalDanCutiKaryawan($conn);
 $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 
 $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
@@ -58,6 +60,8 @@ function tanggalProfil(array $data, string $kolom): string
 }
 
 $nama = trim((string) ($karyawan["employee_name"] ?? "Karyawan"));
+$sisaCuti = sisaCutiKaryawan($conn, (int) $karyawan['id']);
+$masterShift = ambilMasterShift($conn);
 
 $gender = trim((string) ($karyawan["gender"] ?? ""));
 if ($gender === "M" || strcasecmp($gender, "Male") === 0) {
@@ -175,9 +179,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     <?php endif; ?>
 
     <div class="profile-grid">
-        <article class="profile-card">
+        <article class="profile-card profile-summary-card">
             <h3>Profil Karyawan</h3>
-
+            <div class="profile-summary-main">
             <div class="profile-photo-wrap">
                 <?php if (!empty($karyawan["foto_profil"] ?? "") && is_file(__DIR__ . '/../../storage/uploads/foto/' . basename((string) $karyawan["foto_profil"]))): ?>
                     <img class="profile-photo" src="file.php?jenis=foto&amp;file=<?= rawurlencode(basename((string) $karyawan["foto_profil"])); ?>" alt="Foto <?= htmlspecialchars($nama); ?>">
@@ -189,7 +193,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 <?php endif; ?>
             </div>
 
-            <dl class="profile-details">
+            <dl class="profile-details profile-summary-details">
                 <div>
                     <dt>Nama Karyawan</dt>
                     <dd><?= htmlspecialchars(nilaiProfil($karyawan, "employee_name")); ?></dd>
@@ -217,6 +221,17 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 <div>
                     <dt>Skor Performa</dt>
                     <dd><?= htmlspecialchars(tampilkanSkorPerforma($karyawan["performance_score"] ?? null, "Belum dinilai")); ?></dd>
+                </div>
+            </dl>
+            </div>
+            <dl class="profile-details profile-summary-footer">
+                <div>
+                    <dt>Shift</dt>
+                    <dd><span><?= htmlspecialchars(labelShiftKaryawan($karyawan)); ?></span><?php if ($modeEdit): ?><button class="btn btn-secondary" type="button" id="open-shift-dialog">+ Tambah</button><?php endif; ?></dd>
+                </div>
+                <div>
+                    <dt>Sisa Cuti</dt>
+                    <dd><?= htmlspecialchars(number_format($sisaCuti, 1, ',', '.')); ?> kali</dd>
                 </div>
             </dl>
         </article>
@@ -444,6 +459,33 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         <a id="cv-auto-preview" aria-hidden="true" style="display: none;" target="_blank" rel="noopener" href="file.php?jenis=cv&amp;file=<?= rawurlencode($cvUntukDiunduh); ?>">Lihat CV</a>
     <?php endif; ?>
 </section>
+<?php if ($modeEdit): ?>
+<dialog id="shift-dialog" class="history-dialog">
+    <form method="dialog">
+        <h3>Atur Shift Kerja</h3>
+        <div class="history-dialog-fields shift-dialog-fields">
+            <label>Shift<select id="shift-nama" name="shift_nama" form="inline-edit-form"><option value="">Pilih shift</option><?php foreach ($masterShift as $shift): ?><option value="<?= htmlspecialchars($shift['nama']); ?>" <?= ($karyawan['shift_nama'] ?? '') === $shift['nama'] ? 'selected' : ''; ?>><?= htmlspecialchars($shift['nama']); ?></option><?php endforeach; ?><option value="Non Shift" <?= ($karyawan['shift_nama'] ?? '') === 'Non Shift' ? 'selected' : ''; ?>>Non Shift</option></select></label>
+            <label>Jam mulai kerja<input id="shift-mulai" name="shift_mulai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_mulai'] ?? ''), 0, 5)); ?>"></label>
+            <label>Jam selesai kerja<input id="shift-selesai" name="shift_selesai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_selesai'] ?? ''), 0, 5)); ?>"></label>
+            <?php $hariShiftKaryawan = preg_split('/,\s*/', (string) ($karyawan['shift_hari'] ?? 'Senin-Jumat')) ?: []; if (in_array('Senin-Jumat', $hariShiftKaryawan, true)) $hariShiftKaryawan = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']; ?>
+            <fieldset class="shift-day-checklist profile-shift-day-checklist"><legend>Hari Kerja</legend><?php foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $hari): ?><label><input type="checkbox" name="shift_hari[]" form="inline-edit-form" value="<?= $hari; ?>"<?= in_array($hari, $hariShiftKaryawan, true) ? ' checked' : ''; ?>> <?= $hari; ?></label><?php endforeach; ?></fieldset>
+        </div>
+        <div class="history-dialog-actions"><button class="btn btn-secondary" value="cancel">Batal</button><button class="btn btn-success" id="save-shift-dialog" value="default">Simpan</button></div>
+    </form>
+</dialog>
+<script>
+(() => {
+    const dialog = document.getElementById('shift-dialog'); const open = document.getElementById('open-shift-dialog'); const shift = document.getElementById('shift-nama');
+    if (!dialog || !open || !shift) return;
+    const mulai = document.getElementById('shift-mulai'); const selesai = document.getElementById('shift-selesai'); const hari = [...dialog.querySelectorAll('input[name="shift_hari[]"]')];
+    const preset = Object.fromEntries(<?= json_encode(array_map(static fn (array $shift): array => [$shift['nama'], [$shift['jam_mulai'], $shift['jam_selesai'], $shift['hari']]], $masterShift), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>);
+    const aturHari = nilai => { const terpilih = nilai === 'Senin-Jumat' ? ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] : String(nilai || '').split(/,\s*/); hari.forEach(item => { item.checked = terpilih.includes(item.value); }); };
+    const update = (gunakanHariMaster = false) => { const otomatis = preset[shift.value]; mulai.readOnly = selesai.readOnly = !!otomatis; if (otomatis) { mulai.value = otomatis[0]; selesai.value = otomatis[1]; if (gunakanHariMaster) aturHari(otomatis[2]); } };
+    open.addEventListener('click', () => { update(false); dialog.showModal(); }); shift.addEventListener('change', () => update(true));
+    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+})();
+</script>
+<?php endif; ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const page = document.querySelector('.profile-page');

@@ -7,6 +7,7 @@ require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
 require_once __DIR__ . '/../Services/Leave/izin-cuti.php';
 require_once __DIR__ . '/../Services/Settings/master-data.php';
+require_once __DIR__ . '/../Services/Employee/jadwal-cuti.php';
 
 wajibRole("admin", "superadmin", "pic", "koordinator", "manager");
 
@@ -35,6 +36,7 @@ if (!siapkanTabelIzinCuti($conn)) {
     http_response_code(500);
     die("Tabel izin cuti tidak dapat disiapkan.");
 }
+siapkanJadwalDanCutiKaryawan($conn);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $aksi = (string) ($_POST["aksi"] ?? "simpan");
@@ -199,6 +201,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $pesan = "Karyawan tidak sesuai dengan posisi dan departemen yang dipilih.";
             } elseif (!$karyawanPengganti) {
                 $pesan = "Karyawan pengganti harus berasal dari departemen yang sama.";
+            } elseif (
+                ($jenisCuti === 'setengah_hari' ? 0.5 : 1.0)
+                > sisaCutiKaryawan($conn, $karyawanId, (int) $tanggalMulai->format('Y'))
+            ) {
+                $pesan = "Izin cuti telah melewati batas.";
             } else {
                 $pembuatId = (int) ($_SESSION["user"]["id"] ?? 0);
                 $stmt = mysqli_prepare(

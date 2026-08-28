@@ -9,9 +9,12 @@ require_once __DIR__ . '/../Services/Settings/master-data.php';
 require_once __DIR__ . '/../Services/Employee/tanggal-keluar-karyawan.php';
 require_once __DIR__ . '/../Services/Employee/nik-karyawan.php';
 require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
+require_once __DIR__ . '/../Services/Employee/jadwal-cuti.php';
 
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
+siapkanJadwalDanCutiKaryawan($conn);
+$namaShiftDiizinkan = array_merge(['', 'Non Shift'], array_column(ambilMasterShift($conn), 'nama'));
 siapkanTanggalKeluarKaryawan($conn);
 $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 
@@ -55,12 +58,12 @@ $form = [
 $adminHrga = rolePengguna() === "admin";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && !csrfValid($_POST["csrf_token"] ?? null)) {
-    header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Token keamanan tidak valid."));
+    header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Token keamanan tidak valid."));
     exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST" && $adminHrga) {
-    header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1");
+    header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&edit=1");
     exit;
 }
 
@@ -72,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
             $conn,
             "Percobaan Admin mengubah field karyawan yang tidak diizinkan pada ID " . $id . ": " . implode(", ", $fieldTerlarang) . "."
         );
-        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Admin hanya dapat mengubah Biodata dan Informasi yang diizinkan."));
+        header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Admin hanya dapat mengubah Biodata dan Informasi yang diizinkan."));
         exit;
     }
 
@@ -112,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
     }
 
     if ($errorAdmin !== "") {
-        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode($errorAdmin));
+        header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode($errorAdmin));
         exit;
     }
 
@@ -145,7 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
                 @unlink($pathFileBaru);
             }
         }
-        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode($errorAdmin));
+        header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode($errorAdmin));
         exit;
     }
 
@@ -185,6 +188,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
         );
         if (!mysqli_stmt_execute($stmtAdmin)) throw new RuntimeException(mysqli_stmt_error($stmtAdmin));
         mysqli_stmt_close($stmtAdmin);
+
+        if (array_key_exists('shift_nama', $_POST)) {
+            $shiftNama = trim((string) $_POST['shift_nama']);
+            $shiftMulai = trim((string) ($_POST['shift_mulai'] ?? ''));
+            $shiftSelesai = trim((string) ($_POST['shift_selesai'] ?? ''));
+            $hariShift = array_values(array_intersect(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'], array_map('strval', (array) ($_POST['shift_hari'] ?? []))));
+            $shiftHari = implode(', ', $hariShift) ?: 'Senin-Jumat';
+            if (!in_array($shiftNama, $namaShiftDiizinkan, true)) $shiftNama = '';
+            if ($shiftNama === '') { $shiftMulai = ''; $shiftSelesai = ''; }
+            $stmtJadwal = mysqli_prepare($conn, "UPDATE karyawan SET shift_nama = NULLIF(?, ''), shift_mulai = NULLIF(?, ''), shift_selesai = NULLIF(?, ''), shift_hari = ? WHERE id = ?");
+            if (!$stmtJadwal) throw new RuntimeException(mysqli_error($conn));
+            mysqli_stmt_bind_param($stmtJadwal, 'ssssi', $shiftNama, $shiftMulai, $shiftSelesai, $shiftHari, $id);
+            if (!mysqli_stmt_execute($stmtJadwal)) throw new RuntimeException(mysqli_stmt_error($stmtJadwal));
+            mysqli_stmt_close($stmtJadwal);
+        }
 
         if (!mysqli_query($conn, "DELETE FROM riwayat_pendidikan WHERE karyawan_id = " . $id)) {
             throw new RuntimeException(mysqli_error($conn));
@@ -228,7 +246,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
             }
         }
         error_log("Edit Biodata Admin gagal: " . $exception->getMessage());
-        header("Location: ../profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Perubahan Biodata dan Informasi gagal disimpan."));
+        header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&edit=1&error=" . rawurlencode("Perubahan Biodata dan Informasi gagal disimpan."));
         exit;
     }
 
@@ -238,7 +256,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
         error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
     }
     catatAktivitas($conn, "Admin mengedit Biodata dan Informasi karyawan ID " . $id . ".");
-    header("Location: ../profil-karyawan.php?id=" . $id . "&pesan=edit-berhasil");
+    header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&pesan=edit-berhasil");
     exit;
 }
 
@@ -356,6 +374,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
 
                 if ($berhasilUpdate) {
+                    if (array_key_exists('shift_nama', $_POST)) {
+                        $shiftNama = trim((string) $_POST['shift_nama']);
+                        $shiftMulai = trim((string) ($_POST['shift_mulai'] ?? ''));
+                        $shiftSelesai = trim((string) ($_POST['shift_selesai'] ?? ''));
+                        $hariShift = array_values(array_intersect(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'], array_map('strval', (array) ($_POST['shift_hari'] ?? []))));
+                        $shiftHari = implode(', ', $hariShift) ?: 'Senin-Jumat';
+                        if (!in_array($shiftNama, $namaShiftDiizinkan, true)) {
+                            $shiftNama = '';
+                        }
+                        if ($shiftNama === '') {
+                            $shiftMulai = '';
+                            $shiftSelesai = '';
+                        }
+                        $stmtJadwal = mysqli_prepare($conn, "UPDATE karyawan SET shift_nama = NULLIF(?, ''), shift_mulai = NULLIF(?, ''), shift_selesai = NULLIF(?, ''), shift_hari = ? WHERE id = ?");
+                        if ($stmtJadwal) {
+                            mysqli_stmt_bind_param($stmtJadwal, 'ssssi', $shiftNama, $shiftMulai, $shiftSelesai, $shiftHari, $id);
+                            mysqli_stmt_execute($stmtJadwal);
+                            mysqli_stmt_close($stmtJadwal);
+                        }
+                    }
                     mysqli_query($conn, "DELETE FROM riwayat_pendidikan WHERE karyawan_id = " . $id);
                     $insertPendidikan = mysqli_prepare($conn, "INSERT INTO riwayat_pendidikan (karyawan_id, institusi, jenjang, jurusan, tanggal_mulai, tanggal_selesai, keterangan) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?)");
                     foreach ((array) ($_POST["pendidikan"] ?? []) as $itemPendidikan) {
@@ -381,7 +419,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     catatAktivitas($conn, "Mengedit data karyawan " . $employeeName . " (" . $empId . ").");
                     mysqli_stmt_close($stmtUpdate);
                     if (($_POST["return_to_profile"] ?? "") === "1") {
-                        header("Location: ../profil-karyawan.php?id=" . $id . "&pesan=edit-berhasil");
+                        header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&pesan=edit-berhasil");
                     } else {
                         header('Location: karyawan.php?pesan=edit-berhasil');
                     }

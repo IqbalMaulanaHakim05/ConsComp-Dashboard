@@ -10,6 +10,18 @@ function siapkanMasterData(mysqli $conn): void
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi_departemen (posisi_id INT UNSIGNED NOT NULL, department_id INT UNSIGNED NOT NULL, PRIMARY KEY (posisi_id, department_id), FOREIGN KEY (posisi_id) REFERENCES master_posisi(id) ON DELETE CASCADE, FOREIGN KEY (department_id) REFERENCES master_departemen(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_status_kerja (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_agama (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_shift (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(80) NOT NULL UNIQUE, jam_mulai TIME NOT NULL, jam_selesai TIME NOT NULL, hari VARCHAR(60) NOT NULL DEFAULT 'Senin-Jumat') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    // Shift Pagi/Malam boleh memiliki lebih dari satu jadwal. Lepaskan indeks
+    // unik lama pada nama agar penambahan shift membuat baris baru, bukan menimpa.
+    $indeksShift = mysqli_query($conn, "SHOW INDEX FROM master_shift WHERE Column_name = 'nama' AND Non_unique = 0");
+    if ($indeksShift && ($barisIndeks = mysqli_fetch_assoc($indeksShift))) {
+        $namaIndeks = str_replace('`', '``', (string) $barisIndeks['Key_name']);
+        mysqli_query($conn, "ALTER TABLE master_shift DROP INDEX `$namaIndeks`");
+    }
+    $jumlahShift = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM master_shift"));
+    if ((int) ($jumlahShift[0] ?? 0) === 0) {
+        mysqli_query($conn, "INSERT INTO master_shift (nama, jam_mulai, jam_selesai, hari) VALUES ('Shift Pagi', '08:00:00', '16:30:00', 'Senin-Jumat'), ('Shift Malam', '16:30:00', '08:00:00', 'Senin-Jumat')");
+    }
     // Master data dikelola sepenuhnya dari halaman Master Data. Jangan mengisi
     // ulang nilai bawaan setiap halaman dibuka karena item yang dihapus akan
     // muncul kembali secara otomatis.
@@ -27,6 +39,26 @@ function siapkanMasterData(mysqli $conn): void
     // yang sebelumnya hanya menyimpan nama departemen.
     mysqli_query($conn, "UPDATE karyawan k INNER JOIN master_departemen d ON d.nama = k.department SET k.department_id = d.id WHERE k.department_id IS NULL OR k.department_id <> d.id");
     mysqli_query($conn, "INSERT IGNORE INTO master_posisi_departemen (posisi_id, department_id) SELECT p.id, k.department_id FROM master_posisi p INNER JOIN karyawan k ON k.position = p.nama WHERE k.department_id IS NOT NULL");
+}
+
+function ambilMasterShift(mysqli $conn): array
+{
+    siapkanMasterData($conn);
+    $hasil = mysqli_query($conn, "SELECT id, nama, TIME_FORMAT(jam_mulai, '%H:%i') AS jam_mulai, TIME_FORMAT(jam_selesai, '%H:%i') AS jam_selesai, hari FROM master_shift ORDER BY nama");
+    $items = [];
+    while ($hasil && ($item = mysqli_fetch_assoc($hasil))) $items[] = $item;
+    return $items;
+}
+
+function ambilMasterShiftBerdasarkanNama(mysqli $conn, string $nama): ?array
+{
+    $stmt = mysqli_prepare($conn, "SELECT nama, TIME_FORMAT(jam_mulai, '%H:%i') AS jam_mulai, TIME_FORMAT(jam_selesai, '%H:%i') AS jam_selesai, hari FROM master_shift WHERE nama = ? LIMIT 1");
+    if (!$stmt) return null;
+    mysqli_stmt_bind_param($stmt, 's', $nama);
+    mysqli_stmt_execute($stmt);
+    $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
+    mysqli_stmt_close($stmt);
+    return $data;
 }
 
 function ambilMasterData(mysqli $conn, string $jenis): array

@@ -8,11 +8,22 @@ require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
 require_once __DIR__ . '/../Services/Settings/master-data.php';
 require_once __DIR__ . '/../Services/Employee/nik-karyawan.php';
 require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
+require_once __DIR__ . '/../Services/Employee/jadwal-cuti.php';
 
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
+siapkanJadwalDanCutiKaryawan($conn);
 $masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
+$masterShift = ambilMasterShift($conn);
+$namaShiftDiizinkan = array_column($masterShift, 'nama');
 $posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
+
+if (($_GET['aksi'] ?? '') === 'detail_master_shift') {
+    header('Content-Type: application/json; charset=utf-8');
+    $shift = ambilMasterShiftBerdasarkanNama($conn, trim((string) ($_GET['nama'] ?? '')));
+    echo json_encode($shift, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
 $pesan = "";
 $riwayatPendidikanForm = [];
@@ -39,6 +50,10 @@ $form = [
     "date_of_hire" => "",
     "employment_status" => "",
     "performance_score" => "",
+    "shift_nama" => "",
+    "shift_mulai" => "",
+    "shift_selesai" => "",
+    "shift_hari" => "Senin-Jumat",
 ];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -71,6 +86,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $gender = $form["gender"];
     $dateOfHire = $form["date_of_hire"];
     $employmentStatus = $form["employment_status"];
+    $shiftNama = in_array($form['shift_nama'], array_merge(['', 'Non Shift'], $namaShiftDiizinkan), true) ? $form['shift_nama'] : '';
+    $shiftMulai = $shiftNama === '' ? '' : $form['shift_mulai'];
+    $shiftSelesai = $shiftNama === '' ? '' : $form['shift_selesai'];
+    $shiftHari = $form['shift_hari'] !== '' ? $form['shift_hari'] : 'Senin-Jumat';
+    if ($shiftNama !== '' && $shiftNama !== 'Non Shift') {
+        $masterShiftDipilih = ambilMasterShiftBerdasarkanNama($conn, $shiftNama);
+        if ($masterShiftDipilih) {
+            $shiftMulai = (string) $masterShiftDipilih['jam_mulai'];
+            $shiftSelesai = (string) $masterShiftDipilih['jam_selesai'];
+            $shiftHari = (string) $masterShiftDipilih['hari'];
+        }
+    }
     $pesanPerforma = "";
     try {
         $performanceScore = normalisasiSkorPerforma($form["performance_score"]);
@@ -130,8 +157,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         file_cv,
                         foto_profil,
                         file_ijazah,
-                        file_mcu
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        file_mcu,
+                        shift_nama,
+                        shift_mulai,
+                        shift_selesai,
+                        shift_hari
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = mysqli_prepare($conn, $sql);
 
@@ -141,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 mysqli_stmt_bind_param(
                     $stmt,
-                    str_repeat("s", 18) . "d" . str_repeat("s", 8),
+                    str_repeat("s", 18) . "d" . str_repeat("s", 12),
                     $employeeName,
                     $nik,
                     $alamat,
@@ -163,7 +194,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $fileCv,
                     $fotoProfil,
                     $fileIjazah,
-                    $fileMcu
+                    $fileMcu,
+                    $shiftNama,
+                    $shiftMulai,
+                    $shiftSelesai,
+                    $shiftHari
                 );
 
                 $berhasilSimpan = false;
@@ -351,6 +386,23 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 </div>
 
                 <div class="form-group">
+                    <label for="shift_nama">Shift Kerja</label>
+                    <select id="shift_nama" name="shift_nama" onchange="var pilihan=this.options[this.selectedIndex],manual=pilihan.value==='Non Shift';document.getElementById('shift_mulai').value=pilihan.getAttribute('data-mulai')||'';document.getElementById('shift_selesai').value=pilihan.getAttribute('data-selesai')||'';document.getElementById('shift_hari').value=pilihan.getAttribute('data-hari')||'Senin-Jumat';document.getElementById('shift_mulai').disabled=!manual;document.getElementById('shift_selesai').disabled=!manual;document.getElementById('shift_hari').disabled=!manual;"><option value="">Belum diatur</option><?php foreach ($masterShift as $shift): ?><option value="<?= htmlspecialchars($shift['nama']); ?>" data-mulai="<?= htmlspecialchars($shift['jam_mulai']); ?>" data-selesai="<?= htmlspecialchars($shift['jam_selesai']); ?>" data-hari="<?= htmlspecialchars($shift['hari']); ?>" <?= $form['shift_nama'] === $shift['nama'] ? 'selected' : ''; ?>><?= htmlspecialchars($shift['nama']); ?></option><?php endforeach; ?><option value="Non Shift" <?= $form['shift_nama'] === 'Non Shift' ? 'selected' : ''; ?>>Non Shift</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="shift_mulai">Jam Mulai Kerja</label>
+                    <input id="shift_mulai" type="time" name="shift_mulai" value="<?= htmlspecialchars($form['shift_mulai']); ?>">
+                </div>
+                <div class="form-group">
+                    <label for="shift_selesai">Jam Selesai Kerja</label>
+                    <input id="shift_selesai" type="time" name="shift_selesai" value="<?= htmlspecialchars($form['shift_selesai']); ?>">
+                </div>
+                <div class="form-group">
+                    <label for="shift_hari">Hari Kerja</label>
+                    <input id="shift_hari" type="text" name="shift_hari" value="<?= htmlspecialchars($form['shift_hari']); ?>">
+                </div>
+
+                <div class="form-group">
                     <label for="foto_profil">Foto Profil</label>
                     <input type="file" id="foto_profil" name="foto_profil" accept=".jpg,.jpeg,image/jpeg">
                     <p class="field-note">JPG/JPEG, maksimal 2 MB. Boleh dikosongkan.</p>
@@ -493,15 +545,44 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const cards = [
-        makeCard('Profil Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score','date_of_hire'], 'tambah-main-card'),
+        makeCard('Profil Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score','date_of_hire','shift_nama','shift_mulai','shift_selesai','shift_hari'], 'tambah-main-card'),
         makeCard('Biodata Karyawan', ['nik','alamat','tanggal_lahir','agama','gender','marital_status','kontak','email'], 'tambah-personal-card'),
         makeCard('Informasi Karyawan', ['biografi','keahlian'], 'tambah-history-card'),
         makeCard('Berkas Pendukung', ['foto_profil','file_cv','file_ijazah','file_mcu','tanggal_mcu_terakhir'], 'tambah-documents-card')
     ];
     const biodataCard = cards[1];
     const historyCard = cards[2];
+    const profileCard = cards[0];
+    const shiftSection = document.createElement('section');
+    shiftSection.className = 'history-section shift-section';
+    shiftSection.innerHTML = '<div class="history-heading"><h4>Shift Kerja</h4></div><div class="shift-fields"></div>';
+    const shiftFields = shiftSection.querySelector('.shift-fields');
+    ['shift_nama', 'shift_mulai', 'shift_selesai', 'shift_hari'].forEach(name => {
+        if (groups[name]) shiftFields.appendChild(groups[name]);
+    });
+    profileCard.appendChild(shiftSection);
     biodataCard.insertAdjacentHTML('beforeend', '<section class="history-section"><div class="history-heading"><h4>Riwayat Pendidikan</h4><button class="history-add" id="add-education" type="button">Tambah +</button></div><div id="education-list" class="history-list"></div></section>');
     historyCard.insertAdjacentHTML('beforeend', '<section class="history-section"><div class="history-heading"><h4>Riwayat Pekerjaan</h4><button class="history-add" id="add-work" type="button">Tambah +</button></div><div id="work-list" class="history-list"></div></section>');
+
+    const shiftNama = document.getElementById('shift_nama');
+    const shiftMulai = document.getElementById('shift_mulai');
+    const shiftSelesai = document.getElementById('shift_selesai');
+    const shiftHari = document.getElementById('shift_hari');
+    const perbaruiShift = async () => {
+        if (!shiftNama || !shiftMulai || !shiftSelesai || !shiftHari) return;
+        const option = shiftNama.options[shiftNama.selectedIndex];
+        const nama = option?.value || '';
+        const dariOpsi = option?.dataset.mulai ? { jam_mulai: option.dataset.mulai, jam_selesai: option.dataset.selesai, hari: option.dataset.hari } : null;
+        const manual = nama === 'Non Shift';
+        shiftMulai.readOnly = shiftSelesai.readOnly = shiftHari.readOnly = !manual;
+        shiftMulai.disabled = shiftSelesai.disabled = shiftHari.disabled = !manual;
+        if (dariOpsi) { shiftMulai.value = dariOpsi.jam_mulai || ''; shiftSelesai.value = dariOpsi.jam_selesai || ''; shiftHari.value = dariOpsi.hari || ''; }
+        if (!nama || nama === 'Non Shift') return;
+        const master = await fetch(new URL('tambah.php?aksi=detail_master_shift&nama=' + encodeURIComponent(nama), window.location.href), { credentials: 'same-origin' }).then(response => response.ok ? response.json() : null).catch(() => null);
+        if (master) { shiftMulai.value = master.jam_mulai || shiftMulai.value; shiftSelesai.value = master.jam_selesai || shiftSelesai.value; shiftHari.value = master.hari || shiftHari.value; }
+    };
+    shiftNama?.addEventListener('change', perbaruiShift);
+    perbaruiShift();
 
     const educationList = biodataCard.querySelector('#education-list');
     const workList = historyCard.querySelector('#work-list');

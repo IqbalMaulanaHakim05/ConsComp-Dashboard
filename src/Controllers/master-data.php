@@ -20,6 +20,7 @@ $tampilanMaster = [
 ];
 $pesan = trim((string) ($_GET["pesan"] ?? ""));
 $error = trim((string) ($_GET["error"] ?? ""));
+$masterShift = ambilMasterShift($conn);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!csrfValid($_POST["csrf_token"] ?? null)) {
@@ -28,6 +29,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $aksi = (string) ($_POST["aksi"] ?? "tambah");
         $jenis = (string) ($_POST["jenis"] ?? "");
         $table = $map[$jenis] ?? null;
+
+        if ($aksi === 'edit_shift') {
+            $idShift = (int) ($_POST['id'] ?? 0);
+            $mulai = trim((string) ($_POST['jam_mulai'] ?? ''));
+            $selesai = trim((string) ($_POST['jam_selesai'] ?? ''));
+            $hariTerpilih = array_values(array_intersect(
+                ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
+                array_map('strval', (array) ($_POST['hari'] ?? []))
+            ));
+            $hari = implode(', ', $hariTerpilih) ?: 'Senin-Jumat';
+            $stmt = mysqli_prepare($conn, "UPDATE master_shift SET jam_mulai = ?, jam_selesai = ?, hari = ? WHERE id = ?");
+            if ($stmt && $idShift > 0 && preg_match('/^\d{2}:\d{2}$/', $mulai) && preg_match('/^\d{2}:\d{2}$/', $selesai)) {
+                mysqli_stmt_bind_param($stmt, 'sssi', $mulai, $selesai, $hari, $idShift);
+                $berhasil = mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+                header('Location: master-data.php?' . ($berhasil ? 'pesan=' : 'error=') . rawurlencode($berhasil ? 'Shift berhasil diperbarui.' : 'Shift gagal diperbarui.'));
+                exit;
+            }
+            if ($stmt) mysqli_stmt_close($stmt);
+            $error = 'Data shift tidak valid.';
+        }
 
         if ($aksi === "tambah") {
             $nama = trim((string) ($_POST["nama"] ?? ""));
@@ -224,6 +246,38 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     <?php endforeach; ?>
 </section>
 
+<section class="dashboard-chart master-data-grid master-shift-grid">
+    <article class="chart-card master-data-card master-shift-card">
+        <h2>Master Shift Kerja</h2>
+        <ul class="master-list">
+            <?php foreach ($masterShift as $shift): ?><li class="master-item"><span><?= htmlspecialchars($shift['nama'] . ' · ' . $shift['jam_mulai'] . ' - ' . $shift['jam_selesai'] . ' · ' . $shift['hari']); ?></span><button class="btn btn-secondary edit-master-shift" type="button" data-id="<?= (int) $shift['id']; ?>" data-nama="<?= htmlspecialchars($shift['nama'], ENT_QUOTES); ?>" data-mulai="<?= htmlspecialchars($shift['jam_mulai'], ENT_QUOTES); ?>" data-selesai="<?= htmlspecialchars($shift['jam_selesai'], ENT_QUOTES); ?>" data-hari="<?= htmlspecialchars($shift['hari'], ENT_QUOTES); ?>">Edit</button></li><?php endforeach; ?>
+        </ul>
+    </article>
+</section>
+
+<dialog id="shift-master-dialog">
+    <form method="POST" class="position-dialog-add">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="edit_shift"><input type="hidden" name="id" id="shift-master-id">
+        <h2 id="shift-master-title"></h2><input name="jam_mulai" id="shift-master-mulai" type="time" required><input name="jam_selesai" id="shift-master-selesai" type="time" required><fieldset class="shift-day-checklist"><legend>Hari Kerja</legend><?php foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $hari): ?><label><input type="checkbox" name="hari[]" value="<?= $hari; ?>"> <?= $hari; ?></label><?php endforeach; ?></fieldset><button class="btn btn-success" type="submit">Simpan</button><button class="btn btn-secondary" type="button" id="close-shift-master-dialog">Batal</button>
+    </form>
+</dialog>
+<script>
+(() => {
+    const dialog = document.getElementById('shift-master-dialog');
+    document.querySelectorAll('.edit-master-shift').forEach(button => button.addEventListener('click', () => {
+        document.getElementById('shift-master-id').value = button.dataset.id;
+        document.getElementById('shift-master-title').textContent = 'Edit ' + button.dataset.nama;
+        document.getElementById('shift-master-mulai').value = button.dataset.mulai;
+        document.getElementById('shift-master-selesai').value = button.dataset.selesai;
+        const hari = button.dataset.hari.split(/,\s*/);
+        dialog.querySelectorAll('input[name="hari[]"]').forEach(item => { item.checked = hari.includes(item.value) || (button.dataset.hari === 'Senin-Jumat' && ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].includes(item.value)); });
+        dialog.showModal();
+    }));
+    document.getElementById('close-shift-master-dialog').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+})();
+</script>
+
 <style>
     #position-dialog {
         width: min(760px, calc(100vw - 2rem));
@@ -235,6 +289,13 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         box-shadow: 0 20px 60px rgba(0, 0, 0, .28);
     }
     #position-dialog::backdrop { background: rgba(0, 0, 0, .38); }
+    #shift-master-dialog { width: min(620px, calc(100vw - 2rem)); padding: 2rem; border: 1px solid #9ca3af; border-radius: 14px; background: #fff; box-shadow: 0 20px 60px rgba(0, 0, 0, .28); }
+    #shift-master-dialog::backdrop { background: rgba(0, 0, 0, .38); }
+    #shift-master-dialog .position-dialog-add { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #shift-master-dialog h2 { grid-column: 1 / -1; margin: 0; color: #111827; }
+    #shift-master-dialog .shift-day-checklist { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .7rem 1rem; margin: 0; padding: .9rem 1rem; border: 1px solid #cbd5e1; border-radius: 12px; }
+    #shift-master-dialog .shift-day-checklist legend { padding: 0 .35rem; font-weight: 600; }
+    #shift-master-dialog .shift-day-checklist label { display: inline-flex; align-items: center; gap: .35rem; }
     #position-dialog h2 { margin: 0 0 1.25rem; text-align: center; color: #111827; }
     .position-dialog-add { display: flex; gap: .75rem; margin-bottom: 1.25rem; }
     .position-dialog-add select { flex: 1; min-width: 0; border: 1px solid #667cff; border-radius: 14px; padding: .8rem 1rem; }

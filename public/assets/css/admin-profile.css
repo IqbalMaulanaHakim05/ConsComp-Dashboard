@@ -136,6 +136,58 @@
     letter-spacing: -.02em;
 }
 
+/* Ringkasan profil: foto kiri, data utama kanan, shift dan cuti di bawah. */
+.profil-karyawan-page .profile-summary-card {
+    grid-column: auto;
+    align-self: stretch;
+}
+
+.profil-karyawan-page .profile-summary-main {
+    display: grid;
+    grid-template-columns: minmax(170px, 38%) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.profil-karyawan-page .profile-summary-card .profile-photo-wrap {
+    float: none;
+    width: 100%;
+    margin: 0;
+}
+
+.profil-karyawan-page .profile-summary-card .profile-photo {
+    width: 100%;
+    max-width: none;
+    height: 220px;
+}
+
+.profil-karyawan-page .profile-summary-card .profile-summary-details {
+    min-height: 0;
+}
+
+.profil-karyawan-page .profile-summary-footer {
+    margin-top: 28px;
+    min-height: 0 !important;
+}
+
+.profil-karyawan-page .profile-summary-footer div {
+    display: grid;
+    grid-template-columns: minmax(160px, 1fr) minmax(0, 1fr);
+    min-height: 66px;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.profil-karyawan-page .profile-summary-footer dd {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.profil-karyawan-page .profile-summary-footer .btn { font-weight: 500; }
+
 .profil-karyawan-page .profile-photo-wrap {
     float: left;
     width: 38%;
@@ -184,8 +236,8 @@
 
 .profil-karyawan-page .profile-detail-card {
     min-height: 0;
-    height: 100%;
-    align-self: stretch;
+    height: auto;
+    align-self: start;
     box-sizing: border-box;
 }
 
@@ -259,6 +311,12 @@
 .profil-karyawan-page .history-dialog-fields-pekerjaan { grid-template-columns: minmax(190px, 1.35fr) minmax(120px, .75fr) minmax(170px, 1fr) minmax(170px, 1fr) minmax(190px, 1.35fr); }
 .profil-karyawan-page .history-dialog-fields label { display: grid; gap: 8px; color: #111827; font-size: 16px; font-weight: 500; }
 .profil-karyawan-page .history-dialog-fields input { width: 100%; min-width: 0; height: 52px; padding: 0 13px; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 12px; font: inherit; }
+.profil-karyawan-page .history-dialog-fields select { width: 100%; min-width: 0; height: 52px; padding: 0 13px; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 12px; font: inherit; }
+.profil-karyawan-page .shift-dialog-fields { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+.profil-karyawan-page .profile-shift-day-checklist { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .65rem 1rem; margin: 0; padding: .85rem 1rem; border: 1px solid #94a3b8; border-radius: 12px; }
+.profil-karyawan-page .profile-shift-day-checklist legend { padding: 0 .35rem; font-weight: 700; }
+.profil-karyawan-page .profile-shift-day-checklist label { display: inline-flex; align-items: center; gap: .35rem; margin: 0; }
+.profil-karyawan-page .profile-shift-day-checklist input { width: auto; min-width: 0; height: auto; padding: 0; }
 .profil-karyawan-page .history-dialog-fields input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
 .profil-karyawan-page .history-dialog-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; }
 .profil-karyawan-page .history-dialog-actions .btn { min-width: 112px; min-height: 42px; border-radius: 10px; }
@@ -557,6 +615,7 @@
 :root[data-theme="dark"] .profil-karyawan-page .history-dialog { color: #f8fafc; background: #1e293b; }
 :root[data-theme="dark"] .profil-karyawan-page .history-dialog-fields label { color: #e2e8f0; }
 :root[data-theme="dark"] .profil-karyawan-page .history-dialog-fields input { color: #e2e8f0; background: #0f172a; border-color: #475569; color-scheme: dark; }
+:root[data-theme="dark"] .profil-karyawan-page .history-dialog-fields select { color: #e2e8f0; background: #0f172a; border-color: #475569; color-scheme: dark; }
 
 @media screen and (max-width: 800px) {
     .profil-karyawan-page .profile-grid {
@@ -570,6 +629,12 @@
     .profil-karyawan-page .profile-card {
         padding: 22px;
     }
+
+    .profil-karyawan-page .profile-summary-main { grid-template-columns: 1fr; }
+    .profil-karyawan-page .profile-summary-card .profile-photo { max-width: 260px; height: 260px; }
+    .profil-karyawan-page .profile-summary-footer { margin-top: 26px; }
+    .profil-karyawan-page .profile-summary-footer div { grid-template-columns: 1fr; gap: 4px; }
+    .profil-karyawan-page .profile-summary-footer dd { justify-content: flex-start; text-align: left; }
 
     .profil-karyawan-page .profile-history-row { grid-template-columns: 1fr; gap: 16px; min-height: 0 !important; align-items: start !important; }
     .profil-karyawan-page .profile-history-row dd { justify-items: start; text-align: left; }
