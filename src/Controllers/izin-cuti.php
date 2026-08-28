@@ -319,125 +319,131 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     <a class="btn btn-primary" href="notifikasi-izin-cuti.php">🔔 Buka Notifikasi</a>
     <a class="btn export-excel-btn" href="export_izin_cuti.php">Export Excel</a>
 </div>
-<section class="data-card overtime-notifications"><div class="data-card-header"><h2>Notifikasi Terbaru</h2><p class="overtime-note">Persetujuan izin cuti dan perubahan data terbaru.</p></div><div class="notification-list"><?php if ($notifikasiIzinCuti && mysqli_num_rows($notifikasiIzinCuti) > 0): ?><?php while ($notif = mysqli_fetch_assoc($notifikasiIzinCuti)): ?><div class="notification-item"><strong><?= htmlspecialchars($notif["username"] ?: "Sistem"); ?></strong><span><?= htmlspecialchars(labelAktivitas((string) $notif["aktivitas"])); ?></span><small><?= htmlspecialchars($notif["dibuat_pada"]); ?></small></div><?php endwhile; ?><?php else: ?><div class="notification-empty">Belum ada notifikasi.</div><?php endif; ?></div></section>
+<section class="data-card overtime-notifications">
+    <div class="data-card-header">
+        <h2>Notifikasi Terbaru</h2>
+        <p class="overtime-note">Persetujuan izin cuti dan perubahan data terbaru.</p>
+    </div>
+    <div class="notification-list"><?php if ($notifikasiIzinCuti && mysqli_num_rows($notifikasiIzinCuti) > 0): ?><?php while ($notif = mysqli_fetch_assoc($notifikasiIzinCuti)): ?><div class="notification-item"><strong><?= htmlspecialchars($notif["username"] ?: "Sistem"); ?></strong><span><?= htmlspecialchars(labelAktivitas((string) $notif["aktivitas"])); ?></span><small><?= htmlspecialchars($notif["dibuat_pada"]); ?></small></div><?php endwhile; ?><?php else: ?><div class="notification-empty">Belum ada notifikasi.</div><?php endif; ?></div>
+</section>
 
 <?php if ($bolehMenginput): ?>
-<form method="POST" id="izin-cuti-form" class="izin-entry-form">
-    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
-    <input type="hidden" name="aksi" value="simpan">
+    <form method="POST" id="izin-cuti-form" class="izin-entry-form">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>">
+        <input type="hidden" name="aksi" value="simpan">
 
-    <section class="form-card izin-form-card">
-        <div class="form-card-header">
-            <h2>Tambah Izin Cuti</h2>
-            <p>Pilih departemen terlebih dahulu, kemudian pilih posisi dan karyawan yang sesuai.</p>
-        </div>
-
-        <div class="form-body izin-form-fields">
-
-            <div class="form-group">
-                <label for="cuti-department">Departemen</label>
-                <select id="cuti-department" name="department_id" required>
-                    <option value="">Pilih departemen</option>
-                    <?php foreach ($departemenPilihan as $idDepartemen => $namaDepartemen): ?>
-                        <option value="<?= (int) $idDepartemen; ?>" <?= $form["department_id"] === (string) $idDepartemen ? "selected" : ""; ?>>
-                            <?= htmlspecialchars($namaDepartemen); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+        <section class="form-card izin-form-card">
+            <div class="form-card-header">
+                <h2>Tambah Izin Cuti</h2>
+                <p>Pilih departemen terlebih dahulu, kemudian pilih posisi dan karyawan yang sesuai.</p>
             </div>
 
-            <div class="form-group">
-                <label for="cuti-position">Posisi</label>
-                <select id="cuti-position" name="position" data-selected="<?= htmlspecialchars($form["position"]); ?>" required disabled>
-                    <option value="">Pilih departemen terlebih dahulu</option>
-                </select>
+            <div class="form-body izin-form-fields">
+
+                <div class="form-group">
+                    <label for="cuti-department">Departemen</label>
+                    <select id="cuti-department" name="department_id" required>
+                        <option value="">Pilih departemen</option>
+                        <?php foreach ($departemenPilihan as $idDepartemen => $namaDepartemen): ?>
+                            <option value="<?= (int) $idDepartemen; ?>" <?= $form["department_id"] === (string) $idDepartemen ? "selected" : ""; ?>>
+                                <?= htmlspecialchars($namaDepartemen); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cuti-position">Posisi</label>
+                    <select id="cuti-position" name="position" data-selected="<?= htmlspecialchars($form["position"]); ?>" required disabled>
+                        <option value="">Pilih departemen terlebih dahulu</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="cuti-karyawan">Karyawan</label>
+                    <select id="cuti-karyawan" name="karyawan_id" data-selected="<?= (int) $form["karyawan_id"]; ?>" required disabled>
+                        <option value="">Pilih departemen dan posisi terlebih dahulu</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cuti-tanggal-mulai">Tanggal Awal Cuti</label>
+                    <input id="cuti-tanggal-mulai" type="date" name="tanggal_mulai" value="<?= htmlspecialchars($form["tanggal_mulai"]); ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cuti-tanggal-selesai">Tanggal Akhir Cuti</label>
+                    <input id="cuti-tanggal-selesai" type="date" name="tanggal_selesai" value="<?= htmlspecialchars($form["tanggal_selesai"]); ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cuti-jenis">Jenis Durasi Cuti</label>
+                    <select id="cuti-jenis" name="jenis_cuti" required>
+                        <option value="harian" <?= $form["jenis_cuti"] === "harian" ? "selected" : ""; ?>>Harian penuh</option>
+                        <option value="setengah_hari" <?= $form["jenis_cuti"] === "setengah_hari" ? "selected" : ""; ?>>Setengah hari</option>
+                    </select>
+                    <p class="field-note">Durasi dihitung berdasarkan hari kerja (Senin-Jumat). Hari libur nasional tetap dihitung.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="cuti-periode">Periode Setengah Hari</label>
+                    <select id="cuti-periode" name="periode_setengah_hari" data-selected="<?= htmlspecialchars($form["periode_setengah_hari"]); ?>" disabled>
+                        <option value="">Pilih periode</option>
+                        <option value="pagi">Setengah hari pertama (pagi)</option>
+                        <option value="siang">Setengah hari kedua (siang)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cuti-total-hari">Total Hari Cuti</label>
+                    <input id="cuti-total-hari" type="text" value="-">
+                </div>
+
+                <div class="form-group">
+                    <label for="cuti-kontak">Nomor Kontak yang Bisa Dihubungi</label>
+                    <input id="cuti-kontak" type="tel" name="nomor_kontak" maxlength="50" value="<?= htmlspecialchars($form["nomor_kontak"]); ?>" placeholder="Contoh: 081234567890" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="cuti-deskripsi">Deskripsi Keperluan</label>
+                    <textarea id="cuti-deskripsi" name="deskripsi" rows="4" required><?= htmlspecialchars($form["deskripsi"]); ?></textarea>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="form-card replacement-form-card">
+            <div class="form-card-header">
+                <h2>Karyawan Pengganti</h2>
+                <p>Pilih karyawan yang akan menggantikan selama cuti berlangsung.</p>
             </div>
 
-            <div class="form-group full-width">
-                <label for="cuti-karyawan">Karyawan</label>
-                <select id="cuti-karyawan" name="karyawan_id" data-selected="<?= (int) $form["karyawan_id"]; ?>" required disabled>
-                    <option value="">Pilih departemen dan posisi terlebih dahulu</option>
-                </select>
-            </div>
+            <div class="form-body replacement-form-body">
+                <div class="form-group">
+                    <label for="cuti-pengganti-department">Departemen</label>
+                    <select id="cuti-pengganti-department" disabled>
+                        <option value="">Pilih departemen</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cuti-pengganti-position">Posisi</label>
+                    <select id="cuti-pengganti-position" disabled>
+                        <option value="">Pilih departemen terlebih dahulu</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cuti-pengganti">Karyawan Pengganti</label>
+                    <select id="cuti-pengganti" name="karyawan_pengganti_id" data-selected="<?= (int) $form["karyawan_pengganti_id"]; ?>" required disabled>
+                        <option value="">Pilih departemen dan karyawan terlebih dahulu</option>
+                    </select>
+                    <div id="cuti-pengganti-info" class="replacement-employee-info" hidden></div>
+                    <p class="field-note">Pilihan hanya menampilkan karyawan lain dari departemen yang sama.</p>
+                </div>
 
-            <div class="form-group">
-                <label for="cuti-tanggal-mulai">Tanggal Awal Cuti</label>
-                <input id="cuti-tanggal-mulai" type="date" name="tanggal_mulai" value="<?= htmlspecialchars($form["tanggal_mulai"]); ?>" required>
+                <button class="btn btn-success replacement-submit" type="submit">Simpan Izin Cuti</button>
             </div>
-
-            <div class="form-group">
-                <label for="cuti-tanggal-selesai">Tanggal Akhir Cuti</label>
-                <input id="cuti-tanggal-selesai" type="date" name="tanggal_selesai" value="<?= htmlspecialchars($form["tanggal_selesai"]); ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label for="cuti-jenis">Jenis Durasi Cuti</label>
-                <select id="cuti-jenis" name="jenis_cuti" required>
-                    <option value="harian" <?= $form["jenis_cuti"] === "harian" ? "selected" : ""; ?>>Harian penuh</option>
-                    <option value="setengah_hari" <?= $form["jenis_cuti"] === "setengah_hari" ? "selected" : ""; ?>>Setengah hari</option>
-                </select>
-                <p class="field-note">Durasi dihitung berdasarkan hari kerja (Senin-Jumat). Hari libur nasional tetap dihitung.</p>
-            </div>
-
-            <div class="form-group">
-                <label for="cuti-periode">Periode Setengah Hari</label>
-                <select id="cuti-periode" name="periode_setengah_hari" data-selected="<?= htmlspecialchars($form["periode_setengah_hari"]); ?>" disabled>
-                    <option value="">Pilih periode</option>
-                    <option value="pagi">Setengah hari pertama (pagi)</option>
-                    <option value="siang">Setengah hari kedua (siang)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="cuti-total-hari">Total Hari Cuti</label>
-                <input id="cuti-total-hari" type="text" value="-">
-            </div>
-
-            <div class="form-group">
-                <label for="cuti-kontak">Nomor Kontak yang Bisa Dihubungi</label>
-                <input id="cuti-kontak" type="tel" name="nomor_kontak" maxlength="50" value="<?= htmlspecialchars($form["nomor_kontak"]); ?>" placeholder="Contoh: 081234567890" required>
-            </div>
-
-            <div class="form-group full-width">
-                <label for="cuti-deskripsi">Deskripsi Keperluan</label>
-                <textarea id="cuti-deskripsi" name="deskripsi" rows="4" required><?= htmlspecialchars($form["deskripsi"]); ?></textarea>
-            </div>
-
-        </div>
-    </section>
-
-    <section class="form-card replacement-form-card">
-        <div class="form-card-header">
-            <h2>Karyawan Pengganti</h2>
-            <p>Pilih karyawan yang akan menggantikan selama cuti berlangsung.</p>
-        </div>
-
-        <div class="form-body replacement-form-body">
-            <div class="form-group">
-                <label for="cuti-pengganti-department">Departemen</label>
-                <select id="cuti-pengganti-department" disabled>
-                    <option value="">Pilih departemen</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="cuti-pengganti-position">Posisi</label>
-                <select id="cuti-pengganti-position" disabled>
-                    <option value="">Pilih departemen terlebih dahulu</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="cuti-pengganti">Karyawan Pengganti</label>
-                <select id="cuti-pengganti" name="karyawan_pengganti_id" data-selected="<?= (int) $form["karyawan_pengganti_id"]; ?>" required disabled>
-                    <option value="">Pilih departemen dan karyawan terlebih dahulu</option>
-                </select>
-                <div id="cuti-pengganti-info" class="replacement-employee-info" hidden></div>
-                <p class="field-note">Pilihan hanya menampilkan karyawan lain dari departemen yang sama.</p>
-            </div>
-
-            <button class="btn btn-success replacement-submit" type="submit">Simpan Izin Cuti</button>
-        </div>
-    </section>
-</form>
+        </section>
+    </form>
 <?php endif; ?>
 
 <section class="data-card izin-data-card">
@@ -541,218 +547,220 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 </section>
 
 <?php if ($bolehMenginput): ?>
-<script>
-(() => {
-    const employees = <?= json_encode($dataKaryawan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
-    const positionsByDepartment = <?= json_encode($posisiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
-    const department = document.getElementById("cuti-department");
-    const position = document.getElementById("cuti-position");
-    const employee = document.getElementById("cuti-karyawan");
-    const replacement = document.getElementById("cuti-pengganti");
-    const replacementDepartment = document.getElementById("cuti-pengganti-department");
-    const replacementPosition = document.getElementById("cuti-pengganti-position");
-    const replacementInfo = document.getElementById("cuti-pengganti-info");
-    const startDate = document.getElementById("cuti-tanggal-mulai");
-    const endDate = document.getElementById("cuti-tanggal-selesai");
-    const leaveType = document.getElementById("cuti-jenis");
-    const halfDayPeriod = document.getElementById("cuti-periode");
-    const totalDays = document.getElementById("cuti-total-hari");
+    <script>
+        (() => {
+            const employees = <?= json_encode($dataKaryawan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+            const positionsByDepartment = <?= json_encode($posisiPerDepartemen, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+            const department = document.getElementById("cuti-department");
+            const position = document.getElementById("cuti-position");
+            const employee = document.getElementById("cuti-karyawan");
+            const replacement = document.getElementById("cuti-pengganti");
+            const replacementDepartment = document.getElementById("cuti-pengganti-department");
+            const replacementPosition = document.getElementById("cuti-pengganti-position");
+            const replacementInfo = document.getElementById("cuti-pengganti-info");
+            const startDate = document.getElementById("cuti-tanggal-mulai");
+            const endDate = document.getElementById("cuti-tanggal-selesai");
+            const leaveType = document.getElementById("cuti-jenis");
+            const halfDayPeriod = document.getElementById("cuti-periode");
+            const totalDays = document.getElementById("cuti-total-hari");
 
-    const createOption = (value, label) => {
-        const option = document.createElement("option");
-        option.value = String(value);
-        option.textContent = label;
-        return option;
-    };
+            const createOption = (value, label) => {
+                const option = document.createElement("option");
+                option.value = String(value);
+                option.textContent = label;
+                return option;
+            };
 
-    const updatePositions = (restoreSelection = false) => {
-        const selectedPosition = restoreSelection ? position.dataset.selected : "";
-        position.replaceChildren();
+            const updatePositions = (restoreSelection = false) => {
+                const selectedPosition = restoreSelection ? position.dataset.selected : "";
+                position.replaceChildren();
 
-        if (!department.value) {
-            position.append(createOption("", "Pilih departemen terlebih dahulu"));
-            position.disabled = true;
-            position.dataset.selected = "";
-            updateEmployees(false);
-            return;
-        }
+                if (!department.value) {
+                    position.append(createOption("", "Pilih departemen terlebih dahulu"));
+                    position.disabled = true;
+                    position.dataset.selected = "";
+                    updateEmployees(false);
+                    return;
+                }
 
-        const positions = [...new Set(positionsByDepartment[department.value] || [])].sort((first, second) => first.localeCompare(second, "id", { sensitivity: "base" }));
+                const positions = [...new Set(positionsByDepartment[department.value] || [])].sort((first, second) => first.localeCompare(second, "id", {
+                    sensitivity: "base"
+                }));
 
-        position.append(createOption("", positions.length ? "Pilih posisi" : "Tidak ada posisi pada departemen ini"));
-        positions.forEach(item => position.append(createOption(item, item)));
-        position.disabled = positions.length === 0;
+                position.append(createOption("", positions.length ? "Pilih posisi" : "Tidak ada posisi pada departemen ini"));
+                positions.forEach(item => position.append(createOption(item, item)));
+                position.disabled = positions.length === 0;
 
-        if (positions.includes(selectedPosition)) position.value = selectedPosition;
-        position.dataset.selected = "";
-        updateEmployees(restoreSelection);
-    };
+                if (positions.includes(selectedPosition)) position.value = selectedPosition;
+                position.dataset.selected = "";
+                updateEmployees(restoreSelection);
+            };
 
-    const updateEmployees = (restoreSelection = false) => {
-        const selectedId = restoreSelection ? employee.dataset.selected : "";
-        employee.replaceChildren();
+            const updateEmployees = (restoreSelection = false) => {
+                const selectedId = restoreSelection ? employee.dataset.selected : "";
+                employee.replaceChildren();
 
-        if (!department.value || !position.value) {
-            employee.append(createOption("", "Pilih departemen dan posisi terlebih dahulu"));
-            employee.disabled = true;
-            employee.dataset.selected = "";
-            updateReplacements(false);
-            return;
-        }
+                if (!department.value || !position.value) {
+                    employee.append(createOption("", "Pilih departemen dan posisi terlebih dahulu"));
+                    employee.disabled = true;
+                    employee.dataset.selected = "";
+                    updateReplacements(false);
+                    return;
+                }
 
-        const matching = employees.filter(item =>
-            String(item.department_id) === department.value && item.posisi === position.value
-        );
-        employee.append(createOption("", matching.length ? "Pilih karyawan" : "Tidak ada karyawan yang sesuai"));
-        matching.forEach(item => employee.append(createOption(item.id, `${item.emp_id} - ${item.nama}`)));
-        employee.disabled = matching.length === 0;
+                const matching = employees.filter(item =>
+                    String(item.department_id) === department.value && item.posisi === position.value
+                );
+                employee.append(createOption("", matching.length ? "Pilih karyawan" : "Tidak ada karyawan yang sesuai"));
+                matching.forEach(item => employee.append(createOption(item.id, `${item.emp_id} - ${item.nama}`)));
+                employee.disabled = matching.length === 0;
 
-        if (matching.length === 1) employee.value = String(matching[0].id);
-        else if (matching.some(item => String(item.id) === String(selectedId))) employee.value = String(selectedId);
-        employee.dataset.selected = "";
-        updateReplacements(restoreSelection);
-    };
+                if (matching.length === 1) employee.value = String(matching[0].id);
+                else if (matching.some(item => String(item.id) === String(selectedId))) employee.value = String(selectedId);
+                employee.dataset.selected = "";
+                updateReplacements(restoreSelection);
+            };
 
-    const updateReplacements = (restoreSelection = false) => {
-        const selectedId = restoreSelection ? replacement.dataset.selected : "";
-        const selectedReplacementPosition = replacementPosition.value;
-        replacement.replaceChildren();
-        replacementInfo.hidden = true;
-        replacementInfo.replaceChildren();
-        replacementDepartment.replaceChildren(createOption("", "Pilih departemen"));
-        replacementPosition.replaceChildren(createOption("", "Pilih departemen terlebih dahulu"));
-        replacementDepartment.disabled = !department.value;
-        replacementPosition.disabled = true;
-        if (department.value) {
-            replacementDepartment.append(createOption(department.value, department.options[department.selectedIndex].text));
-            replacementDepartment.value = department.value;
-            replacementPosition.replaceChildren(createOption("", "Posisi karyawan pengganti"));
-            (positionsByDepartment[department.value] || []).forEach(item => replacementPosition.append(createOption(item, item)));
-            replacementPosition.disabled = false;
-            if ((positionsByDepartment[department.value] || []).includes(selectedReplacementPosition)) {
-                replacementPosition.value = selectedReplacementPosition;
-            }
-        }
+            const updateReplacements = (restoreSelection = false) => {
+                const selectedId = restoreSelection ? replacement.dataset.selected : "";
+                const selectedReplacementPosition = replacementPosition.value;
+                replacement.replaceChildren();
+                replacementInfo.hidden = true;
+                replacementInfo.replaceChildren();
+                replacementDepartment.replaceChildren(createOption("", "Pilih departemen"));
+                replacementPosition.replaceChildren(createOption("", "Pilih departemen terlebih dahulu"));
+                replacementDepartment.disabled = !department.value;
+                replacementPosition.disabled = true;
+                if (department.value) {
+                    replacementDepartment.append(createOption(department.value, department.options[department.selectedIndex].text));
+                    replacementDepartment.value = department.value;
+                    replacementPosition.replaceChildren(createOption("", "Posisi karyawan pengganti"));
+                    (positionsByDepartment[department.value] || []).forEach(item => replacementPosition.append(createOption(item, item)));
+                    replacementPosition.disabled = false;
+                    if ((positionsByDepartment[department.value] || []).includes(selectedReplacementPosition)) {
+                        replacementPosition.value = selectedReplacementPosition;
+                    }
+                }
 
-        if (!department.value || !employee.value) {
-            replacement.append(createOption("", "Pilih departemen dan karyawan terlebih dahulu"));
-            replacement.disabled = true;
-            replacement.dataset.selected = "";
-            return;
-        }
+                if (!department.value || !employee.value) {
+                    replacement.append(createOption("", "Pilih departemen dan karyawan terlebih dahulu"));
+                    replacement.disabled = true;
+                    replacement.dataset.selected = "";
+                    return;
+                }
 
-        const matching = employees.filter(item =>
-            String(item.department_id) === department.value
-            && (!replacementPosition.value || item.posisi === replacementPosition.value)
-            && String(item.id) !== employee.value
-        );
-        replacement.append(createOption("", matching.length ? "Pilih karyawan pengganti" : "Tidak ada karyawan pengganti"));
-        matching.forEach(item => replacement.append(createOption(item.id, `${item.emp_id} - ${item.nama}`)));
-        replacement.disabled = matching.length === 0;
+                const matching = employees.filter(item =>
+                    String(item.department_id) === department.value &&
+                    (!replacementPosition.value || item.posisi === replacementPosition.value) &&
+                    String(item.id) !== employee.value
+                );
+                replacement.append(createOption("", matching.length ? "Pilih karyawan pengganti" : "Tidak ada karyawan pengganti"));
+                matching.forEach(item => replacement.append(createOption(item.id, `${item.emp_id} - ${item.nama}`)));
+                replacement.disabled = matching.length === 0;
 
-        if (matching.some(item => String(item.id) === String(selectedId))) replacement.value = String(selectedId);
-        replacement.dataset.selected = "";
-        renderReplacementInfo();
-    };
+                if (matching.some(item => String(item.id) === String(selectedId))) replacement.value = String(selectedId);
+                replacement.dataset.selected = "";
+                renderReplacementInfo();
+            };
 
-    const renderReplacementInfo = () => {
-        const selected = employees.find(item => String(item.id) === replacement.value);
-        replacementInfo.replaceChildren();
-        replacementInfo.hidden = !selected;
-        if (!selected) return;
-        replacementPosition.value = selected.posisi || "";
-        const positionInfo = document.createElement("span");
-        positionInfo.textContent = `Posisi: ${selected.posisi || "-"}`;
-        const departmentInfo = document.createElement("span");
-        departmentInfo.textContent = `Departemen: ${selected.departemen || "-"}`;
-        replacementInfo.append(positionInfo, departmentInfo);
-    };
+            const renderReplacementInfo = () => {
+                const selected = employees.find(item => String(item.id) === replacement.value);
+                replacementInfo.replaceChildren();
+                replacementInfo.hidden = !selected;
+                if (!selected) return;
+                replacementPosition.value = selected.posisi || "";
+                const positionInfo = document.createElement("span");
+                positionInfo.textContent = `Posisi: ${selected.posisi || "-"}`;
+                const departmentInfo = document.createElement("span");
+                departmentInfo.textContent = `Departemen: ${selected.departemen || "-"}`;
+                replacementInfo.append(positionInfo, departmentInfo);
+            };
 
-    const parseDateUtc = value => {
-        const [year, month, day] = value.split("-").map(Number);
-        return new Date(Date.UTC(year, month - 1, day));
-    };
+            const parseDateUtc = value => {
+                const [year, month, day] = value.split("-").map(Number);
+                return new Date(Date.UTC(year, month - 1, day));
+            };
 
-    const isWorkingDay = date => {
-        const day = date.getUTCDay();
-        return day >= 1 && day <= 5;
-    };
+            const isWorkingDay = date => {
+                const day = date.getUTCDay();
+                return day >= 1 && day <= 5;
+            };
 
-    const countWorkingDays = (startValue, endValue) => {
-        const start = parseDateUtc(startValue);
-        const end = parseDateUtc(endValue);
-        const calendarDays = Math.floor((end - start) / 86400000) + 1;
-        let days = Math.floor(calendarDays / 7) * 5;
-        const remainingDays = calendarDays % 7;
-        const startDay = start.getUTCDay() || 7;
+            const countWorkingDays = (startValue, endValue) => {
+                const start = parseDateUtc(startValue);
+                const end = parseDateUtc(endValue);
+                const calendarDays = Math.floor((end - start) / 86400000) + 1;
+                let days = Math.floor(calendarDays / 7) * 5;
+                const remainingDays = calendarDays % 7;
+                const startDay = start.getUTCDay() || 7;
 
-        for (let offset = 0; offset < remainingDays; offset++) {
-            const day = ((startDay + offset - 1) % 7) + 1;
-            if (day <= 5) days++;
-        }
+                for (let offset = 0; offset < remainingDays; offset++) {
+                    const day = ((startDay + offset - 1) % 7) + 1;
+                    if (day <= 5) days++;
+                }
 
-        return days;
-    };
+                return days;
+            };
 
-    const updateDuration = () => {
-        const halfDay = leaveType.value === "setengah_hari";
-        halfDayPeriod.disabled = !halfDay;
-        halfDayPeriod.required = halfDay;
+            const updateDuration = () => {
+                const halfDay = leaveType.value === "setengah_hari";
+                halfDayPeriod.disabled = !halfDay;
+                halfDayPeriod.required = halfDay;
 
-        if (!halfDay) {
-            halfDayPeriod.value = "";
-        } else if (halfDayPeriod.dataset.selected) {
-            halfDayPeriod.value = halfDayPeriod.dataset.selected;
-        }
-        halfDayPeriod.dataset.selected = "";
+                if (!halfDay) {
+                    halfDayPeriod.value = "";
+                } else if (halfDayPeriod.dataset.selected) {
+                    halfDayPeriod.value = halfDayPeriod.dataset.selected;
+                }
+                halfDayPeriod.dataset.selected = "";
 
-        endDate.readOnly = halfDay;
-        if (startDate.value) {
-            endDate.min = startDate.value;
-            if (halfDay) endDate.value = startDate.value;
-        }
+                endDate.readOnly = halfDay;
+                if (startDate.value) {
+                    endDate.min = startDate.value;
+                    if (halfDay) endDate.value = startDate.value;
+                }
 
-        // 0,5 hari
-        if (halfDay && startDate.value) {
-            totalDays.value = isWorkingDay(parseDateUtc(startDate.value))
-                ? "-"
-                : "Bukan hari kerja";
-            return;
-        }
+                // 0,5 hari
+                if (halfDay && startDate.value) {
+                    totalDays.value = isWorkingDay(parseDateUtc(startDate.value)) ?
+                        "0,5" :
+                        "Bukan hari kerja";
+                    return;
+                }
 
-        if (!startDate.value || !endDate.value || endDate.value < startDate.value) {
-            totalDays.value = "-";
-            return;
-        }
+                if (!startDate.value || !endDate.value || endDate.value < startDate.value) {
+                    totalDays.value = "-";
+                    return;
+                }
 
-        const days = countWorkingDays(startDate.value, endDate.value);
-        totalDays.value = `${days} hari kerja`;
-    };
+                const days = countWorkingDays(startDate.value, endDate.value);
+                totalDays.value = `${days} hari kerja`;
+            };
 
-    const openDatePicker = input => {
-        if (input.readOnly || typeof input.showPicker !== "function") return;
-        try {
-            input.showPicker();
-        } catch (error) {
-            // Browser tetap dapat memakai pemilih tanggal bawaannya.
-        }
-    };
+            const openDatePicker = input => {
+                if (input.readOnly || typeof input.showPicker !== "function") return;
+                try {
+                    input.showPicker();
+                } catch (error) {
+                    // Browser tetap dapat memakai pemilih tanggal bawaannya.
+                }
+            };
 
-    department.addEventListener("change", () => updatePositions(false));
-    position.addEventListener("change", () => updateEmployees(false));
-    employee.addEventListener("change", () => updateReplacements(false));
-    replacement.addEventListener("change", renderReplacementInfo);
-    replacementPosition.addEventListener("change", () => updateReplacements(false));
-    startDate.addEventListener("change", updateDuration);
-    endDate.addEventListener("change", updateDuration);
-    leaveType.addEventListener("change", updateDuration);
-    startDate.addEventListener("click", () => openDatePicker(startDate));
-    endDate.addEventListener("click", () => openDatePicker(endDate));
+            department.addEventListener("change", () => updatePositions(false));
+            position.addEventListener("change", () => updateEmployees(false));
+            employee.addEventListener("change", () => updateReplacements(false));
+            replacement.addEventListener("change", renderReplacementInfo);
+            replacementPosition.addEventListener("change", () => updateReplacements(false));
+            startDate.addEventListener("change", updateDuration);
+            endDate.addEventListener("change", updateDuration);
+            leaveType.addEventListener("change", updateDuration);
+            startDate.addEventListener("click", () => openDatePicker(startDate));
+            endDate.addEventListener("click", () => openDatePicker(endDate));
 
-    updatePositions(true);
-    updateDuration();
-})();
-</script>
+            updatePositions(true);
+            updateDuration();
+        })();
+    </script>
 <?php endif; ?>
 
 <?php
