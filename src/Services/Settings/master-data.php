@@ -86,8 +86,40 @@ function ambilDepartemenPilihan(mysqli $conn, ?int $departmentId = null): array
 
 function buatIdKaryawanOtomatis(mysqli $conn): string
 {
-    $result = mysqli_query($conn, "SELECT emp_id FROM karyawan WHERE emp_id REGEXP '^EMP[0-9]+$'");
-    $max = 0;
-    while ($result && ($row = mysqli_fetch_assoc($result))) $max = max($max, (int) substr($row["emp_id"], 3));
-    return "EMP" . str_pad((string) ($max + 1), 3, "0", STR_PAD_LEFT);
+    $result = mysqli_query($conn, "SELECT emp_id FROM karyawan WHERE TRIM(COALESCE(emp_id, '')) <> ''");
+    $pola = [];
+
+    while ($result && ($row = mysqli_fetch_assoc($result))) {
+        $id = trim((string) $row["emp_id"]);
+        if (!preg_match('/^(.*?)(\d+)$/', $id, $cocok)) {
+            continue;
+        }
+
+        $awalan = $cocok[1];
+        $nomor = (int) $cocok[2];
+        $lebarNomor = strlen($cocok[2]);
+        if (!isset($pola[$awalan])) {
+            $pola[$awalan] = ["jumlah" => 0, "maksimum" => 0, "lebar" => $lebarNomor];
+        }
+
+        $pola[$awalan]["jumlah"]++;
+        $pola[$awalan]["maksimum"] = max($pola[$awalan]["maksimum"], $nomor);
+        $pola[$awalan]["lebar"] = max($pola[$awalan]["lebar"], $lebarNomor);
+    }
+    if ($result) {
+        mysqli_free_result($result);
+    }
+
+    if ($pola === []) {
+        return "EMP001";
+    }
+
+    uasort(
+        $pola,
+        static fn (array $a, array $b): int => $b["jumlah"] <=> $a["jumlah"]
+            ?: $b["maksimum"] <=> $a["maksimum"]
+    );
+    $awalan = (string) array_key_first($pola);
+    $dataPola = $pola[$awalan];
+    return $awalan . str_pad((string) ($dataPola["maksimum"] + 1), $dataPola["lebar"], "0", STR_PAD_LEFT);
 }

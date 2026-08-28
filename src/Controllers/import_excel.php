@@ -433,7 +433,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         sinkronkanSemuaDataset($conn);
         catatAktivitas($conn, "Mengimpor " . count($dataValid) . " data karyawan dari Excel.");
 
-        header('Location: ../karyawan.php?pesan=import-excel-berhasil&jumlah=' . count($dataValid));
+        header('Location: ' . URL_DASAR . 'karyawan.php?pesan=import-excel-berhasil&jumlah=' . count($dataValid));
         exit;
     } catch (Throwable $error) {
         $pesan = $error->getMessage();
