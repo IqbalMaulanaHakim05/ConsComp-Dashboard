@@ -281,7 +281,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                         name="emp_id"
                         value="<?= htmlspecialchars($form["emp_id"]); ?>"
                         readonly
-                        placeholder="Contoh: EMP001"
+                        placeholder="ID dibuat otomatis mengikuti pola data karyawan"
                         maxlength="50"
                         required
                         autofocus>
