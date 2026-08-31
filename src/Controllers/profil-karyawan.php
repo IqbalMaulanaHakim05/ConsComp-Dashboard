@@ -227,7 +227,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             <dl class="profile-details profile-summary-footer">
                 <div>
                     <dt>Shift</dt>
-                    <dd><span><?= htmlspecialchars(labelShiftKaryawan($karyawan)); ?></span><?php if ($modeEdit): ?><button class="btn btn-secondary" type="button" id="open-shift-dialog">+ Tambah</button><?php endif; ?></dd>
+                    <dd><span id="profile-shift-label"><?= htmlspecialchars(labelShiftKaryawan($karyawan)); ?></span><?php if ($modeEdit): ?><button class="btn btn-secondary" type="button" id="open-shift-dialog">+ Tambah</button><?php endif; ?></dd>
                 </div>
                 <div>
                     <dt>Sisa Cuti</dt>
@@ -477,11 +477,16 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 (() => {
     const dialog = document.getElementById('shift-dialog'); const open = document.getElementById('open-shift-dialog'); const shift = document.getElementById('shift-nama');
     if (!dialog || !open || !shift) return;
-    const mulai = document.getElementById('shift-mulai'); const selesai = document.getElementById('shift-selesai'); const hari = [...dialog.querySelectorAll('input[name="shift_hari[]"]')];
+    const mulai = document.getElementById('shift-mulai'); const selesai = document.getElementById('shift-selesai'); const label = document.getElementById('profile-shift-label'); const hari = [...dialog.querySelectorAll('input[name="shift_hari[]"]')];
     const preset = Object.fromEntries(<?= json_encode(array_map(static fn (array $shift): array => [$shift['nama'], [$shift['jam_mulai'], $shift['jam_selesai'], $shift['hari']]], $masterShift), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>);
     const aturHari = nilai => { const terpilih = nilai === 'Senin-Jumat' ? ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] : String(nilai || '').split(/,\s*/); hari.forEach(item => { item.checked = terpilih.includes(item.value); }); };
     const update = (gunakanHariMaster = false) => { const otomatis = preset[shift.value]; mulai.readOnly = selesai.readOnly = !!otomatis; if (otomatis) { mulai.value = otomatis[0]; selesai.value = otomatis[1]; if (gunakanHariMaster) aturHari(otomatis[2]); } };
     open.addEventListener('click', () => { update(false); dialog.showModal(); }); shift.addEventListener('change', () => update(true));
+    dialog.addEventListener('close', () => {
+        if (dialog.returnValue !== 'default' || !label) return;
+        const nama = shift.value.trim(); const jamMulai = mulai.value.trim(); const jamSelesai = selesai.value.trim();
+        label.textContent = nama && jamMulai && jamSelesai ? `${nama} ${jamMulai} - ${jamSelesai}` : '-';
+    });
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
 })();
 </script>
