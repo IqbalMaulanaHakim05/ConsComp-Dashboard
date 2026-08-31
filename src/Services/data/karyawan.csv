@@ -1,5 +1,5 @@
 ﻿Employee_Name,EmpID,Position,Department,Salary,Sex,MaritalDesc,DateofHire,EmploymentStatus,PerformanceScore
-"Andi Pratama",EMP001,Admin,FINANCE,30000000.00,F,,2018-01-01,Kontrak,80
+"Andi Pratama",EMP001,Admin,FINANCE,30000000.00,M,Single,2018-01-01,Kontrak,80
 "Budi Pratama",EMP002,"Manager Keuangan",FINANCE,15250000.00,M,,2019-02-02,Aktif,79
 "Citra Pratama",EMP003,"Staff Keuangan",FINANCE,6500000.00,F,,2020-03-03,Aktif,86
 "Dedi Pratama",EMP004,"Staff Keuangan",FINANCE,6750000.00,M,Menikah,2021-04-04,Aktif,93

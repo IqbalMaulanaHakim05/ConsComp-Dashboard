@@ -112,7 +112,7 @@ try {
     // Buka file PDF secara inline di browser. Tanpa header "attachment",
     // browser akan menampilkan preview dan pengguna dapat mengunduhnya
     // sendiri dari toolbar PDF bila diperlukan.
-    header("Location: ../file.php?jenis=cv&file=" . rawurlencode($namaFile));
+    header("Location: " . URL_DASAR . "file.php?jenis=cv&file=" . rawurlencode($namaFile));
     exit;
 } catch (Throwable $exception) {
     if ($transaksiAktif) {

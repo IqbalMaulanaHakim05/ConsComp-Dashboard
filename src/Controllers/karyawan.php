@@ -25,6 +25,10 @@ $izinkanSemua = $data["izinkanSemua"];
 $halaman = $data["halaman"];
 $totalHalaman = $data["totalHalaman"];
 $offset = $data["offset"];
+$departemenDipilih = $data['departemenDipilih'];
+$posisiDipilih = $data['posisiDipilih'];
+$filterDepartemen = $data['filterDepartemen'];
+$filterPosisi = $data['filterPosisi'];
 
 $judulHalaman = "Data Karyawan";
 $subjudulHalaman = "Seluruh data karyawan perusahaan.";

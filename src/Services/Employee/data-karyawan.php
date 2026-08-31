@@ -156,6 +156,27 @@ function ambilDataKaryawan(
 ): array {
     $cakupan = roleOperasional() ? "department_id = " . (int) (departmentIdPengguna() ?? 0) : "1=1";
     $kataKunci = trim($_GET["cari"] ?? "");
+    $departemenDipilih = trim((string) ($_GET['departemen'] ?? ''));
+    $posisiDipilih = trim((string) ($_GET['posisi'] ?? ''));
+
+    // Daftar filter dibatasi pada data yang memang boleh dilihat pengguna.
+    $filterDepartemen = [];
+    $filterPosisi = [];
+    $hasilPilihanFilter = mysqli_query($conn, "SELECT DISTINCT department, position FROM karyawan WHERE " . $cakupan . " AND TRIM(COALESCE(department, '')) <> '' ORDER BY department ASC, position ASC");
+    if ($hasilPilihanFilter) {
+        while ($barisFilter = mysqli_fetch_assoc($hasilPilihanFilter)) {
+            $namaDepartemen = trim((string) ($barisFilter['department'] ?? ''));
+            $namaPosisi = trim((string) ($barisFilter['position'] ?? ''));
+            if ($namaDepartemen === '') continue;
+            $filterDepartemen[$namaDepartemen] = true;
+            if ($namaPosisi !== '') $filterPosisi[$namaDepartemen][$namaPosisi] = true;
+        }
+        mysqli_free_result($hasilPilihanFilter);
+    }
+    $filterDepartemen = array_keys($filterDepartemen);
+    $filterPosisi = array_map(static fn (array $daftar): array => array_keys($daftar), $filterPosisi);
+    if (!in_array($departemenDipilih, $filterDepartemen, true)) $departemenDipilih = '';
+    if ($departemenDipilih === '' || !in_array($posisiDipilih, $filterPosisi[$departemenDipilih] ?? [], true)) $posisiDipilih = '';
     $filterKolom = (string) ($_GET["filter"] ?? "nama");
     $sortPilihan = [
         "emp_id" => "emp_id", "nama" => "employee_name",
@@ -188,39 +209,26 @@ function ambilDataKaryawan(
         }
     }
 
-    $pencarian = "%" . $kataKunci . "%";
+    $kondisiTambahan = [];
+    $parameter = [];
+    if ($kataKunci !== '') { $kondisiTambahan[] = '(' . $kondisiFilter . ')'; $parameter[] = '%' . $kataKunci . '%'; }
+    if ($departemenDipilih !== '') { $kondisiTambahan[] = 'department = ?'; $parameter[] = $departemenDipilih; }
+    if ($posisiDipilih !== '') { $kondisiTambahan[] = 'position = ?'; $parameter[] = $posisiDipilih; }
+    $klausaFilter = $kondisiTambahan === [] ? '' : ' AND ' . implode(' AND ', $kondisiTambahan);
+    $jalankanQuery = static function (string $sql) use ($conn, $parameter) {
+        if ($parameter === []) return mysqli_query($conn, $sql);
+        $stmt = mysqli_prepare($conn, $sql);
+        if (!$stmt) die('Query data gagal disiapkan: ' . mysqli_error($conn));
+        $bind = [$stmt, str_repeat('s', count($parameter))];
+        foreach ($parameter as $k => &$nilai) $bind[] = &$nilai;
+        call_user_func_array('mysqli_stmt_bind_param', $bind);
+        mysqli_stmt_execute($stmt);
+        return mysqli_stmt_get_result($stmt);
+    };
 
     // 1. Menghitung total data yang cocok lebih dulu (dasar pagination).
-    if ($kataKunci !== "") {
-        $sqlHitung = "SELECT COUNT(*) AS total FROM karyawan WHERE " . $cakupan . " AND (" . $kondisiFilter . ")";
-
-        $stmtHitung = mysqli_prepare($conn, $sqlHitung);
-
-        if (!$stmtHitung) {
-            die("Query hitung pencarian gagal disiapkan: " . mysqli_error($conn));
-        }
-
-        $jumlahParameter = substr_count($kondisiFilter, "?");
-        $parameter = array_fill(0, $jumlahParameter, $pencarian);
-        $bind = [$stmtHitung, str_repeat("s", $jumlahParameter)];
-        foreach ($parameter as $k => &$nilai) $bind[] = &$nilai;
-        call_user_func_array("mysqli_stmt_bind_param", $bind);
-
-        mysqli_stmt_execute($stmtHitung);
-        $totalCocok = (int) (
-            mysqli_fetch_assoc(
-                mysqli_stmt_get_result($stmtHitung)
-            )["total"] ?? 0
-        );
-    } else {
-        $queryTotal = mysqli_query(
-            $conn,
-            "SELECT COUNT(*) AS total FROM karyawan WHERE " . $cakupan
-        );
-        $totalCocok = (int) (
-            mysqli_fetch_assoc($queryTotal)["total"] ?? 0
-        );
-    }
+    $queryTotal = $jalankanQuery('SELECT COUNT(*) AS total FROM karyawan WHERE ' . $cakupan . $klausaFilter);
+    $totalCocok = (int) (mysqli_fetch_assoc($queryTotal)['total'] ?? 0);
 
     // 2. Menentukan halaman aktif dan klausa LIMIT/OFFSET.
     $halaman = max(1, (int) ($_GET["hal"] ?? 1));
@@ -244,42 +252,18 @@ function ambilDataKaryawan(
     }
 
     // 3. Mengambil data sesuai halaman.
-    if ($kataKunci !== "") {
-        $sql = "SELECT * FROM karyawan WHERE " . $cakupan . " AND (" . $kondisiFilter . ") ORDER BY " . $klausaUrut . $klausaLimit;
-
-        $stmt = mysqli_prepare($conn, $sql);
-
-        if (!$stmt) {
-            die("Query pencarian gagal disiapkan: " . mysqli_error($conn));
-        }
-
-        $jumlahParameter = substr_count($kondisiFilter, "?");
-        $parameter = array_fill(0, $jumlahParameter, $pencarian);
-        $bind = [$stmt, str_repeat("s", $jumlahParameter)];
-        foreach ($parameter as $k => &$nilai) $bind[] = &$nilai;
-        call_user_func_array("mysqli_stmt_bind_param", $bind);
-
-        mysqli_stmt_execute($stmt);
-        $hasil = mysqli_stmt_get_result($stmt);
-    } else {
-        $hasil = mysqli_query(
-            $conn,
-            "SELECT *
-             FROM karyawan
-             WHERE " . $cakupan . "
-             ORDER BY " . $klausaUrut . $klausaLimit
-        );
-
-        if (!$hasil) {
-            die("Query data gagal: " . mysqli_error($conn));
-        }
-    }
+    $hasil = $jalankanQuery('SELECT * FROM karyawan WHERE ' . $cakupan . $klausaFilter . ' ORDER BY ' . $klausaUrut . $klausaLimit);
+    if (!$hasil) die('Query data gagal: ' . mysqli_error($conn));
 
     return [
         "hasil" => $hasil,
         "jumlahData" => mysqli_num_rows($hasil),
         "totalCocok" => $totalCocok,
         "kataKunci" => $kataKunci,
+        'departemenDipilih' => $departemenDipilih,
+        'posisiDipilih' => $posisiDipilih,
+        'filterDepartemen' => $filterDepartemen,
+        'filterPosisi' => $filterPosisi,
         "filterKolom" => $filterKolom,
         "sort" => $sort,
         "arah" => $arah,

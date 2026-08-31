@@ -21,6 +21,10 @@ $totalHalaman = $totalHalaman ?? 1;
 $offset = $offset ?? 0;
 $sort = $sort ?? ($data["sort"] ?? "emp_id");
 $arah = $arah ?? ($data["arah"] ?? "ASC");
+$departemenDipilih = $departemenDipilih ?? ($data['departemenDipilih'] ?? '');
+$posisiDipilih = $posisiDipilih ?? ($data['posisiDipilih'] ?? '');
+$filterDepartemen = $filterDepartemen ?? ($data['filterDepartemen'] ?? []);
+$filterPosisi = $filterPosisi ?? ($data['filterPosisi'] ?? []);
 
 // Rentang baris yang sedang ditampilkan.
 $mulai = $jumlahData > 0 ? ($offset + 1) : 0;
@@ -31,6 +35,8 @@ $paramDasar = [];
 if ($kataKunci !== "") {
     $paramDasar["cari"] = $kataKunci;
 }
+if ($departemenDipilih !== '') $paramDasar['departemen'] = $departemenDipilih;
+if ($posisiDipilih !== '') $paramDasar['posisi'] = $posisiDipilih;
 $paramDasar["filter"] = "nama";
 $paramDasar["batas"] = $tanpaBatas ? "semua" : $batas;
 $paramDasar["sort"] = $sort;
@@ -38,6 +44,8 @@ $paramDasar["arah"] = $arah;
 
 $batasDefaultTampilan = (int) ($batasDiizinkan[0] ?? $batas ?? 0);
 $filterAktif = $kataKunci !== ""
+    || $departemenDipilih !== ''
+    || $posisiDipilih !== ''
     || $sort !== "emp_id"
     || $arah !== "ASC"
     || $tanpaBatas
@@ -68,6 +76,20 @@ $daftarKolomSort = [
                 >
 
                 <input type="hidden" name="filter" value="nama">
+
+                <select name="departemen" id="filter-departemen" title="Filter departemen">
+                    <option value="">Semua departemen</option>
+                    <?php foreach ($filterDepartemen as $departemen): ?>
+                        <option value="<?= htmlspecialchars($departemen); ?>" <?= $departemenDipilih === $departemen ? 'selected' : ''; ?>><?= htmlspecialchars($departemen); ?></option>
+                    <?php endforeach; ?>
+                </select>
+
+                <select name="posisi" id="filter-posisi" title="Filter posisi" <?= $departemenDipilih === '' ? 'disabled' : ''; ?>>
+                    <option value="">Semua posisi</option>
+                    <?php foreach (($filterPosisi[$departemenDipilih] ?? []) as $posisi): ?>
+                        <option value="<?= htmlspecialchars($posisi); ?>" <?= $posisiDipilih === $posisi ? 'selected' : ''; ?>><?= htmlspecialchars($posisi); ?></option>
+                    <?php endforeach; ?>
+                </select>
 
                 <?php if ($sort !== "emp_id"): ?>
                     <input type="hidden" name="sort" value="<?= htmlspecialchars($sort); ?>">
@@ -345,6 +367,22 @@ $daftarKolomSort = [
         <?php endif; ?>
 
         <script>
+            (() => {
+                const form = document.querySelector('.search-form');
+                const departemen = document.getElementById('filter-departemen');
+                const posisi = document.getElementById('filter-posisi');
+                const posisiPerDepartemen = <?= json_encode($filterPosisi, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+                if (!form || !departemen || !posisi) return;
+                departemen.addEventListener('change', () => {
+                    const daftarPosisi = posisiPerDepartemen[departemen.value] || [];
+                    posisi.replaceChildren(new Option('Semua posisi', ''));
+                    daftarPosisi.forEach(nama => posisi.add(new Option(nama, nama)));
+                    posisi.disabled = departemen.value === '';
+                    form.submit();
+                });
+                posisi.addEventListener('change', () => form.submit());
+            })();
+
             function urutkanKolomTabel(kunciKolom, arahBaru) {
                 const form = document.querySelector('.search-form');
                 if (!form) return;
