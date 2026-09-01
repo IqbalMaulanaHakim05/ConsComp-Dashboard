@@ -11,13 +11,26 @@ wajibRole("superadmin");
 siapkanPengaturanPublik($conn);
 
 $data = ambilPengaturanPublik($conn);
+// Sinkronkan nilai legacy agar form mencerminkan company profile publik baru.
+if (($data['nama_situs'] ?? '') === 'Profil Karyawan') $data['nama_situs'] = 'Kalimayat Perkasa';
+if (($data['judul_hero'] ?? '') === 'Profil Pekerja Perusahaan' || ($data['judul_hero'] ?? '') === 'Kelola Karyawan Lebih Mudah dan Terintegrasi') $data['judul_hero'] = 'Kelola SDM Lebih Efisien, Kerja Lebih Terorganisir';
+if (($data['deskripsi_hero'] ?? '') === 'Website ini menyajikan informasi profil karyawan berdasarkan dataset Human Resources.' || ($data['deskripsi_hero'] ?? '') === 'Menyediakan layanan engineering, konstruksi, dan pengadaan yang aman, profesional, dan tepat waktu.') $data['deskripsi_hero'] = 'Kelola data karyawan, absensi, cuti, penggajian, dan performa dalam satu sistem yang terintegrasi.';
+if (($data['teks_tombol'] ?? '') === 'Lihat Data Karyawan') $data['teks_tombol'] = 'Jelajahi Layanan';
+if (($data['warna_utama'] ?? '') === '#2563eb') $data['warna_utama'] = '#f5a000';
+if (($data['warna_hero'] ?? '') === '#0f172a') $data['warna_hero'] = '#082a57';
 $pesan = "";
 $tipePesan = "sukses";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    foreach (["foto_tim" => "company-team.jpg", "foto_fasilitas" => "company-plant.jpg", "foto_operasional" => "company-forklift.jpg"] as $field => $filename) {
+        if (!empty($_FILES[$field]["tmp_name"]) && is_uploaded_file($_FILES[$field]["tmp_name"])) {
+            $mime = mime_content_type($_FILES[$field]["tmp_name"]);
+            if (in_array($mime, ["image/jpeg", "image/png", "image/webp"], true)) move_uploaded_file($_FILES[$field]["tmp_name"], __DIR__ . "/../../public/assets/images/" . $filename);
+        }
+    }
     $nama = trim((string) ($_POST["nama_situs"] ?? ""));
     $judul = trim((string) ($_POST["judul_hero"] ?? ""));
-    $deskripsi = trim((string) ($_POST["deskripsi_hero"] ?? ""));
+    $deskripsi = trim((string) ($_POST["deskripsi_profil"] ?? $_POST["deskripsi_hero"] ?? ""));
     $tombol = trim((string) ($_POST["teks_tombol"] ?? ""));
 
     $warnaUtama = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($_POST["warna_utama"] ?? ""))
@@ -85,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 $judulHalaman = "Personalisasi Tampilan";
-$subjudulHalaman = "Atur tampilan halaman publik sesuai identitas website.";
+$subjudulHalaman = "Atur identitas, hero, warna, dan elemen company profile yang tampil kepada pengunjung.";
 $halamanAktif = "pengaturan-publik";
 
 require __DIR__ . '/../../resources/views/layouts/atas.php';
@@ -104,9 +117,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 </div>
             <?php endif; ?>
 
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <section class="settings-section-card">
-                    <div class="settings-section-heading"><span class="settings-section-icon">✦</span><div><h3>Identitas &amp; Hero</h3><p>Atur teks utama yang tampil di halaman publik.</p></div></div>
+                    <div class="settings-section-heading"><span class="settings-section-icon">✦</span><div><h3>Identitas Company Profile &amp; Hero</h3><p>Atur nama brand, judul pembuka, deskripsi perusahaan, dan teks tombol halaman publik.</p></div></div>
                     <div class="form-grid">
                     <div class="form-group">
                         <label for="nama_situs">Nama Situs</label>
@@ -142,12 +155,16 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                         <label for="deskripsi_hero">Deskripsi Hero</label>
                         <textarea id="deskripsi_hero" name="deskripsi_hero" rows="4" required><?= htmlspecialchars($data["deskripsi_hero"] ?? ""); ?></textarea>
                     </div>
+                    <div class="form-group full-width">
+                        <label for="deskripsi_profil">Deskripsi Profil</label>
+                        <textarea id="deskripsi_profil" name="deskripsi_profil" rows="3" required><?= htmlspecialchars($data["deskripsi_hero"] ?? ""); ?></textarea>
+                    </div>
 
                     </div>
                 </section>
 
                 <section class="settings-section-card">
-                    <div class="settings-section-heading"><span class="settings-section-icon">▦</span><div><h3>Warna Dashboard</h3><p>Sesuaikan gradasi kartu statistik dashboard.</p></div></div>
+                    <div class="settings-section-heading"><span class="settings-section-icon">▦</span><div><h3>Warna Dashboard (Internal)</h3><p>Pengaturan ini hanya berlaku untuk area dashboard superadmin.</p></div></div>
                     <div class="form-grid">
                         <div class="form-group"><label for="warna_dashboard_awal">Gradien Dashboard Awal</label><input id="warna_dashboard_awal" type="color" name="warna_dashboard_awal" value="<?= htmlspecialchars($data["warna_dashboard_awal"] ?? "#1e3a8a"); ?>"></div>
                         <div class="form-group"><label for="warna_dashboard_akhir">Gradien Dashboard Akhir</label><input id="warna_dashboard_akhir" type="color" name="warna_dashboard_akhir" value="<?= htmlspecialchars($data["warna_dashboard_akhir"] ?? "#2563eb"); ?>"></div>
@@ -155,7 +172,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 </section>
 
                 <section class="settings-section-card">
-                    <div class="settings-section-heading"><span class="settings-section-icon">◒</span><div><h3>Warna Grafik Dashboard &amp; Analisis</h3><p>Warna berikut digunakan oleh seluruh grafik pada dashboard dan halaman analisis.</p></div></div>
+                    <div class="settings-section-heading"><span class="settings-section-icon">◒</span><div><h3>Warna Grafik (Internal)</h3><p>Warna grafik untuk dashboard dan analisis internal.</p></div></div>
                     <div class="form-grid">
                         <div class="form-group"><label for="warna_pie_laki">Gender Laki-laki</label><input id="warna_pie_laki" type="color" name="warna_pie_laki" value="<?= htmlspecialchars($data["warna_pie_laki"] ?? "#2563eb"); ?>"></div>
                         <div class="form-group"><label for="warna_pie_perempuan">Gender Perempuan</label><input id="warna_pie_perempuan" type="color" name="warna_pie_perempuan" value="<?= htmlspecialchars($data["warna_pie_perempuan"] ?? "#ec4899"); ?>"></div>
@@ -170,8 +187,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     </div>
                 </section>
 
-                <section class="settings-section-card">
-                    <div class="settings-section-heading"><span class="settings-section-icon">●</span><div><h3>Warna Halaman</h3><p>Tentukan warna utama dan latar hero.</p></div></div>
+                <section class="settings-section-card obsolete-public-setting">        <div class="settings-section-heading"><span class="settings-section-icon">●</span><div><h3>Warna Company Profile</h3><p>Tentukan warna aksen tombol dan latar hero pada halaman publik.</p></div></div>
                     <div class="form-grid">
                         <div class="form-group"><label for="warna_utama">Warna Utama</label><input id="warna_utama" type="color" name="warna_utama" value="<?= htmlspecialchars($data["warna_utama"] ?? "#2563eb"); ?>"></div>
                         <div class="form-group"><label for="warna_hero">Warna Latar Hero</label><input id="warna_hero" type="color" name="warna_hero" value="<?= htmlspecialchars($data["warna_hero"] ?? "#0f172a"); ?>"></div>
@@ -184,7 +200,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 $kartuDashboardAktif = json_decode((string) ($data["kartu_dashboard"] ?? ""), true);
                 if (!is_array($kartuDashboardAktif)) $kartuDashboardAktif = ["total_karyawan", "total_departemen", "rata_performa"];
                 ?>
-                <section class="settings-section-card">
+                <section class="settings-section-card obsolete-public-setting">
                     <div class="settings-section-heading"><span class="settings-section-icon">▦</span><div><h3>Kolom Tabel Publik</h3><p>Pilih informasi yang boleh ditampilkan pada tabel halaman utama.</p></div></div>
                     <div class="form-grid">
                         <?php foreach (["emp_id" => "ID Karyawan", "employee_name" => "Nama", "position" => "Posisi", "department" => "Departemen", "gender" => "Jenis Kelamin", "date_of_hire" => "Tanggal Masuk", "employment_status" => "Status Kerja", "performance_score" => "Performa"] as $kodeKolom => $labelKolom): ?>
@@ -202,8 +218,12 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     </div>
                 </section>
 
+                <section class="settings-section-card">
+                    <div class="settings-section-heading"><span class="settings-section-icon">▧</span><div><h3>Foto Carousel Profil</h3><p>Ganti foto yang bergulir pada bagian profil publik. Format JPG, PNG, atau WebP.</p></div></div>
+                    <div class="form-grid"><div class="form-group"><label for="foto_tim">Foto Tim</label><input id="foto_tim" type="file" name="foto_tim" accept="image/jpeg,image/png,image/webp"></div><div class="form-group"><label for="foto_fasilitas">Foto Fasilitas</label><input id="foto_fasilitas" type="file" name="foto_fasilitas" accept="image/jpeg,image/png,image/webp"></div><div class="form-group"><label for="foto_operasional">Foto Operasional</label><input id="foto_operasional" type="file" name="foto_operasional" accept="image/jpeg,image/png,image/webp"></div></div>
+                </section>
                 <div class="form-actions">
-                    <a href="<?= htmlspecialchars(URL_DASAR); ?>../index.php" class="btn btn-secondary">
+                    <a href="<?= htmlspecialchars(URL_DASAR); ?>../../index.php" class="btn btn-secondary" target="_blank" rel="noopener">
                         Lihat Halaman Publik
                     </a>
                     <button class="btn btn-success" type="submit">Simpan Tampilan</button>
@@ -213,3 +233,8 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     </section>
 <?php
 require __DIR__ . '/../../resources/views/layouts/bawah.php';
+
+
+
+
+

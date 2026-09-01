@@ -6,7 +6,7 @@ require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
 require_once __DIR__ . '/../Utils/xlsx-builder.php';
 
-wajibRole('pic', 'koordinator', 'manager', 'admin', 'superadmin');
+wajibRole('koordinator', 'manager', 'admin', 'superadmin');
 
 function siapkanTabelAbsensi(mysqli $conn): bool
 {
