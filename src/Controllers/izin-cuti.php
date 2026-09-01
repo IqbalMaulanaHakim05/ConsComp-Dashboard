@@ -38,6 +38,40 @@ if (!siapkanTabelIzinCuti($conn)) {
 }
 siapkanJadwalDanCutiKaryawan($conn);
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['aksi'] ?? '') === 'sisa_cuti') {
+    $karyawanId = (int) ($_GET['karyawan_id'] ?? 0);
+    $tahun = (int) ($_GET['tahun'] ?? date('Y'));
+    $tahunValid = $tahun >= 2000 && $tahun <= 2100;
+    $bolehMelihatKaryawan = $bolehMenginput && $karyawanId > 0 && $tahunValid;
+
+    if ($bolehMelihatKaryawan) {
+        $sqlCakupan = 'SELECT id FROM karyawan WHERE id = ?';
+        if (roleOperasional()) {
+            $sqlCakupan .= ' AND department_id = ' . (int) ($departmentId ?? 0);
+        }
+        $stmtCakupan = mysqli_prepare($conn, $sqlCakupan . ' LIMIT 1');
+        mysqli_stmt_bind_param($stmtCakupan, 'i', $karyawanId);
+        mysqli_stmt_execute($stmtCakupan);
+        $bolehMelihatKaryawan = (bool) mysqli_fetch_assoc(mysqli_stmt_get_result($stmtCakupan));
+        mysqli_stmt_close($stmtCakupan);
+    }
+
+    if (!$bolehMelihatKaryawan) {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['pesan' => 'Karyawan atau tahun tidak dapat diakses.']);
+        exit;
+    }
+
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'karyawan_id' => $karyawanId,
+        'tahun' => $tahun,
+        'sisa_cuti' => sisaCutiKaryawan($conn, $karyawanId, $tahun),
+    ]);
+    exit;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $aksi = (string) ($_POST["aksi"] ?? "simpan");
 
@@ -201,11 +235,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $pesan = "Karyawan tidak sesuai dengan posisi dan departemen yang dipilih.";
             } elseif (!$karyawanPengganti) {
                 $pesan = "Karyawan pengganti harus berasal dari departemen yang sama.";
-            } elseif (
-                ($jenisCuti === 'setengah_hari' ? 0.5 : 1.0)
-                > sisaCutiKaryawan($conn, $karyawanId, (int) $tanggalMulai->format('Y'))
-            ) {
-                $pesan = "Izin cuti telah melewati batas.";
+            } elseif ($totalHari > sisaCutiKaryawan($conn, $karyawanId, (int) $tanggalMulai->format('Y'))) {
+                $pesan = "Total " . number_format($totalHari, 1, ',', '.') . " hari cuti melebihi sisa kuota karyawan.";
             } else {
                 $pembuatId = (int) ($_SESSION["user"]["id"] ?? 0);
                 $stmt = mysqli_prepare(
@@ -403,7 +434,13 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 
                 <div class="form-group">
                     <label for="cuti-total-hari">Total Hari Cuti</label>
-                    <input id="cuti-total-hari" type="text" value="-">
+                    <input id="cuti-total-hari" type="text" value="-" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="cuti-sisa">Sisa Cuti</label>
+                    <input id="cuti-sisa" type="text" value="Pilih karyawan terlebih dahulu" readonly>
+                    <p id="cuti-sisa-note" class="field-note">Tanggal akhir akan dibatasi sesuai sisa cuti dan hari kerja.</p>
                 </div>
 
                 <div class="form-group">
@@ -570,6 +607,11 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             const leaveType = document.getElementById("cuti-jenis");
             const halfDayPeriod = document.getElementById("cuti-periode");
             const totalDays = document.getElementById("cuti-total-hari");
+            const remainingLeave = document.getElementById("cuti-sisa");
+            const remainingLeaveNote = document.getElementById("cuti-sisa-note");
+            let remainingLeaveDays = null;
+            let remainingLeaveYear = null;
+            let balanceRequestNumber = 0;
 
             const createOption = (value, label) => {
                 const option = document.createElement("option");
@@ -693,6 +735,13 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 return day >= 1 && day <= 5;
             };
 
+            const formatDateUtc = date => {
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+                const day = String(date.getUTCDate()).padStart(2, "0");
+                return `${year}-${month}-${day}`;
+            };
+
             const countWorkingDays = (startValue, endValue) => {
                 const start = parseDateUtc(startValue);
                 const end = parseDateUtc(endValue);
@@ -709,6 +758,71 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 return days;
             };
 
+            const maximumEndDate = (startValue, availableDays) => {
+                if (!startValue || !Number.isFinite(availableDays)) return "";
+                if (availableDays < 1) return startValue;
+
+                const maximumWorkingDays = Math.floor(availableDays);
+                const date = parseDateUtc(startValue);
+                let countedDays = 0;
+
+                while (countedDays < maximumWorkingDays) {
+                    if (isWorkingDay(date)) countedDays++;
+                    if (countedDays === maximumWorkingDays) return formatDateUtc(date);
+                    date.setUTCDate(date.getUTCDate() + 1);
+                }
+
+                return "";
+            };
+
+            const requestedLeaveDays = () => {
+                if (!startDate.value) return null;
+                if (leaveType.value === "setengah_hari") {
+                    return isWorkingDay(parseDateUtc(startDate.value)) ? 0.5 : null;
+                }
+                if (!endDate.value || endDate.value < startDate.value) return null;
+                return countWorkingDays(startDate.value, endDate.value);
+            };
+
+            const updateLeaveBalance = async () => {
+                const requestNumber = ++balanceRequestNumber;
+                const selectedEmployeeId = employee.value;
+                const selectedYear = startDate.value ? Number(startDate.value.slice(0, 4)) : new Date().getFullYear();
+
+                remainingLeaveDays = null;
+                remainingLeaveYear = null;
+                remainingLeave.value = selectedEmployeeId ? "Memuat sisa cuti…" : "Pilih karyawan terlebih dahulu";
+                remainingLeaveNote.textContent = selectedEmployeeId
+                    ? "Mengambil sisa cuti karyawan."
+                    : "Tanggal akhir akan dibatasi sesuai sisa cuti dan hari kerja.";
+                updateDuration();
+
+                if (!selectedEmployeeId) return;
+
+                const url = new URL(window.location.href);
+                url.searchParams.set("aksi", "sisa_cuti");
+                url.searchParams.set("karyawan_id", selectedEmployeeId);
+                url.searchParams.set("tahun", String(selectedYear));
+
+                try {
+                    const response = await fetch(url, { headers: { Accept: "application/json" } });
+                    if (!response.ok) throw new Error("Sisa cuti tidak dapat dimuat.");
+                    const data = await response.json();
+                    if (requestNumber !== balanceRequestNumber) return;
+
+                    remainingLeaveDays = Number(data.sisa_cuti);
+                    remainingLeaveYear = data.tahun;
+                    remainingLeave.value = `${remainingLeaveDays.toLocaleString("id-ID", { maximumFractionDigits: 1 })} hari`;
+                    remainingLeaveNote.textContent = `Sisa kuota cuti tahun ${data.tahun}.`;
+                } catch (error) {
+                    if (requestNumber !== balanceRequestNumber) return;
+                    remainingLeave.value = "Tidak dapat memuat sisa cuti";
+                    remainingLeaveNote.textContent = "Sisa cuti akan diperiksa kembali saat pengajuan disimpan.";
+                }
+
+                updateDuration();
+            };
+
             const updateDuration = () => {
                 const halfDay = leaveType.value === "setengah_hari";
                 halfDayPeriod.disabled = !halfDay;
@@ -722,9 +836,14 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 halfDayPeriod.dataset.selected = "";
 
                 endDate.readOnly = halfDay;
+                endDate.max = "";
                 if (startDate.value) {
                     endDate.min = startDate.value;
                     if (halfDay) endDate.value = startDate.value;
+                }
+
+                if (!halfDay && startDate.value && Number.isFinite(remainingLeaveDays)) {
+                    endDate.max = maximumEndDate(startDate.value, remainingLeaveDays);
                 }
 
                 // 0,5 hari
@@ -732,16 +851,27 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     totalDays.value = isWorkingDay(parseDateUtc(startDate.value)) ?
                         "0,5" :
                         "Bukan hari kerja";
-                    return;
-                }
-
-                if (!startDate.value || !endDate.value || endDate.value < startDate.value) {
+                } else if (!startDate.value || !endDate.value || endDate.value < startDate.value) {
                     totalDays.value = "-";
-                    return;
+                } else {
+                    const days = countWorkingDays(startDate.value, endDate.value);
+                    totalDays.value = `${days} hari kerja`;
                 }
 
-                const days = countWorkingDays(startDate.value, endDate.value);
-                totalDays.value = `${days} hari kerja`;
+                const requestedDays = requestedLeaveDays();
+                const exceedsLeaveBalance = requestedDays !== null
+                    && Number.isFinite(remainingLeaveDays)
+                    && requestedDays > remainingLeaveDays;
+                const validationMessage = exceedsLeaveBalance
+                    ? `Total cuti melebihi sisa ${remainingLeaveDays.toLocaleString("id-ID", { maximumFractionDigits: 1 })} hari.`
+                    : "";
+                startDate.setCustomValidity(validationMessage);
+                endDate.setCustomValidity(validationMessage);
+                if (exceedsLeaveBalance) {
+                    remainingLeaveNote.textContent = validationMessage;
+                } else if (Number.isFinite(remainingLeaveDays) && remainingLeaveYear !== null) {
+                    remainingLeaveNote.textContent = `Sisa kuota cuti tahun ${remainingLeaveYear}.`;
+                }
             };
 
             const openDatePicker = input => {
@@ -755,16 +885,23 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 
             department.addEventListener("change", () => updatePositions(false));
             position.addEventListener("change", () => updateEmployees(false));
-            employee.addEventListener("change", () => updateReplacements(false));
+            employee.addEventListener("change", () => {
+                updateReplacements(false);
+                updateLeaveBalance();
+            });
             replacement.addEventListener("change", renderReplacementInfo);
             replacementPosition.addEventListener("change", () => updateReplacements(false));
-            startDate.addEventListener("change", updateDuration);
+            startDate.addEventListener("change", () => {
+                updateLeaveBalance();
+                updateDuration();
+            });
             endDate.addEventListener("change", updateDuration);
             leaveType.addEventListener("change", updateDuration);
             startDate.addEventListener("click", () => openDatePicker(startDate));
             endDate.addEventListener("click", () => openDatePicker(endDate));
 
             updatePositions(true);
+            updateLeaveBalance();
             updateDuration();
         })();
     </script>

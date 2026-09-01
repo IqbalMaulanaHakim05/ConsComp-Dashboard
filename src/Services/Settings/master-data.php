@@ -3,24 +3,58 @@ declare(strict_types=1);
 
 function siapkanMasterData(mysqli $conn): void
 {
-    // Normalisasi nilai lama agar opsi aktif hanya satu.
-    mysqli_query($conn, "UPDATE karyawan SET employment_status = 'Aktif' WHERE LOWER(employment_status) IN ('active', 'aktif')");
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_aturan_denda (
+        tipe VARCHAR(30) NOT NULL PRIMARY KEY,
+        toleransi_menit SMALLINT UNSIGNED NOT NULL,
+        batas_tingkat_1 SMALLINT UNSIGNED NOT NULL,
+        batas_tingkat_2 SMALLINT UNSIGNED NOT NULL,
+        pengali_tingkat_1 DECIMAL(6,2) NOT NULL,
+        pengali_tingkat_2 DECIMAL(6,2) NOT NULL,
+        pembagi_jam_bulanan DECIMAL(8,2) NOT NULL DEFAULT 178.00
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    mysqli_query($conn, "INSERT IGNORE INTO master_aturan_denda
+        (tipe, toleransi_menit, batas_tingkat_1, batas_tingkat_2, pengali_tingkat_1, pengali_tingkat_2, pembagi_jam_bulanan)
+        VALUES ('terlambat', 10, 11, 16, 1, 2, 178), ('pulang_lebih_awal', 5, 6, 11, 1, 2, 178)");
+    $kolomTipeKerja = mysqli_query($conn, "SHOW COLUMNS FROM karyawan LIKE 'tipe_kerja'");
+    $punyaKolomTipeKerja = $kolomTipeKerja && mysqli_num_rows($kolomTipeKerja) > 0;
+    if ($kolomTipeKerja) mysqli_free_result($kolomTipeKerja);
+    if (!$punyaKolomTipeKerja) mysqli_query($conn, "ALTER TABLE karyawan ADD COLUMN tipe_kerja VARCHAR(20) NULL DEFAULT NULL AFTER employment_status");
+
+    // Pisahkan nilai lama Kontrak/Harian/PKWT/Magang menjadi tipe kerja dan
+    // normalisasi status kerja agar hanya Aktif atau Nonaktif.
+    mysqli_query($conn, "UPDATE karyawan SET tipe_kerja = CASE LOWER(TRIM(employment_status)) WHEN 'harian' THEN 'Harian' WHEN 'kontrak' THEN 'Kontrak' WHEN 'pkwt' THEN 'PKWT' WHEN 'magang' THEN 'Magang' ELSE 'Kontrak' END WHERE tipe_kerja IS NULL OR TRIM(tipe_kerja) = ''");
+    mysqli_query($conn, "UPDATE karyawan SET employment_status = CASE WHEN LOWER(TRIM(employment_status)) IN ('nonaktif', 'inactive') THEN 'Nonaktif' ELSE 'Aktif' END");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_departemen (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi_departemen (posisi_id INT UNSIGNED NOT NULL, department_id INT UNSIGNED NOT NULL, PRIMARY KEY (posisi_id, department_id), FOREIGN KEY (posisi_id) REFERENCES master_posisi(id) ON DELETE CASCADE, FOREIGN KEY (department_id) REFERENCES master_departemen(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_status_kerja (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_agama (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_shift (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(80) NOT NULL UNIQUE, jam_mulai TIME NOT NULL, jam_selesai TIME NOT NULL, hari VARCHAR(60) NOT NULL DEFAULT 'Senin-Jumat') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    // Shift Pagi/Malam boleh memiliki lebih dari satu jadwal. Lepaskan indeks
-    // unik lama pada nama agar penambahan shift membuat baris baru, bukan menimpa.
-    $indeksShift = mysqli_query($conn, "SHOW INDEX FROM master_shift WHERE Column_name = 'nama' AND Non_unique = 0");
-    if ($indeksShift && ($barisIndeks = mysqli_fetch_assoc($indeksShift))) {
-        $namaIndeks = str_replace('`', '``', (string) $barisIndeks['Key_name']);
-        mysqli_query($conn, "ALTER TABLE master_shift DROP INDEX `$namaIndeks`");
+    // Normalisasi istilah lama sekali secara idempoten. Jadwal lama tetap
+    // dipertahankan pada karyawan; master hanya menyisakan pilihan "Shift".
+    $kolomShiftKaryawan = mysqli_query($conn, "SHOW COLUMNS FROM karyawan LIKE 'shift_nama'");
+    $punyaKolomShiftKaryawan = $kolomShiftKaryawan && mysqli_num_rows($kolomShiftKaryawan) > 0;
+    if ($kolomShiftKaryawan) mysqli_free_result($kolomShiftKaryawan);
+    if ($punyaKolomShiftKaryawan) {
+        mysqli_query($conn, "UPDATE karyawan SET shift_nama = 'Shift' WHERE LOWER(TRIM(shift_nama)) IN ('shift pagi', 'shift malam')");
     }
+
+    $shiftUtama = mysqli_query($conn, "SELECT id FROM master_shift WHERE LOWER(TRIM(nama)) = 'shift' LIMIT 1");
+    $adaShiftUtama = $shiftUtama && mysqli_num_rows($shiftUtama) > 0;
+    if ($shiftUtama) mysqli_free_result($shiftUtama);
+    if (!$adaShiftUtama) {
+        mysqli_query($conn, "UPDATE master_shift SET nama = 'Shift' WHERE LOWER(TRIM(nama)) = 'shift pagi' LIMIT 1");
+        $shiftUtama = mysqli_query($conn, "SELECT id FROM master_shift WHERE LOWER(TRIM(nama)) = 'shift' LIMIT 1");
+        $adaShiftUtama = $shiftUtama && mysqli_num_rows($shiftUtama) > 0;
+        if ($shiftUtama) mysqli_free_result($shiftUtama);
+    }
+    if (!$adaShiftUtama) {
+        mysqli_query($conn, "UPDATE master_shift SET nama = 'Shift' WHERE LOWER(TRIM(nama)) = 'shift malam' LIMIT 1");
+    }
+    mysqli_query($conn, "DELETE FROM master_shift WHERE LOWER(TRIM(nama)) IN ('shift pagi', 'shift malam')");
     $jumlahShift = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM master_shift"));
     if ((int) ($jumlahShift[0] ?? 0) === 0) {
-        mysqli_query($conn, "INSERT INTO master_shift (nama, jam_mulai, jam_selesai, hari) VALUES ('Shift Pagi', '08:00:00', '16:30:00', 'Senin-Jumat'), ('Shift Malam', '16:30:00', '08:00:00', 'Senin-Jumat')");
+        mysqli_query($conn, "INSERT INTO master_shift (nama, jam_mulai, jam_selesai, hari) VALUES ('Shift', '08:00:00', '16:30:00', 'Senin-Jumat')");
     }
     // Master data dikelola sepenuhnya dari halaman Master Data. Jangan mengisi
     // ulang nilai bawaan setiap halaman dibuka karena item yang dihapus akan
@@ -59,6 +93,70 @@ function ambilMasterShiftBerdasarkanNama(mysqli $conn, string $nama): ?array
     $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
     mysqli_stmt_close($stmt);
     return $data;
+}
+
+function ambilAturanDenda(mysqli $conn): array
+{
+    siapkanMasterData($conn);
+    $hasil = mysqli_query($conn, 'SELECT * FROM master_aturan_denda ORDER BY tipe');
+    $aturan = [];
+    while ($hasil && ($baris = mysqli_fetch_assoc($hasil))) {
+        $aturan[(string) $baris['tipe']] = $baris;
+    }
+    return $aturan;
+}
+
+function pilihanStatusKerja(): array
+{
+    return ['Aktif', 'Nonaktif'];
+}
+
+function pilihanTipeKerja(): array
+{
+    return ['Harian', 'Kontrak', 'PKWT', 'Magang'];
+}
+
+function daftarHariKerja(): array
+{
+    return ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+}
+
+function hariKerjaJadwalTerpilih(string $hari): array
+{
+    $hari = trim($hari);
+    if ($hari === 'Senin-Jumat') return array_slice(daftarHariKerja(), 0, 5);
+    $tersimpan = array_map('trim', preg_split('/,\\s*/', $hari) ?: []);
+    return array_values(array_filter(daftarHariKerja(), static fn (string $namaHari): bool => in_array($namaHari, $tersimpan, true)));
+}
+
+function formatHariKerjaJadwal(string $hari): string
+{
+    $terpilih = hariKerjaJadwalTerpilih($hari);
+    if ($terpilih === []) return '-';
+
+    $kelompok = [];
+    $awal = $terpilih[0];
+    $sebelumnya = $terpilih[0];
+    $indeksSebelumnya = array_search($sebelumnya, daftarHariKerja(), true);
+    foreach (array_slice($terpilih, 1) as $namaHari) {
+        $indeks = array_search($namaHari, daftarHariKerja(), true);
+        if ($indeks === $indeksSebelumnya + 1) {
+            $sebelumnya = $namaHari;
+            $indeksSebelumnya = $indeks;
+            continue;
+        }
+        $kelompok[] = $awal === $sebelumnya ? $awal : $awal . '-' . $sebelumnya;
+        $awal = $namaHari;
+        $sebelumnya = $namaHari;
+        $indeksSebelumnya = $indeks;
+    }
+    $kelompok[] = $awal === $sebelumnya ? $awal : $awal . '-' . $sebelumnya;
+    return implode(', ', $kelompok);
+}
+
+function jumlahHariKerjaJadwal(string $hari): int
+{
+    return count(hariKerjaJadwalTerpilih($hari));
 }
 
 function ambilMasterData(mysqli $conn, string $jenis): array
