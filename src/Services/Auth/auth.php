@@ -211,7 +211,7 @@ function punyaRole(string ...$roles): bool
 }
 
 /**
- * PIC hanya boleh membuka halaman Lembur, Izin, dan halaman pendukungnya.
+ * PIC hanya boleh membuka halaman Lembur, Denda, Izin, dan halaman pendukungnya.
  */
 function halamanDiizinkanUntukPic(string $namaFile): bool
 {
@@ -220,7 +220,6 @@ function halamanDiizinkanUntukPic(string $namaFile): bool
         [
             'lembur.php',
             'denda.php',
-            'absensi.php',
             'izin-karyawan.php',
             'izin-cuti.php',
             'izin-cuti-khusus.php',

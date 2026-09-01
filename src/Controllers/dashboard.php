@@ -16,6 +16,8 @@ wajibLogin();
 $pengaturanDashboard = ambilPengaturanPublik($conn);
 $kartuDashboardAktif = json_decode((string) ($pengaturanDashboard["kartu_dashboard"] ?? ""), true);
 if (!is_array($kartuDashboardAktif)) $kartuDashboardAktif = ["total_karyawan", "total_departemen", "rata_performa"];
+// Total karyawan adalah metrik utama dashboard dan selalu ditampilkan.
+if (!in_array("total_karyawan", $kartuDashboardAktif, true)) array_unshift($kartuDashboardAktif, "total_karyawan");
 
 // Statistik untuk kartu atas.
 $statistik = ambilStatistik($conn);

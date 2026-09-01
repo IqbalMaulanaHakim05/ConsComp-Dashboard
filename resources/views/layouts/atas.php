@@ -77,7 +77,7 @@ $versiCssHalaman = match ($halamanAktif) {
 if (
     function_exists("rolePengguna")
     && rolePengguna() === "pic"
-    && !in_array($halamanAktif, ["lembur", "denda", "absensi", "izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit"], true)
+    && !in_array($halamanAktif, ["lembur", "denda", "izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit"], true)
 ) {
     header("Location: lembur.php");
     exit;
@@ -208,12 +208,6 @@ if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php"
             </a>
             <a href="<?= htmlspecialchars(URL_DASAR); ?>izin-sakit.php" class="<?= $halamanAktif === "izin-sakit" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">3</span>Sakit</a>
             <a href="<?= htmlspecialchars(URL_DASAR); ?>izin-cuti-khusus.php" class="<?= $halamanAktif === "izin-cuti-khusus" ? "active" : ""; ?>"><span class="sidebar-icon" aria-hidden="true">4</span>Cuti Khusus</a>
-            <a
-                href="<?= htmlspecialchars(URL_DASAR); ?>absensi.php"
-                class="<?= $halamanAktif === "absensi" ? "active" : ""; ?>"
-            >
-                <span class="sidebar-icon" aria-hidden="true">◷</span>Absensi
-            </a>
         <?php else: ?>
         <?php if (!(function_exists("punyaRole") && punyaRole("pic", "koordinator"))): ?><a
             href="<?= htmlspecialchars(URL_DASAR); ?>index.php"
