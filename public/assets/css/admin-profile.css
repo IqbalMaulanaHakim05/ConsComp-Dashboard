@@ -312,7 +312,11 @@
 .profil-karyawan-page .history-dialog-fields label { display: grid; gap: 8px; color: #111827; font-size: 16px; font-weight: 500; }
 .profil-karyawan-page .history-dialog-fields input { width: 100%; min-width: 0; height: 52px; padding: 0 13px; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 12px; font: inherit; }
 .profil-karyawan-page .history-dialog-fields select { width: 100%; min-width: 0; height: 52px; padding: 0 13px; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 12px; font: inherit; }
-.profil-karyawan-page .shift-dialog-fields { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+.profil-karyawan-page .shift-dialog-fields { grid-template-columns: minmax(0, 1fr); }
+.profil-karyawan-page .shift-dialog-fields > label { max-width: 460px; }
+.profil-karyawan-page .non-shift-time-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; max-width: 680px; }
+.profil-karyawan-page .non-shift-time-fields label { display: grid; gap: 8px; color: #111827; font-size: 16px; font-weight: 500; }
+.profil-karyawan-page .non-shift-time-fields input { width: 100%; min-width: 0; height: 52px; padding: 0 13px; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 12px; font: inherit; }
 .profil-karyawan-page .profile-shift-day-checklist { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .65rem 1rem; margin: 0; padding: .85rem 1rem; border: 1px solid #94a3b8; border-radius: 12px; }
 .profil-karyawan-page .profile-shift-day-checklist legend { padding: 0 .35rem; font-weight: 700; }
 .profil-karyawan-page .profile-shift-day-checklist label { display: inline-flex; align-items: center; gap: .35rem; margin: 0; }
@@ -616,6 +620,8 @@
 :root[data-theme="dark"] .profil-karyawan-page .history-dialog-fields label { color: #e2e8f0; }
 :root[data-theme="dark"] .profil-karyawan-page .history-dialog-fields input { color: #e2e8f0; background: #0f172a; border-color: #475569; color-scheme: dark; }
 :root[data-theme="dark"] .profil-karyawan-page .history-dialog-fields select { color: #e2e8f0; background: #0f172a; border-color: #475569; color-scheme: dark; }
+:root[data-theme="dark"] .profil-karyawan-page .non-shift-time-fields label { color: #e2e8f0; }
+:root[data-theme="dark"] .profil-karyawan-page .non-shift-time-fields input { color: #e2e8f0; background: #0f172a; border-color: #475569; color-scheme: dark; }
 
 @media screen and (max-width: 800px) {
     .profil-karyawan-page .profile-grid {
@@ -640,6 +646,7 @@
     .profil-karyawan-page .profile-history-row dd { justify-items: start; text-align: left; }
     .profil-karyawan-page .history-dialog-fields,
     .profil-karyawan-page .history-dialog-fields-pekerjaan { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .profil-karyawan-page .non-shift-time-fields { grid-template-columns: 1fr; max-width: none; }
 
     .profil-karyawan-page .profile-page > .profile-actions {
         position: static;

@@ -30,25 +30,70 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $jenis = (string) ($_POST["jenis"] ?? "");
         $table = $map[$jenis] ?? null;
 
-        if ($aksi === 'edit_shift') {
+        if ($aksi === 'tambah_shift' || $aksi === 'edit_shift') {
             $idShift = (int) ($_POST['id'] ?? 0);
+            $nama = trim((string) ($_POST['nama'] ?? ''));
             $mulai = trim((string) ($_POST['jam_mulai'] ?? ''));
             $selesai = trim((string) ($_POST['jam_selesai'] ?? ''));
             $hariTerpilih = array_values(array_intersect(
-                ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
+                daftarHariKerja(),
                 array_map('strval', (array) ($_POST['hari'] ?? []))
             ));
-            $hari = implode(', ', $hariTerpilih) ?: 'Senin-Jumat';
-            $stmt = mysqli_prepare($conn, "UPDATE master_shift SET jam_mulai = ?, jam_selesai = ?, hari = ? WHERE id = ?");
-            if ($stmt && $idShift > 0 && preg_match('/^\d{2}:\d{2}$/', $mulai) && preg_match('/^\d{2}:\d{2}$/', $selesai)) {
-                mysqli_stmt_bind_param($stmt, 'sssi', $mulai, $selesai, $hari, $idShift);
+            $hari = implode(', ', $hariTerpilih);
+            $dataValid = $nama !== '' && $nama !== 'Non Shift' && strlen($nama) <= 80 && $hariTerpilih !== []
+                && preg_match('/^\d{2}:\d{2}$/', $mulai) && preg_match('/^\d{2}:\d{2}$/', $selesai);
+
+            $namaSudahAda = false;
+            if ($dataValid) {
+                $stmtNama = mysqli_prepare($conn, "SELECT 1 FROM master_shift WHERE LOWER(nama) = LOWER(?) AND id <> ? LIMIT 1");
+                if ($stmtNama) {
+                    mysqli_stmt_bind_param($stmtNama, 'si', $nama, $idShift);
+                    mysqli_stmt_execute($stmtNama);
+                    $namaSudahAda = mysqli_num_rows(mysqli_stmt_get_result($stmtNama)) > 0;
+                    mysqli_stmt_close($stmtNama);
+                }
+            }
+
+            if ($aksi === 'tambah_shift' && $dataValid && !$namaSudahAda) {
+                $stmt = mysqli_prepare($conn, "INSERT INTO master_shift (nama, jam_mulai, jam_selesai, hari) VALUES (?, ?, ?, ?)");
+                if ($stmt) {
+                    mysqli_stmt_bind_param($stmt, 'ssss', $nama, $mulai, $selesai, $hari);
+                    $berhasil = mysqli_stmt_execute($stmt);
+                    mysqli_stmt_close($stmt);
+                    header('Location: master-data.php?' . ($berhasil ? 'pesan=' : 'error=') . rawurlencode($berhasil ? 'Jadwal kerja berhasil ditambahkan.' : 'Nama jadwal kerja sudah digunakan atau data tidak valid.'));
+                    exit;
+                }
+            }
+
+            $namaLama = '';
+            if ($aksi === 'edit_shift' && $idShift > 0) {
+                $stmtLama = mysqli_prepare($conn, "SELECT nama FROM master_shift WHERE id = ? LIMIT 1");
+                if ($stmtLama) {
+                    mysqli_stmt_bind_param($stmtLama, 'i', $idShift);
+                    mysqli_stmt_execute($stmtLama);
+                    $dataLama = mysqli_fetch_assoc(mysqli_stmt_get_result($stmtLama)) ?: [];
+                    $namaLama = (string) ($dataLama['nama'] ?? '');
+                    mysqli_stmt_close($stmtLama);
+                }
+            }
+            $stmt = mysqli_prepare($conn, "UPDATE master_shift SET nama = ?, jam_mulai = ?, jam_selesai = ?, hari = ? WHERE id = ?");
+            if ($stmt && $aksi === 'edit_shift' && $idShift > 0 && $namaLama !== '' && $dataValid && !$namaSudahAda) {
+                mysqli_stmt_bind_param($stmt, 'ssssi', $nama, $mulai, $selesai, $hari, $idShift);
                 $berhasil = mysqli_stmt_execute($stmt);
                 mysqli_stmt_close($stmt);
-                header('Location: master-data.php?' . ($berhasil ? 'pesan=' : 'error=') . rawurlencode($berhasil ? 'Shift berhasil diperbarui.' : 'Shift gagal diperbarui.'));
+                if ($berhasil && $namaLama !== $nama) {
+                    $stmtKaryawan = mysqli_prepare($conn, "UPDATE karyawan SET shift_nama = ? WHERE shift_nama = ?");
+                    if ($stmtKaryawan) {
+                        mysqli_stmt_bind_param($stmtKaryawan, 'ss', $nama, $namaLama);
+                        mysqli_stmt_execute($stmtKaryawan);
+                        mysqli_stmt_close($stmtKaryawan);
+                    }
+                }
+                header('Location: master-data.php?' . ($berhasil ? 'pesan=' : 'error=') . rawurlencode($berhasil ? 'Jadwal kerja berhasil diperbarui.' : 'Nama jadwal kerja sudah digunakan atau data tidak valid.'));
                 exit;
             }
             if ($stmt) mysqli_stmt_close($stmt);
-            $error = 'Data shift tidak valid.';
+            $error = 'Data jadwal kerja tidak valid. Nama, jam, dan minimal satu hari kerja wajib diisi.';
         }
 
         if ($aksi === "tambah") {
@@ -248,29 +293,45 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 
 <section class="dashboard-chart master-data-grid master-shift-grid">
     <article class="chart-card master-data-card master-shift-card">
-        <h2>Master Shift Kerja</h2>
+        <h2>Master Jadwal Kerja</h2>
+        <button class="btn btn-success" type="button" id="add-master-shift">+ Tambah Shift</button>
         <ul class="master-list">
-            <?php foreach ($masterShift as $shift): ?><li class="master-item"><span><?= htmlspecialchars($shift['nama'] . ' · ' . $shift['jam_mulai'] . ' - ' . $shift['jam_selesai'] . ' · ' . $shift['hari']); ?></span><button class="btn btn-secondary edit-master-shift" type="button" data-id="<?= (int) $shift['id']; ?>" data-nama="<?= htmlspecialchars($shift['nama'], ENT_QUOTES); ?>" data-mulai="<?= htmlspecialchars($shift['jam_mulai'], ENT_QUOTES); ?>" data-selesai="<?= htmlspecialchars($shift['jam_selesai'], ENT_QUOTES); ?>" data-hari="<?= htmlspecialchars($shift['hari'], ENT_QUOTES); ?>">Edit</button></li><?php endforeach; ?>
+            <?php foreach ($masterShift as $shift): ?><li class="master-item"><span><?= htmlspecialchars($shift['nama'] . ' — ' . $shift['jam_mulai'] . '–' . $shift['jam_selesai'] . ' — ' . $shift['hari'] . ' — ' . jumlahHariKerjaJadwal($shift['hari']) . ' hari kerja'); ?></span><button class="btn btn-secondary edit-master-shift" type="button" data-id="<?= (int) $shift['id']; ?>" data-nama="<?= htmlspecialchars($shift['nama'], ENT_QUOTES); ?>" data-mulai="<?= htmlspecialchars($shift['jam_mulai'], ENT_QUOTES); ?>" data-selesai="<?= htmlspecialchars($shift['jam_selesai'], ENT_QUOTES); ?>" data-hari="<?= htmlspecialchars($shift['hari'], ENT_QUOTES); ?>">Edit</button></li><?php endforeach; ?>
         </ul>
     </article>
 </section>
 
 <dialog id="shift-master-dialog">
-    <form method="POST" class="position-dialog-add">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="edit_shift"><input type="hidden" name="id" id="shift-master-id">
-        <h2 id="shift-master-title"></h2><input name="jam_mulai" id="shift-master-mulai" type="time" required><input name="jam_selesai" id="shift-master-selesai" type="time" required><fieldset class="shift-day-checklist"><legend>Hari Kerja</legend><?php foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $hari): ?><label><input type="checkbox" name="hari[]" value="<?= $hari; ?>"> <?= $hari; ?></label><?php endforeach; ?></fieldset><button class="btn btn-success" type="submit">Simpan</button><button class="btn btn-secondary" type="button" id="close-shift-master-dialog">Batal</button>
+    <form method="POST" class="shift-master-form">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" id="shift-master-aksi" value="edit_shift"><input type="hidden" name="id" id="shift-master-id">
+        <h2 id="shift-master-title"></h2><label>Nama Shift<input name="nama" id="shift-master-nama" maxlength="80" required></label><label>Jam mulai<input name="jam_mulai" id="shift-master-mulai" type="time" required></label><label>Jam selesai<input name="jam_selesai" id="shift-master-selesai" type="time" required></label><fieldset class="shift-day-checklist"><legend>Hari Kerja</legend><?php foreach (daftarHariKerja() as $hari): ?><label><input type="checkbox" name="hari[]" value="<?= $hari; ?>"> <?= $hari; ?></label><?php endforeach; ?></fieldset><div class="shift-master-actions"><button class="btn btn-secondary" type="button" id="close-shift-master-dialog">Batal</button><button class="btn btn-success" type="submit">Simpan</button></div>
     </form>
 </dialog>
 <script>
 (() => {
     const dialog = document.getElementById('shift-master-dialog');
+    const resetHari = nilai => {
+        const hari = nilai === 'Senin-Jumat' ? ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] : String(nilai || '').split(/,\s*/);
+        dialog.querySelectorAll('input[name="hari[]"]').forEach(item => { item.checked = hari.includes(item.value); });
+    };
+    document.getElementById('add-master-shift').addEventListener('click', () => {
+        document.getElementById('shift-master-aksi').value = 'tambah_shift';
+        document.getElementById('shift-master-id').value = '';
+        document.getElementById('shift-master-title').textContent = 'Tambah Shift';
+        document.getElementById('shift-master-nama').value = 'Shift';
+        document.getElementById('shift-master-mulai').value = '08:00';
+        document.getElementById('shift-master-selesai').value = '16:30';
+        resetHari('Senin-Jumat');
+        dialog.showModal();
+    });
     document.querySelectorAll('.edit-master-shift').forEach(button => button.addEventListener('click', () => {
+        document.getElementById('shift-master-aksi').value = 'edit_shift';
         document.getElementById('shift-master-id').value = button.dataset.id;
         document.getElementById('shift-master-title').textContent = 'Edit ' + button.dataset.nama;
+        document.getElementById('shift-master-nama').value = button.dataset.nama;
         document.getElementById('shift-master-mulai').value = button.dataset.mulai;
         document.getElementById('shift-master-selesai').value = button.dataset.selesai;
-        const hari = button.dataset.hari.split(/,\s*/);
-        dialog.querySelectorAll('input[name="hari[]"]').forEach(item => { item.checked = hari.includes(item.value) || (button.dataset.hari === 'Senin-Jumat' && ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].includes(item.value)); });
+        resetHari(button.dataset.hari);
         dialog.showModal();
     }));
     document.getElementById('close-shift-master-dialog').addEventListener('click', () => dialog.close());
@@ -291,11 +352,15 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     #position-dialog::backdrop { background: rgba(0, 0, 0, .38); }
     #shift-master-dialog { width: min(620px, calc(100vw - 2rem)); padding: 2rem; border: 1px solid #9ca3af; border-radius: 14px; background: #fff; box-shadow: 0 20px 60px rgba(0, 0, 0, .28); }
     #shift-master-dialog::backdrop { background: rgba(0, 0, 0, .38); }
-    #shift-master-dialog .position-dialog-add { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #shift-master-dialog .shift-master-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     #shift-master-dialog h2 { grid-column: 1 / -1; margin: 0; color: #111827; }
+    #shift-master-dialog .shift-master-form > label { display: grid; gap: 8px; color: #334155; font-weight: 600; }
+    #shift-master-dialog .shift-master-form > label:first-of-type { grid-column: 1 / -1; }
+    #shift-master-dialog .shift-master-form input[type="text"], #shift-master-dialog .shift-master-form input[type="time"] { width: 100%; min-width: 0; height: 44px; padding: 0 .8rem; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 10px; font: inherit; }
     #shift-master-dialog .shift-day-checklist { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .7rem 1rem; margin: 0; padding: .9rem 1rem; border: 1px solid #cbd5e1; border-radius: 12px; }
     #shift-master-dialog .shift-day-checklist legend { padding: 0 .35rem; font-weight: 600; }
     #shift-master-dialog .shift-day-checklist label { display: inline-flex; align-items: center; gap: .35rem; }
+    #shift-master-dialog .shift-master-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .75rem; }
     #position-dialog h2 { margin: 0 0 1.25rem; text-align: center; color: #111827; }
     .position-dialog-add { display: flex; gap: .75rem; margin-bottom: 1.25rem; }
     .position-dialog-add select { flex: 1; min-width: 0; border: 1px solid #667cff; border-radius: 14px; padding: .8rem 1rem; }
@@ -308,10 +373,13 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     :root[data-theme="dark"] #position-dialog { color: #e2e8f0; background: #1e293b; border-color: #475569; }
     :root[data-theme="dark"] #position-dialog h2,
     :root[data-theme="dark"] .position-dialog-pages strong { color: #f8fafc; }
+    :root[data-theme="dark"] #shift-master-dialog { color: #e2e8f0; background: #1e293b; border-color: #475569; }
+    :root[data-theme="dark"] #shift-master-dialog h2, :root[data-theme="dark"] #shift-master-dialog .shift-master-form > label { color: #f8fafc; }
+    :root[data-theme="dark"] #shift-master-dialog .shift-master-form input[type="text"], :root[data-theme="dark"] #shift-master-dialog .shift-master-form input[type="time"] { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
     :root[data-theme="dark"] .position-dialog-add select { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
     :root[data-theme="dark"] .position-dialog-add select option { color: #e2e8f0; background: #0f172a; }
     :root[data-theme="dark"] .position-dialog-list li { color: #e2e8f0; background: #172033; border-color: #475569; }
-    @media (max-width: 640px) { #position-dialog { padding: 1.25rem; } .position-dialog-add, .position-dialog-list { grid-template-columns: 1fr; } .position-dialog-add { display: grid; } }
+    @media (max-width: 640px) { #position-dialog { padding: 1.25rem; } .position-dialog-add, .position-dialog-list { grid-template-columns: 1fr; } .position-dialog-add { display: grid; } #shift-master-dialog { padding: 1.25rem; } #shift-master-dialog .shift-master-form { grid-template-columns: 1fr; } #shift-master-dialog .shift-master-actions { justify-content: stretch; } #shift-master-dialog .shift-master-actions .btn { flex: 1; } }
 </style>
 <dialog id="position-dialog">
     <h2>Posisi Departemen <span id="position-department-name"></span></h2>

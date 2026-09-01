@@ -226,8 +226,8 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             </div>
             <dl class="profile-details profile-summary-footer">
                 <div>
-                    <dt>Shift</dt>
-                    <dd><span id="profile-shift-label"><?= htmlspecialchars(labelShiftKaryawan($karyawan)); ?></span><?php if ($modeEdit): ?><button class="btn btn-secondary" type="button" id="open-shift-dialog">+ Tambah</button><?php endif; ?></dd>
+                    <dt>Jadwal Kerja</dt>
+                    <dd><span id="profile-shift-label"><?= htmlspecialchars(labelShiftKaryawan($karyawan)); ?></span><?php if ($modeEdit): ?><button class="btn btn-secondary" type="button" id="open-shift-dialog">Ubah</button><?php endif; ?></dd>
                 </div>
                 <div>
                     <dt>Sisa Cuti</dt>
@@ -462,13 +462,12 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 <?php if ($modeEdit): ?>
 <dialog id="shift-dialog" class="history-dialog">
     <form method="dialog">
-        <h3>Atur Shift Kerja</h3>
+        <h3>Atur Jadwal Kerja</h3>
         <div class="history-dialog-fields shift-dialog-fields">
-            <label>Shift<select id="shift-nama" name="shift_nama" form="inline-edit-form"><option value="">Pilih shift</option><?php foreach ($masterShift as $shift): ?><option value="<?= htmlspecialchars($shift['nama']); ?>" <?= ($karyawan['shift_nama'] ?? '') === $shift['nama'] ? 'selected' : ''; ?>><?= htmlspecialchars($shift['nama']); ?></option><?php endforeach; ?><option value="Non Shift" <?= ($karyawan['shift_nama'] ?? '') === 'Non Shift' ? 'selected' : ''; ?>>Non Shift</option></select></label>
-            <label>Jam mulai kerja<input id="shift-mulai" name="shift_mulai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_mulai'] ?? ''), 0, 5)); ?>"></label>
-            <label>Jam selesai kerja<input id="shift-selesai" name="shift_selesai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_selesai'] ?? ''), 0, 5)); ?>"></label>
+            <label>Shift<select id="shift-nama" name="shift_nama" form="inline-edit-form" required><?php foreach ($masterShift as $shift): ?><option value="<?= htmlspecialchars($shift['nama']); ?>" <?= ($karyawan['shift_nama'] ?? '') === $shift['nama'] ? 'selected' : ''; ?>><?= htmlspecialchars($shift['nama']); ?></option><?php endforeach; ?><option value="Non Shift" <?= ($karyawan['shift_nama'] ?? '') === 'Non Shift' ? 'selected' : ''; ?>>Non Shift</option></select></label>
+            <div id="non-shift-time-fields" class="non-shift-time-fields" hidden><label>Jam Masuk<input id="shift-mulai" name="shift_mulai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_mulai'] ?? ''), 0, 5)); ?>"></label><label>Jam Pulang<input id="shift-selesai" name="shift_selesai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_selesai'] ?? ''), 0, 5)); ?>"></label></div>
             <?php $hariShiftKaryawan = preg_split('/,\s*/', (string) ($karyawan['shift_hari'] ?? 'Senin-Jumat')) ?: []; if (in_array('Senin-Jumat', $hariShiftKaryawan, true)) $hariShiftKaryawan = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']; ?>
-            <fieldset class="shift-day-checklist profile-shift-day-checklist"><legend>Hari Kerja</legend><?php foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $hari): ?><label><input type="checkbox" name="shift_hari[]" form="inline-edit-form" value="<?= $hari; ?>"<?= in_array($hari, $hariShiftKaryawan, true) ? ' checked' : ''; ?>> <?= $hari; ?></label><?php endforeach; ?></fieldset>
+            <fieldset id="shift-hari-fieldset" class="shift-day-checklist profile-shift-day-checklist"><legend>Hari Kerja</legend><?php foreach (daftarHariKerja() as $hari): ?><label><input type="checkbox" name="shift_hari[]" form="inline-edit-form" value="<?= $hari; ?>"<?= in_array($hari, $hariShiftKaryawan, true) ? ' checked' : ''; ?>> <?= $hari; ?></label><?php endforeach; ?></fieldset>
         </div>
         <div class="history-dialog-actions"><button class="btn btn-secondary" value="cancel">Batal</button><button class="btn btn-success" id="save-shift-dialog" value="default">Simpan</button></div>
     </form>
@@ -477,15 +476,31 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 (() => {
     const dialog = document.getElementById('shift-dialog'); const open = document.getElementById('open-shift-dialog'); const shift = document.getElementById('shift-nama');
     if (!dialog || !open || !shift) return;
-    const mulai = document.getElementById('shift-mulai'); const selesai = document.getElementById('shift-selesai'); const label = document.getElementById('profile-shift-label'); const hari = [...dialog.querySelectorAll('input[name="shift_hari[]"]')];
+    const label = document.getElementById('profile-shift-label');
+    const hari = [...dialog.querySelectorAll('input[name="shift_hari[]"]')];
+    const waktuNonShift = document.getElementById('non-shift-time-fields');
+    const mulai = document.getElementById('shift-mulai');
+    const selesai = document.getElementById('shift-selesai');
     const preset = Object.fromEntries(<?= json_encode(array_map(static fn (array $shift): array => [$shift['nama'], [$shift['jam_mulai'], $shift['jam_selesai'], $shift['hari']]], $masterShift), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>);
-    const aturHari = nilai => { const terpilih = nilai === 'Senin-Jumat' ? ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] : String(nilai || '').split(/,\s*/); hari.forEach(item => { item.checked = terpilih.includes(item.value); }); };
-    const update = (gunakanHariMaster = false) => { const otomatis = preset[shift.value]; mulai.readOnly = selesai.readOnly = !!otomatis; if (otomatis) { mulai.value = otomatis[0]; selesai.value = otomatis[1]; if (gunakanHariMaster) aturHari(otomatis[2]); } };
-    open.addEventListener('click', () => { update(false); dialog.showModal(); }); shift.addEventListener('change', () => update(true));
+    const hariDariNilai = nilai => nilai === 'Senin-Jumat' ? ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] : String(nilai || '').split(/,\s*/).filter(Boolean);
+    const aturHari = nilai => { const terpilih = hariDariNilai(nilai); hari.forEach(item => { item.checked = terpilih.includes(item.value); }); };
+    const hariTerpilih = () => hari.filter(item => item.checked).map(item => item.value);
+    const labelJadwal = () => {
+        const terpilih = hariTerpilih();
+        if (shift.value === 'Non Shift') return mulai.value && selesai.value ? `Non Shift — ${mulai.value}–${selesai.value} — ${terpilih.join(', ')} — ${terpilih.length} hari kerja` : 'Non Shift';
+        const data = preset[shift.value];
+        return data ? `${shift.value} — ${data[0]}–${data[1]} — ${terpilih.join(', ')} — ${terpilih.length} hari kerja` : '-';
+    };
+    const perbaruiHari = (gunakanHariMaster = false) => {
+        const data = preset[shift.value];
+        waktuNonShift.hidden = shift.value !== 'Non Shift';
+        if (gunakanHariMaster && data) aturHari(data[2]);
+    };
+    open.addEventListener('click', () => { perbaruiHari(false); dialog.showModal(); });
+    shift.addEventListener('change', () => perbaruiHari(true));
     dialog.addEventListener('close', () => {
         if (dialog.returnValue !== 'default' || !label) return;
-        const nama = shift.value.trim(); const jamMulai = mulai.value.trim(); const jamSelesai = selesai.value.trim();
-        label.textContent = nama && jamMulai && jamSelesai ? `${nama} ${jamMulai} - ${jamSelesai}` : '-';
+        label.textContent = labelJadwal();
     });
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
 })();

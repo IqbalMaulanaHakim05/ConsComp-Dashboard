@@ -11,16 +11,31 @@ function siapkanMasterData(mysqli $conn): void
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_status_kerja (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_agama (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_shift (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(80) NOT NULL UNIQUE, jam_mulai TIME NOT NULL, jam_selesai TIME NOT NULL, hari VARCHAR(60) NOT NULL DEFAULT 'Senin-Jumat') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    // Shift Pagi/Malam boleh memiliki lebih dari satu jadwal. Lepaskan indeks
-    // unik lama pada nama agar penambahan shift membuat baris baru, bukan menimpa.
-    $indeksShift = mysqli_query($conn, "SHOW INDEX FROM master_shift WHERE Column_name = 'nama' AND Non_unique = 0");
-    if ($indeksShift && ($barisIndeks = mysqli_fetch_assoc($indeksShift))) {
-        $namaIndeks = str_replace('`', '``', (string) $barisIndeks['Key_name']);
-        mysqli_query($conn, "ALTER TABLE master_shift DROP INDEX `$namaIndeks`");
+    // Normalisasi istilah lama sekali secara idempoten. Jadwal lama tetap
+    // dipertahankan pada karyawan; master hanya menyisakan pilihan "Shift".
+    $kolomShiftKaryawan = mysqli_query($conn, "SHOW COLUMNS FROM karyawan LIKE 'shift_nama'");
+    $punyaKolomShiftKaryawan = $kolomShiftKaryawan && mysqli_num_rows($kolomShiftKaryawan) > 0;
+    if ($kolomShiftKaryawan) mysqli_free_result($kolomShiftKaryawan);
+    if ($punyaKolomShiftKaryawan) {
+        mysqli_query($conn, "UPDATE karyawan SET shift_nama = 'Shift' WHERE LOWER(TRIM(shift_nama)) IN ('shift pagi', 'shift malam')");
     }
+
+    $shiftUtama = mysqli_query($conn, "SELECT id FROM master_shift WHERE LOWER(TRIM(nama)) = 'shift' LIMIT 1");
+    $adaShiftUtama = $shiftUtama && mysqli_num_rows($shiftUtama) > 0;
+    if ($shiftUtama) mysqli_free_result($shiftUtama);
+    if (!$adaShiftUtama) {
+        mysqli_query($conn, "UPDATE master_shift SET nama = 'Shift' WHERE LOWER(TRIM(nama)) = 'shift pagi' LIMIT 1");
+        $shiftUtama = mysqli_query($conn, "SELECT id FROM master_shift WHERE LOWER(TRIM(nama)) = 'shift' LIMIT 1");
+        $adaShiftUtama = $shiftUtama && mysqli_num_rows($shiftUtama) > 0;
+        if ($shiftUtama) mysqli_free_result($shiftUtama);
+    }
+    if (!$adaShiftUtama) {
+        mysqli_query($conn, "UPDATE master_shift SET nama = 'Shift' WHERE LOWER(TRIM(nama)) = 'shift malam' LIMIT 1");
+    }
+    mysqli_query($conn, "DELETE FROM master_shift WHERE LOWER(TRIM(nama)) IN ('shift pagi', 'shift malam')");
     $jumlahShift = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM master_shift"));
     if ((int) ($jumlahShift[0] ?? 0) === 0) {
-        mysqli_query($conn, "INSERT INTO master_shift (nama, jam_mulai, jam_selesai, hari) VALUES ('Shift Pagi', '08:00:00', '16:30:00', 'Senin-Jumat'), ('Shift Malam', '16:30:00', '08:00:00', 'Senin-Jumat')");
+        mysqli_query($conn, "INSERT INTO master_shift (nama, jam_mulai, jam_selesai, hari) VALUES ('Shift', '08:00:00', '16:30:00', 'Senin-Jumat')");
     }
     // Master data dikelola sepenuhnya dari halaman Master Data. Jangan mengisi
     // ulang nilai bawaan setiap halaman dibuka karena item yang dihapus akan
@@ -59,6 +74,19 @@ function ambilMasterShiftBerdasarkanNama(mysqli $conn, string $nama): ?array
     $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
     mysqli_stmt_close($stmt);
     return $data;
+}
+
+function daftarHariKerja(): array
+{
+    return ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+}
+
+function jumlahHariKerjaJadwal(string $hari): int
+{
+    $hari = trim($hari);
+    if ($hari === 'Senin-Jumat') return 5;
+    $terpilih = array_intersect(daftarHariKerja(), preg_split('/,\\s*/', $hari) ?: []);
+    return count($terpilih);
 }
 
 function ambilMasterData(mysqli $conn, string $jenis): array

@@ -24,7 +24,15 @@ function labelShiftKaryawan(array $karyawan): string
     $nama = trim((string) ($karyawan['shift_nama'] ?? ''));
     $mulai = substr((string) ($karyawan['shift_mulai'] ?? ''), 0, 5);
     $selesai = substr((string) ($karyawan['shift_selesai'] ?? ''), 0, 5);
-    return $nama === '' || $mulai === '' || $selesai === '' ? '-' : $nama . ' ' . $mulai . ' - ' . $selesai;
+    $hari = trim((string) ($karyawan['shift_hari'] ?? ''));
+    if ($nama === '') return '-';
+    if ($mulai === '' || $selesai === '') return $nama;
+
+    $jumlahHari = jumlahHariKerjaJadwal($hari);
+    $informasi = [$nama, $mulai . '–' . $selesai];
+    if ($hari !== '') $informasi[] = $hari;
+    $informasi[] = $jumlahHari . ' hari kerja';
+    return implode(' — ', $informasi);
 }
 
 function sisaCutiKaryawan(mysqli $conn, int $karyawanId, ?int $tahun = null): float

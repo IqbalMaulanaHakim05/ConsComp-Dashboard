@@ -14,7 +14,7 @@ require_once __DIR__ . '/../Services/Employee/jadwal-cuti.php';
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
 siapkanJadwalDanCutiKaryawan($conn);
-$namaShiftDiizinkan = array_merge(['', 'Non Shift'], array_column(ambilMasterShift($conn), 'nama'));
+$namaShiftDiizinkan = array_merge(['Non Shift'], array_column(ambilMasterShift($conn), 'nama'));
 siapkanTanggalKeluarKaryawan($conn);
 $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
 
@@ -191,12 +191,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
 
         if (array_key_exists('shift_nama', $_POST)) {
             $shiftNama = trim((string) $_POST['shift_nama']);
-            $shiftMulai = trim((string) ($_POST['shift_mulai'] ?? ''));
-            $shiftSelesai = trim((string) ($_POST['shift_selesai'] ?? ''));
-            $hariShift = array_values(array_intersect(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'], array_map('strval', (array) ($_POST['shift_hari'] ?? []))));
-            $shiftHari = implode(', ', $hariShift) ?: 'Senin-Jumat';
-            if (!in_array($shiftNama, $namaShiftDiizinkan, true)) $shiftNama = '';
-            if ($shiftNama === '') { $shiftMulai = ''; $shiftSelesai = ''; }
+            if (!in_array($shiftNama, $namaShiftDiizinkan, true)) $shiftNama = 'Non Shift';
+            $shiftMulai = ''; $shiftSelesai = ''; $shiftHari = '';
+            $hariTerpilih = array_values(array_intersect(daftarHariKerja(), array_map('strval', (array) ($_POST['shift_hari'] ?? []))));
+            if ($shiftNama === 'Non Shift') {
+                $mulaiNonShift = trim((string) ($_POST['shift_mulai'] ?? ''));
+                $selesaiNonShift = trim((string) ($_POST['shift_selesai'] ?? ''));
+                $shiftMulai = preg_match('/^\d{2}:\d{2}$/', $mulaiNonShift) ? $mulaiNonShift : substr((string) ($data['shift_mulai'] ?? ''), 0, 5);
+                $shiftSelesai = preg_match('/^\d{2}:\d{2}$/', $selesaiNonShift) ? $selesaiNonShift : substr((string) ($data['shift_selesai'] ?? ''), 0, 5);
+                $shiftHari = implode(', ', $hariTerpilih) ?: (string) ($data['shift_hari'] ?? 'Senin-Jumat');
+            } else {
+                $detailShift = ambilMasterShiftBerdasarkanNama($conn, $shiftNama);
+                if ($detailShift) {
+                    $shiftMulai = (string) $detailShift['jam_mulai'];
+                    $shiftSelesai = (string) $detailShift['jam_selesai'];
+                    $shiftHari = implode(', ', $hariTerpilih) ?: (string) $detailShift['hari'];
+                }
+            }
             $stmtJadwal = mysqli_prepare($conn, "UPDATE karyawan SET shift_nama = NULLIF(?, ''), shift_mulai = NULLIF(?, ''), shift_selesai = NULLIF(?, ''), shift_hari = ? WHERE id = ?");
             if (!$stmtJadwal) throw new RuntimeException(mysqli_error($conn));
             mysqli_stmt_bind_param($stmtJadwal, 'ssssi', $shiftNama, $shiftMulai, $shiftSelesai, $shiftHari, $id);
@@ -376,16 +387,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if ($berhasilUpdate) {
                     if (array_key_exists('shift_nama', $_POST)) {
                         $shiftNama = trim((string) $_POST['shift_nama']);
-                        $shiftMulai = trim((string) ($_POST['shift_mulai'] ?? ''));
-                        $shiftSelesai = trim((string) ($_POST['shift_selesai'] ?? ''));
-                        $hariShift = array_values(array_intersect(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'], array_map('strval', (array) ($_POST['shift_hari'] ?? []))));
-                        $shiftHari = implode(', ', $hariShift) ?: 'Senin-Jumat';
-                        if (!in_array($shiftNama, $namaShiftDiizinkan, true)) {
-                            $shiftNama = '';
-                        }
-                        if ($shiftNama === '') {
-                            $shiftMulai = '';
-                            $shiftSelesai = '';
+                        if (!in_array($shiftNama, $namaShiftDiizinkan, true)) $shiftNama = 'Non Shift';
+                        $shiftMulai = ''; $shiftSelesai = ''; $shiftHari = '';
+                        $hariTerpilih = array_values(array_intersect(daftarHariKerja(), array_map('strval', (array) ($_POST['shift_hari'] ?? []))));
+                        if ($shiftNama === 'Non Shift') {
+                            $mulaiNonShift = trim((string) ($_POST['shift_mulai'] ?? ''));
+                            $selesaiNonShift = trim((string) ($_POST['shift_selesai'] ?? ''));
+                            $shiftMulai = preg_match('/^\d{2}:\d{2}$/', $mulaiNonShift) ? $mulaiNonShift : substr((string) ($data['shift_mulai'] ?? ''), 0, 5);
+                            $shiftSelesai = preg_match('/^\d{2}:\d{2}$/', $selesaiNonShift) ? $selesaiNonShift : substr((string) ($data['shift_selesai'] ?? ''), 0, 5);
+                            $shiftHari = implode(', ', $hariTerpilih) ?: (string) ($data['shift_hari'] ?? 'Senin-Jumat');
+                        } else {
+                            $detailShift = ambilMasterShiftBerdasarkanNama($conn, $shiftNama);
+                            if ($detailShift) {
+                                $shiftMulai = (string) $detailShift['jam_mulai'];
+                                $shiftSelesai = (string) $detailShift['jam_selesai'];
+                                $shiftHari = implode(', ', $hariTerpilih) ?: (string) $detailShift['hari'];
+                            }
                         }
                         $stmtJadwal = mysqli_prepare($conn, "UPDATE karyawan SET shift_nama = NULLIF(?, ''), shift_mulai = NULLIF(?, ''), shift_selesai = NULLIF(?, ''), shift_hari = ? WHERE id = ?");
                         if ($stmtJadwal) {
