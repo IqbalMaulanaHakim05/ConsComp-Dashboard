@@ -21,6 +21,7 @@ $tampilanMaster = [
 $pesan = trim((string) ($_GET["pesan"] ?? ""));
 $error = trim((string) ($_GET["error"] ?? ""));
 $masterShift = ambilMasterShift($conn);
+$aturanDenda = ambilAturanDenda($conn);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!csrfValid($_POST["csrf_token"] ?? null)) {
@@ -29,6 +30,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $aksi = (string) ($_POST["aksi"] ?? "tambah");
         $jenis = (string) ($_POST["jenis"] ?? "");
         $table = $map[$jenis] ?? null;
+
+        if ($aksi === 'simpan_aturan_denda') {
+            $aturanBaru = (array) ($_POST['aturan_denda'] ?? []);
+            $valid = true;
+            foreach (['terlambat', 'pulang_lebih_awal'] as $tipe) {
+                $item = (array) ($aturanBaru[$tipe] ?? []);
+                $toleransi = (int) ($item['toleransi_menit'] ?? -1);
+                $batas1 = (int) ($item['batas_tingkat_1'] ?? -1);
+                $batas2 = (int) ($item['batas_tingkat_2'] ?? -1);
+                $pengali1 = (float) ($item['pengali_tingkat_1'] ?? 0);
+                $pengali2 = (float) ($item['pengali_tingkat_2'] ?? 0);
+                $pembagi = (float) ($item['pembagi_jam_bulanan'] ?? 0);
+                if ($toleransi < 0 || $batas1 <= $toleransi || $batas2 <= $batas1 || $pengali1 <= 0 || $pengali2 < $pengali1 || $pembagi <= 0) { $valid = false; break; }
+                $stmtAturan = mysqli_prepare($conn, 'UPDATE master_aturan_denda SET toleransi_menit = ?, batas_tingkat_1 = ?, batas_tingkat_2 = ?, pengali_tingkat_1 = ?, pengali_tingkat_2 = ?, pembagi_jam_bulanan = ? WHERE tipe = ?');
+                mysqli_stmt_bind_param($stmtAturan, 'iiiddds', $toleransi, $batas1, $batas2, $pengali1, $pengali2, $pembagi, $tipe);
+                $valid = mysqli_stmt_execute($stmtAturan) && $valid;
+                mysqli_stmt_close($stmtAturan);
+            }
+            header('Location: master-data.php?' . ($valid ? 'pesan=' : 'error=') . rawurlencode($valid ? 'Aturan denda berhasil diperbarui.' : 'Aturan denda tidak valid.'));
+            exit;
+        }
 
         if ($aksi === 'tambah_shift' || $aksi === 'edit_shift') {
             $idShift = (int) ($_POST['id'] ?? 0);
@@ -293,6 +315,26 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 
 <section class="dashboard-chart master-data-grid master-shift-grid">
     <article class="chart-card master-data-card master-shift-card">
+        <h2>Aturan Denda</h2>
+        <form method="POST" class="aturan-denda-form">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="simpan_aturan_denda">
+            <?php foreach (['terlambat' => 'Datang terlambat', 'pulang_lebih_awal' => 'Pulang lebih awal'] as $tipe => $label): $aturan = $aturanDenda[$tipe]; ?>
+                <fieldset class="shift-day-checklist"><legend><?= $label; ?></legend>
+                    <label>Toleransi (menit)<input type="number" name="aturan_denda[<?= $tipe; ?>][toleransi_menit]" min="0" value="<?= (int) $aturan['toleransi_menit']; ?>" required></label>
+                    <label>Mulai 1× (menit)<input type="number" name="aturan_denda[<?= $tipe; ?>][batas_tingkat_1]" min="1" value="<?= (int) $aturan['batas_tingkat_1']; ?>" required></label>
+                    <label>Mulai 2× (menit)<input type="number" name="aturan_denda[<?= $tipe; ?>][batas_tingkat_2]" min="1" value="<?= (int) $aturan['batas_tingkat_2']; ?>" required></label>
+                    <label>Pengali 1×<input type="number" name="aturan_denda[<?= $tipe; ?>][pengali_tingkat_1]" min="0.01" step="0.01" value="<?= htmlspecialchars((string) $aturan['pengali_tingkat_1']); ?>" required></label>
+                    <label>Pengali 2×<input type="number" name="aturan_denda[<?= $tipe; ?>][pengali_tingkat_2]" min="0.01" step="0.01" value="<?= htmlspecialchars((string) $aturan['pengali_tingkat_2']); ?>" required></label>
+                    <label>Pembagi jam/bulan<input type="number" name="aturan_denda[<?= $tipe; ?>][pembagi_jam_bulanan]" min="0.01" step="0.01" value="<?= htmlspecialchars((string) $aturan['pembagi_jam_bulanan']); ?>" required></label>
+                </fieldset>
+            <?php endforeach; ?>
+            <div class="shift-master-actions"><button class="btn btn-success" type="submit">Simpan Aturan Denda</button></div>
+        </form>
+    </article>
+</section>
+
+<section class="dashboard-chart master-data-grid master-shift-grid">
+    <article class="chart-card master-data-card master-shift-card">
         <h2>Master Jadwal Kerja</h2>
         <button class="btn btn-success" type="button" id="add-master-shift">+ Tambah Shift</button>
         <ul class="master-list">
@@ -361,6 +403,12 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     #shift-master-dialog .shift-day-checklist legend { padding: 0 .35rem; font-weight: 600; }
     #shift-master-dialog .shift-day-checklist label { display: inline-flex; align-items: center; gap: .35rem; }
     #shift-master-dialog .shift-master-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .75rem; }
+    .aturan-denda-form { display: grid; gap: 16px; }
+    .aturan-denda-form .shift-day-checklist { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 14px; border: 1px solid #cbd5e1; border-radius: 12px; }
+    .aturan-denda-form .shift-day-checklist legend { padding: 0 .35rem; font-weight: 700; }
+    .aturan-denda-form .shift-day-checklist label { display: grid; gap: 6px; color: #334155; font-weight: 600; }
+    .aturan-denda-form input { width: 100%; min-width: 0; height: 42px; padding: 0 .75rem; border: 1px solid #94a3b8; border-radius: 9px; font: inherit; }
+    .aturan-denda-form .shift-master-actions { display: flex; justify-content: flex-end; }
     #position-dialog h2 { margin: 0 0 1.25rem; text-align: center; color: #111827; }
     .position-dialog-add { display: flex; gap: .75rem; margin-bottom: 1.25rem; }
     .position-dialog-add select { flex: 1; min-width: 0; border: 1px solid #667cff; border-radius: 14px; padding: .8rem 1rem; }
@@ -376,10 +424,13 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     :root[data-theme="dark"] #shift-master-dialog { color: #e2e8f0; background: #1e293b; border-color: #475569; }
     :root[data-theme="dark"] #shift-master-dialog h2, :root[data-theme="dark"] #shift-master-dialog .shift-master-form > label { color: #f8fafc; }
     :root[data-theme="dark"] #shift-master-dialog .shift-master-form #shift-master-nama, :root[data-theme="dark"] #shift-master-dialog .shift-master-form input[type="time"] { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
+    :root[data-theme="dark"] .aturan-denda-form .shift-day-checklist { border-color: #475569; }
+    :root[data-theme="dark"] .aturan-denda-form .shift-day-checklist label { color: #e2e8f0; }
+    :root[data-theme="dark"] .aturan-denda-form input { color: #e2e8f0; background: #0f172a; border-color: #64748b; }
     :root[data-theme="dark"] .position-dialog-add select { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
     :root[data-theme="dark"] .position-dialog-add select option { color: #e2e8f0; background: #0f172a; }
     :root[data-theme="dark"] .position-dialog-list li { color: #e2e8f0; background: #172033; border-color: #475569; }
-    @media (max-width: 640px) { #position-dialog { padding: 1.25rem; } .position-dialog-add, .position-dialog-list { grid-template-columns: 1fr; } .position-dialog-add { display: grid; } #shift-master-dialog { padding: 1.25rem; } #shift-master-dialog .shift-master-form { grid-template-columns: 1fr; } #shift-master-dialog .shift-master-actions { justify-content: stretch; } #shift-master-dialog .shift-master-actions .btn { flex: 1; } }
+    @media (max-width: 640px) { #position-dialog { padding: 1.25rem; } .position-dialog-add, .position-dialog-list, .aturan-denda-form .shift-day-checklist { grid-template-columns: 1fr; } .position-dialog-add { display: grid; } #shift-master-dialog { padding: 1.25rem; } #shift-master-dialog .shift-master-form { grid-template-columns: 1fr; } #shift-master-dialog .shift-master-actions { justify-content: stretch; } #shift-master-dialog .shift-master-actions .btn { flex: 1; } }
 </style>
 <dialog id="position-dialog">
     <h2>Posisi Departemen <span id="position-department-name"></span></h2>

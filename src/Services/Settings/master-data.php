@@ -3,6 +3,18 @@ declare(strict_types=1);
 
 function siapkanMasterData(mysqli $conn): void
 {
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_aturan_denda (
+        tipe VARCHAR(30) NOT NULL PRIMARY KEY,
+        toleransi_menit SMALLINT UNSIGNED NOT NULL,
+        batas_tingkat_1 SMALLINT UNSIGNED NOT NULL,
+        batas_tingkat_2 SMALLINT UNSIGNED NOT NULL,
+        pengali_tingkat_1 DECIMAL(6,2) NOT NULL,
+        pengali_tingkat_2 DECIMAL(6,2) NOT NULL,
+        pembagi_jam_bulanan DECIMAL(8,2) NOT NULL DEFAULT 178.00
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    mysqli_query($conn, "INSERT IGNORE INTO master_aturan_denda
+        (tipe, toleransi_menit, batas_tingkat_1, batas_tingkat_2, pengali_tingkat_1, pengali_tingkat_2, pembagi_jam_bulanan)
+        VALUES ('terlambat', 10, 11, 16, 1, 2, 178), ('pulang_lebih_awal', 5, 6, 11, 1, 2, 178)");
     $kolomTipeKerja = mysqli_query($conn, "SHOW COLUMNS FROM karyawan LIKE 'tipe_kerja'");
     $punyaKolomTipeKerja = $kolomTipeKerja && mysqli_num_rows($kolomTipeKerja) > 0;
     if ($kolomTipeKerja) mysqli_free_result($kolomTipeKerja);
@@ -81,6 +93,17 @@ function ambilMasterShiftBerdasarkanNama(mysqli $conn, string $nama): ?array
     $data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
     mysqli_stmt_close($stmt);
     return $data;
+}
+
+function ambilAturanDenda(mysqli $conn): array
+{
+    siapkanMasterData($conn);
+    $hasil = mysqli_query($conn, 'SELECT * FROM master_aturan_denda ORDER BY tipe');
+    $aturan = [];
+    while ($hasil && ($baris = mysqli_fetch_assoc($hasil))) {
+        $aturan[(string) $baris['tipe']] = $baris;
+    }
+    return $aturan;
 }
 
 function pilihanStatusKerja(): array
