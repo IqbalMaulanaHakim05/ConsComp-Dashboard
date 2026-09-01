@@ -123,8 +123,18 @@ function siapkanPenyimpananSlipGaji(mysqli $conn): bool
 function namaBulanSlipGaji(int $bulan): string
 {
     return [
-        1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+        1 => 'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
     ][$bulan] ?? '-';
 }
 
@@ -323,7 +333,7 @@ function dataSlipGajiKaryawan(mysqli $conn, int $karyawanId, int $bulan, int $ta
 
 function buatPdfSlipGaji(array $data): string
 {
-    $autoload = dirname(__DIR__, 2) . '/vendor/autoload.php';
+    $autoload = dirname(__DIR__, 2) . '../../vendor/autoload.php';
     if (!is_file($autoload)) {
         throw new RuntimeException('Dependensi PDF belum terpasang.');
     }
@@ -335,10 +345,10 @@ function buatPdfSlipGaji(array $data): string
         throw new RuntimeException('Logo perusahaan tidak ditemukan.');
     }
 
-    $escape = static fn (string $nilai): string => htmlspecialchars($nilai, ENT_QUOTES, 'UTF-8');
-    $rupiah = static fn (float $nilai): string => number_format($nilai, 0, ',', '.');
-    $pendapatan = array_values(array_filter($data['items'], static fn (array $item): bool => $item['kategori'] === 'pendapatan'));
-    $potongan = array_values(array_filter($data['items'], static fn (array $item): bool => $item['kategori'] === 'potongan'));
+    $escape = static fn(string $nilai): string => htmlspecialchars($nilai, ENT_QUOTES, 'UTF-8');
+    $rupiah = static fn(float $nilai): string => number_format($nilai, 0, ',', '.');
+    $pendapatan = array_values(array_filter($data['items'], static fn(array $item): bool => $item['kategori'] === 'pendapatan'));
+    $potongan = array_values(array_filter($data['items'], static fn(array $item): bool => $item['kategori'] === 'potongan'));
     $baris = '';
     $jumlahBaris = max(count($pendapatan), count($potongan), 1);
     for ($i = 0; $i < $jumlahBaris; $i++) {
@@ -714,4 +724,3 @@ function hapusSlipGaji(mysqli $conn, int $slipId, int $karyawanId): array
         throw $e;
     }
 }
-
