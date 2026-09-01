@@ -356,7 +356,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     #shift-master-dialog h2 { grid-column: 1 / -1; margin: 0; color: #111827; }
     #shift-master-dialog .shift-master-form > label { display: grid; gap: 8px; color: #334155; font-weight: 600; }
     #shift-master-dialog .shift-master-form > label:first-of-type { grid-column: 1 / -1; }
-    #shift-master-dialog .shift-master-form input[type="text"], #shift-master-dialog .shift-master-form input[type="time"] { width: 100%; min-width: 0; height: 44px; padding: 0 .8rem; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 10px; font: inherit; }
+    #shift-master-dialog .shift-master-form #shift-master-nama, #shift-master-dialog .shift-master-form input[type="time"] { width: 100%; min-width: 0; height: 44px; padding: 0 .8rem; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 10px; font: inherit; }
     #shift-master-dialog .shift-day-checklist { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .7rem 1rem; margin: 0; padding: .9rem 1rem; border: 1px solid #cbd5e1; border-radius: 12px; }
     #shift-master-dialog .shift-day-checklist legend { padding: 0 .35rem; font-weight: 600; }
     #shift-master-dialog .shift-day-checklist label { display: inline-flex; align-items: center; gap: .35rem; }
@@ -375,7 +375,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     :root[data-theme="dark"] .position-dialog-pages strong { color: #f8fafc; }
     :root[data-theme="dark"] #shift-master-dialog { color: #e2e8f0; background: #1e293b; border-color: #475569; }
     :root[data-theme="dark"] #shift-master-dialog h2, :root[data-theme="dark"] #shift-master-dialog .shift-master-form > label { color: #f8fafc; }
-    :root[data-theme="dark"] #shift-master-dialog .shift-master-form input[type="text"], :root[data-theme="dark"] #shift-master-dialog .shift-master-form input[type="time"] { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
+    :root[data-theme="dark"] #shift-master-dialog .shift-master-form #shift-master-nama, :root[data-theme="dark"] #shift-master-dialog .shift-master-form input[type="time"] { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
     :root[data-theme="dark"] .position-dialog-add select { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
     :root[data-theme="dark"] .position-dialog-add select option { color: #e2e8f0; background: #0f172a; }
     :root[data-theme="dark"] .position-dialog-list li { color: #e2e8f0; background: #172033; border-color: #475569; }

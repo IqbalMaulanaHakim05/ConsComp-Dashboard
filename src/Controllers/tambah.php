@@ -13,7 +13,7 @@ require_once __DIR__ . '/../Services/Employee/jadwal-cuti.php';
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
 siapkanJadwalDanCutiKaryawan($conn);
-$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
+$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = pilihanStatusKerja(); $masterTipeKerja = pilihanTipeKerja(); $masterAgama = ambilMasterData($conn, "agama");
 $masterShift = ambilMasterShift($conn);
 $namaShiftDiizinkan = array_column($masterShift, 'nama');
 $posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
@@ -49,6 +49,7 @@ $form = [
     "gender" => "",
     "date_of_hire" => "",
     "employment_status" => "",
+    "tipe_kerja" => "Kontrak",
     "performance_score" => "",
     "shift_nama" => (string) ($masterShift[0]['nama'] ?? 'Non Shift'),
 ];
@@ -83,6 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $gender = $form["gender"];
     $dateOfHire = $form["date_of_hire"];
     $employmentStatus = $form["employment_status"];
+    $tipeKerja = $form["tipe_kerja"];
     $shiftNama = in_array($form['shift_nama'], array_merge(['Non Shift'], $namaShiftDiizinkan), true) ? $form['shift_nama'] : '';
     $shiftMulai = '';
     $shiftSelesai = '';
@@ -113,9 +115,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $gender === ""
         || $dateOfHire === ""
         || $employmentStatus === ""
+        || $tipeKerja === ""
         || $shiftNama === ''
     ) {
         $pesan = "Semua kolom wajib diisi.";
+    } elseif (!in_array($employmentStatus, pilihanStatusKerja(), true) || !in_array($tipeKerja, pilihanTipeKerja(), true)) {
+        $pesan = "Status Kerja atau Tipe Kerja tidak valid.";
     } elseif ($pesanPerforma !== "") {
         $pesan = $pesanPerforma;
     } elseif (nikKaryawanSudahDigunakan($conn, $nik)) {
@@ -151,6 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         gender,
                         date_of_hire,
                         employment_status,
+                        tipe_kerja,
                         performance_score,
                         file_cv,
                         foto_profil,
@@ -160,7 +166,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         shift_mulai,
                         shift_selesai,
                         shift_hari
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = mysqli_prepare($conn, $sql);
 
@@ -170,7 +176,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             } else {
                 mysqli_stmt_bind_param(
                     $stmt,
-                    str_repeat("s", 18) . "d" . str_repeat("s", 12),
+                    str_repeat("s", 18) . "d" . str_repeat("s", 13),
                     $employeeName,
                     $nik,
                     $alamat,
@@ -188,6 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $gender,
                     $dateOfHire,
                     $employmentStatus,
+                    $tipeKerja,
                     $performanceScore,
                     $fileCv,
                     $fotoProfil,
@@ -361,10 +368,12 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     <label for="employment_status">
                         Status Kerja <span class="required">*</span>
                     </label>
-                    <select
-                        id="employment_status"
-                        name="employment_status"
-                            required><option value="">Pilih status kerja</option><?php foreach ($masterStatus as $item): ?><option <?= $form["employment_status"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                    <select id="employment_status" name="employment_status" required><option value="">Pilih status kerja</option><?php foreach ($masterStatus as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= $form["employment_status"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipe_kerja">Tipe Kerja <span class="required">*</span></label>
+                    <select id="tipe_kerja" name="tipe_kerja" required><?php foreach ($masterTipeKerja as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= $form["tipe_kerja"] === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                 </div>
 
                 <div class="form-group">
@@ -531,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const cards = [
-        makeCard('Profil Karyawan', ['employee_name','emp_id','department','position','employment_status','salary','performance_score','date_of_hire','shift_nama'], 'tambah-main-card'),
+        makeCard('Profil Karyawan', ['employee_name','emp_id','department','position','employment_status','tipe_kerja','salary','performance_score','date_of_hire','shift_nama'], 'tambah-main-card'),
         makeCard('Biodata Karyawan', ['nik','alamat','tanggal_lahir','agama','gender','marital_status','kontak','email'], 'tambah-personal-card'),
         makeCard('Informasi Karyawan', ['biografi','keahlian'], 'tambah-history-card'),
         makeCard('Berkas Pendukung', ['foto_profil','file_cv','file_ijazah','file_mcu','tanggal_mcu_terakhir'], 'tambah-documents-card')

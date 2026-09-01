@@ -14,7 +14,7 @@ require_once __DIR__ . '/../Services/Employee/promosi-karyawan.php';
 wajibRole("admin", "superadmin", "koordinator", "manager");
 siapkanMasterData($conn);
 siapkanJadwalDanCutiKaryawan($conn);
-$masterStatus = ambilMasterData($conn, "employment_status"); $masterAgama = ambilMasterData($conn, "agama");
+$masterStatus = pilihanStatusKerja(); $masterTipeKerja = pilihanTipeKerja(); $masterAgama = ambilMasterData($conn, "agama");
 
 $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
 $karyawan = null;
@@ -139,7 +139,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                         "employee_name" => "Nama Karyawan", "nik" => "NIK", "keahlian" => "Keahlian",
                         "tanggal_lahir" => "Tanggal Lahir", "tanggal_mcu_terakhir" => "Tanggal MCU Terakhir", "agama" => "Agama", "marital_status" => "Status Kawin",
                         "kontak" => "Kontak", "email" => "Email",
-                        "salary" => "Gaji", "gender" => "Jenis Kelamin", "employment_status" => "Status Kerja",
+                        "salary" => "Gaji", "gender" => "Jenis Kelamin", "employment_status" => "Status Kerja", "tipe_kerja" => "Tipe Kerja",
                         "performance_score" => "Skor Performa"
                     ];
                     if ($adminHrgaEdit) {
@@ -154,8 +154,8 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     ?>
                         <div class="form-group">
                             <label for="profile_<?= $field; ?>"><?= $label; ?></label>
-                            <?php if ($field === "employment_status" || $field === "agama"): ?>
-                                <select id="profile_<?= $field; ?>" name="<?= $field; ?>" <?= $field === "agama" ? "" : "required"; ?>><option value="">Pilih</option><?php foreach (($field === "employment_status" ? $masterStatus : $masterAgama) as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
+                            <?php if ($field === "employment_status" || $field === "tipe_kerja" || $field === "agama"): ?>
+                                <?php $pilihan = $field === "employment_status" ? $masterStatus : ($field === "tipe_kerja" ? $masterTipeKerja : $masterAgama); ?><select id="profile_<?= $field; ?>" name="<?= $field; ?>" <?= $field === "agama" ? "" : "required"; ?>><option value="">Pilih</option><?php foreach ($pilihan as $item): ?><option value="<?= htmlspecialchars($item); ?>" <?= ($karyawan[$field] ?? "") === $item ? "selected" : ""; ?>><?= htmlspecialchars($item); ?></option><?php endforeach; ?></select>
                             <?php elseif ($field === "alamat" || $field === "biografi" || $field === "keahlian"): ?>
                                 <textarea id="profile_<?= $field; ?>" name="<?= $field; ?>" rows="4"><?= htmlspecialchars((string) ($karyawan[$field] ?? "")); ?></textarea>
                             <?php elseif ($field === "gender"): ?>
@@ -219,6 +219,10 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     <dd><?= htmlspecialchars(nilaiProfil($karyawan, "employment_status")); ?></dd>
                 </div>
                 <div>
+                    <dt>Tipe Kerja</dt>
+                    <dd><?= htmlspecialchars(nilaiProfil($karyawan, "tipe_kerja")); ?></dd>
+                </div>
+                <div>
                     <dt>Skor Performa</dt>
                     <dd><?= htmlspecialchars(tampilkanSkorPerforma($karyawan["performance_score"] ?? null, "Belum dinilai")); ?></dd>
                 </div>
@@ -228,6 +232,10 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 <div>
                     <dt>Jadwal Kerja</dt>
                     <dd><span id="profile-shift-label"><?= htmlspecialchars(labelShiftKaryawan($karyawan)); ?></span><?php if ($modeEdit): ?><button class="btn btn-secondary" type="button" id="open-shift-dialog">Ubah</button><?php endif; ?></dd>
+                </div>
+                <div class="profile-schedule-row">
+                    <dt>Hari Kerja</dt>
+                    <dd><span id="profile-shift-days-label"><?= htmlspecialchars(labelHariKerjaKaryawan($karyawan)); ?></span></dd>
                 </div>
                 <div>
                     <dt>Sisa Cuti</dt>
@@ -465,7 +473,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         <h3>Atur Jadwal Kerja</h3>
         <div class="history-dialog-fields shift-dialog-fields">
             <label>Shift<select id="shift-nama" name="shift_nama" form="inline-edit-form" required><?php foreach ($masterShift as $shift): ?><option value="<?= htmlspecialchars($shift['nama']); ?>" <?= ($karyawan['shift_nama'] ?? '') === $shift['nama'] ? 'selected' : ''; ?>><?= htmlspecialchars($shift['nama']); ?></option><?php endforeach; ?><option value="Non Shift" <?= ($karyawan['shift_nama'] ?? '') === 'Non Shift' ? 'selected' : ''; ?>>Non Shift</option></select></label>
-            <div id="non-shift-time-fields" class="non-shift-time-fields" hidden><label>Jam Masuk<input id="shift-mulai" name="shift_mulai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_mulai'] ?? ''), 0, 5)); ?>"></label><label>Jam Pulang<input id="shift-selesai" name="shift_selesai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_selesai'] ?? ''), 0, 5)); ?>"></label></div>
+            <div id="shift-time-fields" class="non-shift-time-fields"><label>Jam Masuk<input id="shift-mulai" name="shift_mulai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_mulai'] ?? ''), 0, 5)); ?>"></label><label>Jam Pulang<input id="shift-selesai" name="shift_selesai" form="inline-edit-form" type="time" value="<?= htmlspecialchars(substr((string) ($karyawan['shift_selesai'] ?? ''), 0, 5)); ?>"></label></div>
             <?php $hariShiftKaryawan = preg_split('/,\s*/', (string) ($karyawan['shift_hari'] ?? 'Senin-Jumat')) ?: []; if (in_array('Senin-Jumat', $hariShiftKaryawan, true)) $hariShiftKaryawan = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']; ?>
             <fieldset id="shift-hari-fieldset" class="shift-day-checklist profile-shift-day-checklist"><legend>Hari Kerja</legend><?php foreach (daftarHariKerja() as $hari): ?><label><input type="checkbox" name="shift_hari[]" form="inline-edit-form" value="<?= $hari; ?>"<?= in_array($hari, $hariShiftKaryawan, true) ? ' checked' : ''; ?>> <?= $hari; ?></label><?php endforeach; ?></fieldset>
         </div>
@@ -477,8 +485,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     const dialog = document.getElementById('shift-dialog'); const open = document.getElementById('open-shift-dialog'); const shift = document.getElementById('shift-nama');
     if (!dialog || !open || !shift) return;
     const label = document.getElementById('profile-shift-label');
+    const labelHari = document.getElementById('profile-shift-days-label');
     const hari = [...dialog.querySelectorAll('input[name="shift_hari[]"]')];
-    const waktuNonShift = document.getElementById('non-shift-time-fields');
+    const waktuJadwal = document.getElementById('shift-time-fields');
     const mulai = document.getElementById('shift-mulai');
     const selesai = document.getElementById('shift-selesai');
     const preset = Object.fromEntries(<?= json_encode(array_map(static fn (array $shift): array => [$shift['nama'], [$shift['jam_mulai'], $shift['jam_selesai'], $shift['hari']]], $masterShift), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>);
@@ -486,21 +495,41 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     const aturHari = nilai => { const terpilih = hariDariNilai(nilai); hari.forEach(item => { item.checked = terpilih.includes(item.value); }); };
     const hariTerpilih = () => hari.filter(item => item.checked).map(item => item.value);
     const labelJadwal = () => {
-        const terpilih = hariTerpilih();
-        if (shift.value === 'Non Shift') return mulai.value && selesai.value ? `Non Shift — ${mulai.value}–${selesai.value} — ${terpilih.join(', ')} — ${terpilih.length} hari kerja` : 'Non Shift';
+        if (shift.value === 'Non Shift') return mulai.value && selesai.value ? `${mulai.value}–${selesai.value}` : '-';
         const data = preset[shift.value];
-        return data ? `${shift.value} — ${data[0]}–${data[1]} — ${terpilih.join(', ')} — ${terpilih.length} hari kerja` : '-';
+        return data ? `${data[0]}–${data[1]}` : '-';
+    };
+    const labelHariKerja = () => {
+        const terpilih = hariTerpilih();
+        if (terpilih.length === 0) return '-';
+        const kelompok = [];
+        let awal = terpilih[0]; let sebelumnya = terpilih[0]; let indeksSebelumnya = hari.findIndex(item => item.value === sebelumnya);
+        terpilih.slice(1).forEach(namaHari => {
+            const indeks = hari.findIndex(item => item.value === namaHari);
+            if (indeks === indeksSebelumnya + 1) { sebelumnya = namaHari; indeksSebelumnya = indeks; return; }
+            kelompok.push(awal === sebelumnya ? awal : `${awal}-${sebelumnya}`);
+            awal = namaHari; sebelumnya = namaHari; indeksSebelumnya = indeks;
+        });
+        kelompok.push(awal === sebelumnya ? awal : `${awal}-${sebelumnya}`);
+        return `${kelompok.join(', ')} — ${terpilih.length} hari kerja`;
     };
     const perbaruiHari = (gunakanHariMaster = false) => {
         const data = preset[shift.value];
-        waktuNonShift.hidden = shift.value !== 'Non Shift';
-        if (gunakanHariMaster && data) aturHari(data[2]);
+        const nonShift = shift.value === 'Non Shift';
+        waktuJadwal.hidden = false;
+        mulai.readOnly = selesai.readOnly = !nonShift;
+        if (data) {
+            mulai.value = data[0];
+            selesai.value = data[1];
+            if (gunakanHariMaster) aturHari(data[2]);
+        }
     };
     open.addEventListener('click', () => { perbaruiHari(false); dialog.showModal(); });
     shift.addEventListener('change', () => perbaruiHari(true));
     dialog.addEventListener('close', () => {
-        if (dialog.returnValue !== 'default' || !label) return;
+        if (dialog.returnValue !== 'default' || !label || !labelHari) return;
         label.textContent = labelJadwal();
+        labelHari.textContent = labelHariKerja();
     });
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
 })();
@@ -664,7 +693,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const labels = {
         employee_name:'Nama Karyawan', emp_id:'ID Karyawan', nik:'NIK', alamat:'Alamat', tanggal_lahir:'Tanggal Lahir', tanggal_mcu_terakhir:'Tanggal MCU Terakhir', riwayat_pekerjaan:'Riwayat Pekerjaan', tanggal_riwayat_pekerjaan:'Tanggal Riwayat Pekerjaan', riwayat_pendidikan:'Riwayat Pendidikan', tanggal_riwayat_pendidikan:'Tanggal Riwayat Pendidikan', agama:'Agama',
         marital_status:'Status Kawin', kontak:'Kontak', email:'Email', salary:'Gaji',
-        gender:'Jenis Kelamin', employment_status:'Status Kerja', performance_score:'Skor Performa', biografi:'Biografi', keahlian:'Keahlian'
+        gender:'Jenis Kelamin', employment_status:'Status Kerja', tipe_kerja:'Tipe Kerja', performance_score:'Skor Performa', biografi:'Biografi', keahlian:'Keahlian'
     };
     const detailRows = [...document.querySelectorAll('.profile-details > div')];
     const actionBox = document.querySelector('.profile-actions');

@@ -47,6 +47,10 @@
     min-height: 0;
 }
 
+.master-data-page .master-shift-card #add-master-shift {
+    margin-bottom: 14px;
+}
+
 .master-data-page .master-data-grid .master-data-card-departemen {
     border-top-color: #ef2626;
 }
