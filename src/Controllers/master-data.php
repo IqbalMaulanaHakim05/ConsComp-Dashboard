@@ -32,23 +32,77 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $table = $map[$jenis] ?? null;
 
         if ($aksi === 'simpan_aturan_denda') {
-            $aturanBaru = (array) ($_POST['aturan_denda'] ?? []);
-            $valid = true;
-            foreach (['terlambat', 'pulang_lebih_awal'] as $tipe) {
-                $item = (array) ($aturanBaru[$tipe] ?? []);
-                $toleransi = (int) ($item['toleransi_menit'] ?? -1);
-                $batas1 = (int) ($item['batas_tingkat_1'] ?? -1);
-                $batas2 = (int) ($item['batas_tingkat_2'] ?? -1);
-                $pengali1 = (float) ($item['pengali_tingkat_1'] ?? 0);
-                $pengali2 = (float) ($item['pengali_tingkat_2'] ?? 0);
-                $pembagi = (float) ($item['pembagi_jam_bulanan'] ?? 0);
-                if ($toleransi < 0 || $batas1 <= $toleransi || $batas2 <= $batas1 || $pengali1 <= 0 || $pengali2 < $pengali1 || $pembagi <= 0) { $valid = false; break; }
+            $tipe = (string) ($_POST['tipe_denda'] ?? '');
+            $toleransi = (int) ($_POST['toleransi_menit'] ?? -1);
+            $pengali1 = (float) ($_POST['pengali_tingkat_1'] ?? 0);
+            $pembagi = (float) ($_POST['pembagi_jam_bulanan'] ?? 0);
+            // Batas dan pengali tingkat berikutnya tidak lagi diinput manual.
+            // Perhitungan denda aktif satu detik setelah toleransi, lalu naik tiap 5 menit.
+            $batas1 = $toleransi + 1;
+            $batas2 = $batas1 + 5;
+            $pengali2 = $pengali1 * 2;
+            $valid = in_array($tipe, ['terlambat', 'pulang_lebih_awal'], true)
+                && $toleransi >= 0 && $pengali1 > 0 && $pembagi > 0;
+            if ($valid) {
                 $stmtAturan = mysqli_prepare($conn, 'UPDATE master_aturan_denda SET toleransi_menit = ?, batas_tingkat_1 = ?, batas_tingkat_2 = ?, pengali_tingkat_1 = ?, pengali_tingkat_2 = ?, pembagi_jam_bulanan = ? WHERE tipe = ?');
-                mysqli_stmt_bind_param($stmtAturan, 'iiiddds', $toleransi, $batas1, $batas2, $pengali1, $pengali2, $pembagi, $tipe);
-                $valid = mysqli_stmt_execute($stmtAturan) && $valid;
-                mysqli_stmt_close($stmtAturan);
+                if ($stmtAturan) {
+                    mysqli_stmt_bind_param($stmtAturan, 'iiiddds', $toleransi, $batas1, $batas2, $pengali1, $pengali2, $pembagi, $tipe);
+                    $valid = mysqli_stmt_execute($stmtAturan);
+                    mysqli_stmt_close($stmtAturan);
+                } else {
+                    $valid = false;
+                }
             }
             header('Location: master-data.php?' . ($valid ? 'pesan=' : 'error=') . rawurlencode($valid ? 'Aturan denda berhasil diperbarui.' : 'Aturan denda tidak valid.'));
+            exit;
+        }
+
+        if ($aksi === 'hapus_shift') {
+            $idShift = (int) ($_POST['id'] ?? 0);
+            $namaShift = '';
+            $stmtShift = mysqli_prepare($conn, 'SELECT nama FROM master_shift WHERE id = ? LIMIT 1');
+            if ($stmtShift && $idShift > 0) {
+                mysqli_stmt_bind_param($stmtShift, 'i', $idShift);
+                mysqli_stmt_execute($stmtShift);
+                $dataShift = mysqli_fetch_assoc(mysqli_stmt_get_result($stmtShift)) ?: [];
+                $namaShift = (string) ($dataShift['nama'] ?? '');
+                mysqli_stmt_close($stmtShift);
+            }
+
+            $dipakaiKaryawan = 0;
+            if ($namaShift !== '') {
+                $stmtPemakaian = mysqli_prepare($conn, 'SELECT COUNT(*) AS total FROM karyawan WHERE shift_nama = ?');
+                if ($stmtPemakaian) {
+                    mysqli_stmt_bind_param($stmtPemakaian, 's', $namaShift);
+                    mysqli_stmt_execute($stmtPemakaian);
+                    $dataPemakaian = mysqli_fetch_assoc(mysqli_stmt_get_result($stmtPemakaian)) ?: [];
+                    $dipakaiKaryawan = (int) ($dataPemakaian['total'] ?? 0);
+                    mysqli_stmt_close($stmtPemakaian);
+                }
+            }
+            $jumlahShift = mysqli_fetch_assoc(mysqli_query($conn, 'SELECT COUNT(*) AS total FROM master_shift'));
+
+            if ($namaShift === '') {
+                $pesanHapus = 'Jadwal kerja tidak ditemukan.';
+                $parameter = 'error';
+            } elseif ($dipakaiKaryawan > 0) {
+                $pesanHapus = 'Jadwal kerja tidak dapat dihapus karena masih digunakan oleh karyawan.';
+                $parameter = 'error';
+            } elseif ((int) ($jumlahShift['total'] ?? 0) <= 1) {
+                $pesanHapus = 'Minimal satu jadwal kerja harus tersedia.';
+                $parameter = 'error';
+            } else {
+                $stmtHapus = mysqli_prepare($conn, 'DELETE FROM master_shift WHERE id = ?');
+                $berhasilHapus = false;
+                if ($stmtHapus) {
+                    mysqli_stmt_bind_param($stmtHapus, 'i', $idShift);
+                    $berhasilHapus = mysqli_stmt_execute($stmtHapus) && mysqli_stmt_affected_rows($stmtHapus) === 1;
+                    mysqli_stmt_close($stmtHapus);
+                }
+                $pesanHapus = $berhasilHapus ? 'Jadwal kerja berhasil dihapus.' : 'Jadwal kerja gagal dihapus.';
+                $parameter = $berhasilHapus ? 'pesan' : 'error';
+            }
+            header('Location: master-data.php?' . $parameter . '=' . rawurlencode($pesanHapus));
             exit;
         }
 
@@ -316,29 +370,34 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 <section class="dashboard-chart master-data-grid master-shift-grid">
     <article class="chart-card master-data-card master-shift-card">
         <h2>Aturan Denda</h2>
-        <form method="POST" class="aturan-denda-form">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="simpan_aturan_denda">
+        <div class="aturan-denda-list">
             <?php foreach (['terlambat' => 'Datang terlambat', 'pulang_lebih_awal' => 'Pulang lebih awal'] as $tipe => $label): $aturan = $aturanDenda[$tipe]; ?>
-                <fieldset class="shift-day-checklist"><legend><?= $label; ?></legend>
-                    <label>Toleransi (menit)<input type="number" name="aturan_denda[<?= $tipe; ?>][toleransi_menit]" min="0" value="<?= (int) $aturan['toleransi_menit']; ?>" required></label>
-                    <label>Mulai 1× (menit)<input type="number" name="aturan_denda[<?= $tipe; ?>][batas_tingkat_1]" min="1" value="<?= (int) $aturan['batas_tingkat_1']; ?>" required></label>
-                    <label>Mulai 2× (menit)<input type="number" name="aturan_denda[<?= $tipe; ?>][batas_tingkat_2]" min="1" value="<?= (int) $aturan['batas_tingkat_2']; ?>" required></label>
-                    <label>Pengali 1×<input type="number" name="aturan_denda[<?= $tipe; ?>][pengali_tingkat_1]" min="0.01" step="0.01" value="<?= htmlspecialchars((string) $aturan['pengali_tingkat_1']); ?>" required></label>
-                    <label>Pengali 2×<input type="number" name="aturan_denda[<?= $tipe; ?>][pengali_tingkat_2]" min="0.01" step="0.01" value="<?= htmlspecialchars((string) $aturan['pengali_tingkat_2']); ?>" required></label>
-                    <label>Pembagi jam/bulan<input type="number" name="aturan_denda[<?= $tipe; ?>][pembagi_jam_bulanan]" min="0.01" step="0.01" value="<?= htmlspecialchars((string) $aturan['pembagi_jam_bulanan']); ?>" required></label>
-                </fieldset>
+                <section class="aturan-denda-info">
+                    <div class="aturan-denda-info-header"><h3><?= $label; ?></h3><button class="btn btn-secondary edit-aturan-denda" type="button" data-tipe="<?= $tipe; ?>" data-label="<?= htmlspecialchars($label, ENT_QUOTES); ?>" data-toleransi="<?= (int) $aturan['toleransi_menit']; ?>" data-pengali="<?= htmlspecialchars((string) $aturan['pengali_tingkat_1'], ENT_QUOTES); ?>" data-pembagi="<?= htmlspecialchars((string) $aturan['pembagi_jam_bulanan'], ENT_QUOTES); ?>">Edit</button></div>
+                    <dl class="aturan-denda-rincian"><div><dt>Toleransi</dt><dd><?= (int) $aturan['toleransi_menit']; ?> menit</dd></div><div><dt>Pembagi dasar</dt><dd><?= htmlspecialchars((string) $aturan['pembagi_jam_bulanan']); ?></dd></div><div><dt>Pengali dasar</dt><dd><?= htmlspecialchars((string) $aturan['pengali_tingkat_1']); ?>×</dd></div><div><dt>Perhitungan bertingkat</dt><dd>Mulai 1 detik setelah toleransi = 1×; setiap tambahan 5 menit naik 1×.</dd></div></dl>
+                </section>
             <?php endforeach; ?>
-            <div class="shift-master-actions"><button class="btn btn-success" type="submit">Simpan Aturan Denda</button></div>
-        </form>
+        </div>
     </article>
 </section>
+
+<dialog id="aturan-denda-dialog">
+    <form method="POST" class="aturan-denda-form">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="simpan_aturan_denda"><input type="hidden" name="tipe_denda" id="aturan-denda-tipe">
+        <h2 id="aturan-denda-title">Edit Aturan Denda</h2>
+        <label>Toleransi (menit)<input type="number" name="toleransi_menit" id="aturan-denda-toleransi" min="0" required></label>
+        <div class="aturan-denda-dua-kolom"><label>Pembagi dasar<input type="number" name="pembagi_jam_bulanan" id="aturan-denda-pembagi" min="0.01" step="0.01" required></label><label>Pengali 1×<input type="number" name="pengali_tingkat_1" id="aturan-denda-pengali" min="0.01" step="0.01" required></label></div>
+        <p class="field-note">Denda dimulai 1 detik setelah toleransi. Setiap tambahan 5 menit menaikkan pengali: 2×, 3×, dan seterusnya.</p>
+        <div class="shift-master-actions"><button class="btn btn-secondary" type="button" id="close-aturan-denda-dialog">Batal</button><button class="btn btn-success" type="submit">Simpan</button></div>
+    </form>
+</dialog>
 
 <section class="dashboard-chart master-data-grid master-shift-grid">
     <article class="chart-card master-data-card master-shift-card">
         <h2>Master Jadwal Kerja</h2>
         <button class="btn btn-success" type="button" id="add-master-shift">+ Tambah Shift</button>
         <ul class="master-list">
-            <?php foreach ($masterShift as $shift): ?><li class="master-item"><span><?= htmlspecialchars($shift['nama'] . ' — ' . $shift['jam_mulai'] . '–' . $shift['jam_selesai'] . ' — ' . $shift['hari'] . ' — ' . jumlahHariKerjaJadwal($shift['hari']) . ' hari kerja'); ?></span><button class="btn btn-secondary edit-master-shift" type="button" data-id="<?= (int) $shift['id']; ?>" data-nama="<?= htmlspecialchars($shift['nama'], ENT_QUOTES); ?>" data-mulai="<?= htmlspecialchars($shift['jam_mulai'], ENT_QUOTES); ?>" data-selesai="<?= htmlspecialchars($shift['jam_selesai'], ENT_QUOTES); ?>" data-hari="<?= htmlspecialchars($shift['hari'], ENT_QUOTES); ?>">Edit</button></li><?php endforeach; ?>
+            <?php foreach ($masterShift as $shift): ?><li class="master-item"><span><?= htmlspecialchars($shift['nama'] . ' — ' . $shift['jam_mulai'] . '–' . $shift['jam_selesai'] . ' — ' . $shift['hari'] . ' — ' . jumlahHariKerjaJadwal($shift['hari']) . ' hari kerja'); ?></span><div class="shift-master-item-actions"><form method="POST" onsubmit="return confirm('Hapus jadwal kerja ini?');"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="hapus_shift"><input type="hidden" name="id" value="<?= (int) $shift['id']; ?>"><button class="btn btn-danger" type="submit">Hapus</button></form><button class="btn btn-secondary edit-master-shift" type="button" data-id="<?= (int) $shift['id']; ?>" data-nama="<?= htmlspecialchars($shift['nama'], ENT_QUOTES); ?>" data-mulai="<?= htmlspecialchars($shift['jam_mulai'], ENT_QUOTES); ?>" data-selesai="<?= htmlspecialchars($shift['jam_selesai'], ENT_QUOTES); ?>" data-hari="<?= htmlspecialchars($shift['hari'], ENT_QUOTES); ?>">Edit</button></div></li><?php endforeach; ?>
         </ul>
     </article>
 </section>
@@ -380,6 +439,22 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
 })();
 </script>
+<script>
+(() => {
+    const dialog = document.getElementById('aturan-denda-dialog');
+    if (!dialog) return;
+    document.querySelectorAll('.edit-aturan-denda').forEach(button => button.addEventListener('click', () => {
+        document.getElementById('aturan-denda-tipe').value = button.dataset.tipe;
+        document.getElementById('aturan-denda-title').textContent = 'Edit Aturan Denda — ' + button.dataset.label;
+        document.getElementById('aturan-denda-toleransi').value = button.dataset.toleransi;
+        document.getElementById('aturan-denda-pembagi').value = button.dataset.pembagi;
+        document.getElementById('aturan-denda-pengali').value = button.dataset.pengali;
+        dialog.showModal();
+    }));
+    document.getElementById('close-aturan-denda-dialog').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+})();
+</script>
 
 <style>
     #position-dialog {
@@ -403,12 +478,25 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     #shift-master-dialog .shift-day-checklist legend { padding: 0 .35rem; font-weight: 600; }
     #shift-master-dialog .shift-day-checklist label { display: inline-flex; align-items: center; gap: .35rem; }
     #shift-master-dialog .shift-master-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .75rem; }
+    .master-shift-card .shift-master-item-actions { display: flex; align-items: center; gap: .5rem; }
+    .master-shift-card .shift-master-item-actions form { margin: 0; }
+    .aturan-denda-list { display: grid; gap: 14px; }
+    .aturan-denda-info { padding: 16px; border: 1px solid #cbd5e1; border-radius: 12px; background: #fff; }
+    .aturan-denda-info-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .aturan-denda-info h3 { margin: 0; color: #111827; font-size: 17px; }
+    .aturan-denda-rincian { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; margin: 0; }
+    .aturan-denda-rincian div { min-width: 0; }
+    .aturan-denda-rincian dt { color: #64748b; font-size: 13px; }
+    .aturan-denda-rincian dd { margin: 3px 0 0; color: #1e293b; font-weight: 600; }
+    #aturan-denda-dialog { width: min(540px, calc(100vw - 2rem)); padding: 2rem; border: 1px solid #9ca3af; border-radius: 14px; background: #fff; box-shadow: 0 20px 60px rgba(0, 0, 0, .28); }
+    #aturan-denda-dialog::backdrop { background: rgba(0, 0, 0, .38); }
     .aturan-denda-form { display: grid; gap: 16px; }
-    .aturan-denda-form .shift-day-checklist { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 14px; border: 1px solid #cbd5e1; border-radius: 12px; }
-    .aturan-denda-form .shift-day-checklist legend { padding: 0 .35rem; font-weight: 700; }
-    .aturan-denda-form .shift-day-checklist label { display: grid; gap: 6px; color: #334155; font-weight: 600; }
-    .aturan-denda-form input { width: 100%; min-width: 0; height: 42px; padding: 0 .75rem; border: 1px solid #94a3b8; border-radius: 9px; font: inherit; }
-    .aturan-denda-form .shift-master-actions { display: flex; justify-content: flex-end; }
+    .aturan-denda-form h2 { margin: 0; color: #111827; }
+    .aturan-denda-form label { display: grid; gap: 8px; color: #334155; font-weight: 600; }
+    .aturan-denda-form input { width: 100%; min-width: 0; height: 42px; padding: 0 .75rem; color: #111827; background: #fff; border: 1px solid #94a3b8; border-radius: 9px; font: inherit; }
+    .aturan-denda-dua-kolom { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .aturan-denda-form .field-note { margin: -4px 0 0; }
+    .aturan-denda-form .shift-master-actions { display: flex; justify-content: flex-end; gap: .75rem; }
     #position-dialog h2 { margin: 0 0 1.25rem; text-align: center; color: #111827; }
     .position-dialog-add { display: flex; gap: .75rem; margin-bottom: 1.25rem; }
     .position-dialog-add select { flex: 1; min-width: 0; border: 1px solid #667cff; border-radius: 14px; padding: .8rem 1rem; }
@@ -424,13 +512,14 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     :root[data-theme="dark"] #shift-master-dialog { color: #e2e8f0; background: #1e293b; border-color: #475569; }
     :root[data-theme="dark"] #shift-master-dialog h2, :root[data-theme="dark"] #shift-master-dialog .shift-master-form > label { color: #f8fafc; }
     :root[data-theme="dark"] #shift-master-dialog .shift-master-form #shift-master-nama, :root[data-theme="dark"] #shift-master-dialog .shift-master-form input[type="time"] { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
-    :root[data-theme="dark"] .aturan-denda-form .shift-day-checklist { border-color: #475569; }
-    :root[data-theme="dark"] .aturan-denda-form .shift-day-checklist label { color: #e2e8f0; }
+    :root[data-theme="dark"] .aturan-denda-info, :root[data-theme="dark"] #aturan-denda-dialog { color: #e2e8f0; background: #1e293b; border-color: #475569; }
+    :root[data-theme="dark"] .aturan-denda-info h3, :root[data-theme="dark"] .aturan-denda-rincian dd, :root[data-theme="dark"] .aturan-denda-form h2, :root[data-theme="dark"] .aturan-denda-form label { color: #f8fafc; }
+    :root[data-theme="dark"] .aturan-denda-rincian dt { color: #94a3b8; }
     :root[data-theme="dark"] .aturan-denda-form input { color: #e2e8f0; background: #0f172a; border-color: #64748b; }
     :root[data-theme="dark"] .position-dialog-add select { color: #e2e8f0; background: #0f172a; border-color: #64748b; color-scheme: dark; }
     :root[data-theme="dark"] .position-dialog-add select option { color: #e2e8f0; background: #0f172a; }
     :root[data-theme="dark"] .position-dialog-list li { color: #e2e8f0; background: #172033; border-color: #475569; }
-    @media (max-width: 640px) { #position-dialog { padding: 1.25rem; } .position-dialog-add, .position-dialog-list, .aturan-denda-form .shift-day-checklist { grid-template-columns: 1fr; } .position-dialog-add { display: grid; } #shift-master-dialog { padding: 1.25rem; } #shift-master-dialog .shift-master-form { grid-template-columns: 1fr; } #shift-master-dialog .shift-master-actions { justify-content: stretch; } #shift-master-dialog .shift-master-actions .btn { flex: 1; } }
+    @media (max-width: 640px) { #position-dialog, #shift-master-dialog, #aturan-denda-dialog { padding: 1.25rem; } .position-dialog-add, .position-dialog-list, .aturan-denda-rincian, .aturan-denda-dua-kolom { grid-template-columns: 1fr; } .position-dialog-add { display: grid; } #shift-master-dialog .shift-master-form { grid-template-columns: 1fr; } #shift-master-dialog .shift-master-actions, .aturan-denda-form .shift-master-actions { justify-content: stretch; } #shift-master-dialog .shift-master-actions .btn, .aturan-denda-form .shift-master-actions .btn { flex: 1; } }
 </style>
 <dialog id="position-dialog">
     <h2>Posisi Departemen <span id="position-department-name"></span></h2>

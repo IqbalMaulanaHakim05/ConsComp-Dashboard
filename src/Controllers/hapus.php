@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
+require_once __DIR__ . '/../Services/Payroll/slip-gaji.php';
 
 wajibRole("admin", "superadmin");
 
@@ -75,7 +76,7 @@ try {
 }
 
 // Hapus file fisik dari server setelah penghapusan database berhasil
-$uploadDir = __DIR__ . '/../../../storage/uploads';
+$uploadDir = dirname(__DIR__, 2) . '/storage/uploads';
 $hapusFile = static function (string $folder, ?string $namaFile) use ($uploadDir): void {
     if (!$namaFile) {
         return;
@@ -93,7 +94,10 @@ $hapusFile("ijazah", $karyawan["file_ijazah"] ?? null);
 $hapusFile("mcu", $karyawan["file_mcu"] ?? null);
 
 foreach ($slipFiles as $fileSlip) {
-    $hapusFile("slip", $fileSlip);
+    $pathSlip = pathFileSlipGaji($fileSlip);
+    if ($pathSlip !== null && is_file($pathSlip)) {
+        @unlink($pathSlip);
+    }
 }
 
 $namaKaryawan = trim((string) ($karyawan["employee_name"] ?? ""));

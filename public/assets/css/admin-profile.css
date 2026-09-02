@@ -239,7 +239,7 @@
 .profil-karyawan-page .profile-detail-card {
     min-height: 0;
     height: auto;
-    align-self: start;
+    align-self: stretch;
     box-sizing: border-box;
 }
 

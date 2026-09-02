@@ -28,6 +28,7 @@ if (($_GET['aksi'] ?? '') === 'detail_master_shift') {
 $pesan = "";
 $riwayatPendidikanForm = [];
 $riwayatPekerjaanForm = [];
+$shiftHariForm = [];
 
 $form = [
     "employee_name" => "",
@@ -52,6 +53,8 @@ $form = [
     "tipe_kerja" => "Kontrak",
     "performance_score" => "",
     "shift_nama" => (string) ($masterShift[0]['nama'] ?? 'Non Shift'),
+    "shift_mulai" => "",
+    "shift_selesai" => "",
 ];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -61,6 +64,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $riwayatPendidikanForm = array_values(array_filter((array) ($_POST["pendidikan"] ?? []), static fn($item): bool => is_array($item) && trim((string) ($item["institusi"] ?? "")) !== ""));
     $riwayatPekerjaanForm = array_values(array_filter((array) ($_POST["pekerjaan"] ?? []), static fn($item): bool => is_array($item) && trim((string) ($item["nama_perusahaan"] ?? "")) !== ""));
+    $shiftHariForm = array_values(array_intersect(
+        daftarHariKerja(),
+        array_map('strval', (array) ($_POST['shift_hari'] ?? []))
+    ));
 
     $employeeName = $form["employee_name"];
     $nik = $form["nik"];
@@ -89,7 +96,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $shiftMulai = '';
     $shiftSelesai = '';
     $shiftHari = '';
-    if ($shiftNama !== '' && $shiftNama !== 'Non Shift') {
+    if ($shiftNama === 'Non Shift') {
+        $shiftMulai = $form['shift_mulai'];
+        $shiftSelesai = $form['shift_selesai'];
+        $shiftHari = implode(', ', $shiftHariForm);
+    } elseif ($shiftNama !== '') {
         $masterShiftDipilih = ambilMasterShiftBerdasarkanNama($conn, $shiftNama);
         if ($masterShiftDipilih) {
             $shiftMulai = (string) $masterShiftDipilih['jam_mulai'];
@@ -119,6 +130,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $shiftNama === ''
     ) {
         $pesan = "Semua kolom wajib diisi.";
+    } elseif (
+        $shiftNama === 'Non Shift'
+        && (
+            !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/', $shiftMulai)
+            || !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/', $shiftSelesai)
+            || $shiftHariForm === []
+        )
+    ) {
+        $pesan = "Jam Masuk, Jam Pulang, dan minimal satu Hari Kerja wajib diisi untuk Non Shift.";
     } elseif (!in_array($employmentStatus, pilihanStatusKerja(), true) || !in_array($tipeKerja, pilihanTipeKerja(), true)) {
         $pesan = "Status Kerja atau Tipe Kerja tidak valid.";
     } elseif ($pesanPerforma !== "") {
@@ -393,8 +413,16 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 </div>
 
                 <div class="form-group">
-                    <label for="shift_nama">Jadwal Kerja</label>
+                    <label for="shift_nama">Jadwal Kerja <span class="required">*</span></label>
                     <select id="shift_nama" name="shift_nama" required><?php foreach ($masterShift as $shift): ?><option value="<?= htmlspecialchars($shift['nama']); ?>" <?= $form['shift_nama'] === $shift['nama'] ? 'selected' : ''; ?>><?= htmlspecialchars($shift['nama']); ?></option><?php endforeach; ?><option value="Non Shift" <?= $form['shift_nama'] === 'Non Shift' ? 'selected' : ''; ?>>Non Shift</option></select>
+                    <div id="non-shift-schedule-fields" class="tambah-non-shift-fields">
+                        <div class="non-shift-time-fields">
+                            <label for="shift_mulai">Jam Masuk <span class="required">*</span><input id="shift_mulai" name="shift_mulai" type="time" value="<?= htmlspecialchars($form['shift_mulai']); ?>"<?= $form['shift_nama'] === 'Non Shift' ? ' required' : ''; ?>></label>
+                            <label for="shift_selesai">Jam Pulang <span class="required">*</span><input id="shift_selesai" name="shift_selesai" type="time" value="<?= htmlspecialchars($form['shift_selesai']); ?>"<?= $form['shift_nama'] === 'Non Shift' ? ' required' : ''; ?>></label>
+                        </div>
+                        <fieldset class="shift-day-checklist"><legend>Hari Kerja <span class="required">*</span></legend><?php foreach (daftarHariKerja() as $hari): ?><label><input type="checkbox" name="shift_hari[]" value="<?= $hari; ?>"<?= in_array($hari, $shiftHariForm, true) ? ' checked' : ''; ?>> <?= $hari; ?></label><?php endforeach; ?></fieldset>
+                        <p class="field-note" id="shift-schedule-note">Jam kerja dan minimal satu hari kerja wajib diisi untuk Non Shift.</p>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -556,6 +584,45 @@ document.addEventListener('DOMContentLoaded', function () {
         if (groups[name]) shiftFields.appendChild(groups[name]);
     });
     profileCard.appendChild(shiftSection);
+    const shiftSelect = shiftSection.querySelector('#shift_nama');
+    const nonShiftFields = shiftSection.querySelector('#non-shift-schedule-fields');
+    const shiftMulai = shiftSection.querySelector('#shift_mulai');
+    const shiftSelesai = shiftSection.querySelector('#shift_selesai');
+    const shiftDays = [...shiftSection.querySelectorAll('input[name="shift_hari[]"]')];
+    const shiftNote = shiftSection.querySelector('#shift-schedule-note');
+    const shiftPreset = Object.fromEntries(<?= json_encode(array_map(static fn (array $shift): array => [$shift['nama'], [$shift['jam_mulai'], $shift['jam_selesai'], $shift['hari']]], $masterShift), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>);
+    const hariDariNilai = nilai => nilai === 'Senin-Jumat' ? ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] : String(nilai || '').split(/,\s*/).filter(Boolean);
+    const aturHari = nilai => {
+        const terpilih = hariDariNilai(nilai);
+        shiftDays.forEach(item => { item.checked = terpilih.includes(item.value); });
+    };
+    const validateShiftDays = () => {
+        const wajib = shiftSelect.value === 'Non Shift';
+        const adaHari = shiftDays.some(item => item.checked);
+        shiftDays[0].setCustomValidity(wajib && !adaHari ? 'Pilih minimal satu hari kerja.' : '');
+    };
+    const toggleNonShiftFields = () => {
+        const nonShift = shiftSelect.value === 'Non Shift';
+        const detailMaster = shiftPreset[shiftSelect.value];
+        if (detailMaster) {
+            shiftMulai.value = detailMaster[0];
+            shiftSelesai.value = detailMaster[1];
+            aturHari(detailMaster[2]);
+        }
+        shiftMulai.required = nonShift;
+        shiftSelesai.required = nonShift;
+        shiftMulai.readOnly = !nonShift;
+        shiftSelesai.readOnly = !nonShift;
+        shiftDays.forEach(item => { item.disabled = !nonShift; });
+        nonShiftFields.classList.toggle('is-master-shift', !nonShift);
+        shiftNote.textContent = nonShift
+            ? 'Jam kerja dan minimal satu hari kerja wajib diisi untuk Non Shift.'
+            : 'Jadwal ini mengikuti master shift dan tidak dapat diubah dari halaman ini.';
+        validateShiftDays();
+    };
+    shiftSelect.addEventListener('change', toggleNonShiftFields);
+    shiftDays.forEach(item => item.addEventListener('change', validateShiftDays));
+    toggleNonShiftFields();
     biodataCard.insertAdjacentHTML('beforeend', '<section class="history-section"><div class="history-heading"><h4>Riwayat Pendidikan</h4><button class="history-add" id="add-education" type="button">Tambah +</button></div><div id="education-list" class="history-list"></div></section>');
     historyCard.insertAdjacentHTML('beforeend', '<section class="history-section"><div class="history-heading"><h4>Riwayat Pekerjaan</h4><button class="history-add" id="add-work" type="button">Tambah +</button></div><div id="work-list" class="history-list"></div></section>');
 

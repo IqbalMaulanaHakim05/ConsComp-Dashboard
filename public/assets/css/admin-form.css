@@ -84,6 +84,17 @@
 .tambah-page .history-section { min-width: 0; padding-top: 6px; }
 .tambah-page .tambah-main-card .shift-section { grid-column: 1 / -1; margin-top: 6px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
 .tambah-page .shift-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.tambah-page .shift-fields .field-shift_nama { grid-column: 1 / -1; }
+.tambah-page .shift-fields .field-shift_nama > select { width: min(460px, 100%); }
+.tambah-page .tambah-non-shift-fields { display: grid; gap: 16px; margin-top: 16px; }
+.tambah-page .tambah-non-shift-fields[hidden] { display: none; }
+.tambah-page .tambah-non-shift-fields .non-shift-time-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; max-width: 680px; }
+.tambah-page .tambah-non-shift-fields .non-shift-time-fields label { display: grid; gap: 8px; color: #111827; font-size: 15px; font-weight: 700; }
+.tambah-page .tambah-non-shift-fields .shift-day-checklist { display: flex; flex-wrap: wrap; gap: .65rem 1rem; margin: 0; padding: .85rem 1rem; border: 1px solid #94a3b8; border-radius: 12px; }
+.tambah-page .tambah-non-shift-fields .shift-day-checklist legend { padding: 0 .35rem; color: #111827; font-weight: 700; }
+.tambah-page .tambah-non-shift-fields .shift-day-checklist label { display: inline-flex; align-items: center; gap: .35rem; margin: 0; color: #111827; font-weight: 500; }
+.tambah-page .tambah-non-shift-fields .shift-day-checklist input { width: auto; min-width: 0; min-height: 0; padding: 0; }
+.tambah-page .tambah-non-shift-fields.is-master-shift input[readonly] { color: #475569; background: #f8fafc; cursor: default; }
 .tambah-page .history-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
 .tambah-page .history-heading h4 { margin: 0; color: #111827; font-size: 18px; }
 .tambah-page .history-add { padding: 7px 11px; color: #64748b; background: #fff; border: 1px solid #94a3b8; border-radius: 9px; cursor: pointer; font-size: 15px; }
@@ -156,6 +167,11 @@
 
 :root[data-theme="dark"] .tambah-page .history-heading h4,
 :root[data-theme="dark"] .tambah-page .history-entry label { color: #e2e8f0; }
+:root[data-theme="dark"] .tambah-page .tambah-non-shift-fields .non-shift-time-fields label,
+:root[data-theme="dark"] .tambah-page .tambah-non-shift-fields .shift-day-checklist legend,
+:root[data-theme="dark"] .tambah-page .tambah-non-shift-fields .shift-day-checklist label { color: #e2e8f0; }
+:root[data-theme="dark"] .tambah-page .tambah-non-shift-fields .shift-day-checklist { border-color: #475569; }
+:root[data-theme="dark"] .tambah-page .tambah-non-shift-fields.is-master-shift input[readonly] { color: #cbd5e1; background: #172033; }
 :root[data-theme="dark"] .tambah-page .history-add,
 :root[data-theme="dark"] .tambah-page .history-entry input { color: #e2e8f0; background: #0f172a; border-color: #475569; }
 
@@ -226,6 +242,7 @@
 
     .tambah-page .history-section { overflow-x: auto; padding-bottom: 8px; }
     .tambah-page .shift-fields { min-width: 700px; }
+    .tambah-page .tambah-non-shift-fields .non-shift-time-fields { grid-template-columns: 1fr; max-width: none; }
     .tambah-page .history-heading { position: sticky; left: 0; }
     .tambah-page .history-entry { min-width: 940px; }
 }
