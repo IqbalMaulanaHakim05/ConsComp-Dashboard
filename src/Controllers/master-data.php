@@ -35,14 +35,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $tipe = (string) ($_POST['tipe_denda'] ?? '');
             $toleransi = (int) ($_POST['toleransi_menit'] ?? -1);
             $pengali1 = (float) ($_POST['pengali_tingkat_1'] ?? 0);
+            $intervalTambahan = (int) ($_POST['interval_tambahan_menit'] ?? 0);
+            $kenaikanPengali = (float) ($_POST['kenaikan_pengali'] ?? 0);
             $pembagi = (float) ($_POST['pembagi_jam_bulanan'] ?? 0);
-            // Batas dan pengali tingkat berikutnya tidak lagi diinput manual.
-            // Perhitungan denda aktif satu detik setelah toleransi, lalu naik tiap 5 menit.
+            // Kolom tingkat kedua menyimpan interval dan kenaikan pengali yang dapat diubah.
             $batas1 = $toleransi + 1;
-            $batas2 = $batas1 + 5;
-            $pengali2 = $pengali1 * 2;
+            $batas2 = $batas1 + $intervalTambahan;
+            $pengali2 = $pengali1 + $kenaikanPengali;
             $valid = in_array($tipe, ['terlambat', 'pulang_lebih_awal'], true)
-                && $toleransi >= 0 && $pengali1 > 0 && $pembagi > 0;
+                && $toleransi >= 0 && $intervalTambahan > 0 && $batas2 <= 65535
+                && $pengali1 > 0 && $kenaikanPengali > 0 && $pengali2 <= 9999.99 && $pembagi > 0;
             if ($valid) {
                 $stmtAturan = mysqli_prepare($conn, 'UPDATE master_aturan_denda SET toleransi_menit = ?, batas_tingkat_1 = ?, batas_tingkat_2 = ?, pengali_tingkat_1 = ?, pengali_tingkat_2 = ?, pembagi_jam_bulanan = ? WHERE tipe = ?');
                 if ($stmtAturan) {
@@ -373,8 +375,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         <div class="aturan-denda-list">
             <?php foreach (['terlambat' => 'Datang terlambat', 'pulang_lebih_awal' => 'Pulang lebih awal'] as $tipe => $label): $aturan = $aturanDenda[$tipe]; ?>
                 <section class="aturan-denda-info">
-                    <div class="aturan-denda-info-header"><h3><?= $label; ?></h3><button class="btn btn-secondary edit-aturan-denda" type="button" data-tipe="<?= $tipe; ?>" data-label="<?= htmlspecialchars($label, ENT_QUOTES); ?>" data-toleransi="<?= (int) $aturan['toleransi_menit']; ?>" data-pengali="<?= htmlspecialchars((string) $aturan['pengali_tingkat_1'], ENT_QUOTES); ?>" data-pembagi="<?= htmlspecialchars((string) $aturan['pembagi_jam_bulanan'], ENT_QUOTES); ?>">Edit</button></div>
-                    <dl class="aturan-denda-rincian"><div><dt>Toleransi</dt><dd><?= (int) $aturan['toleransi_menit']; ?> menit</dd></div><div><dt>Pembagi dasar</dt><dd><?= htmlspecialchars((string) $aturan['pembagi_jam_bulanan']); ?></dd></div><div><dt>Pengali dasar</dt><dd><?= htmlspecialchars((string) $aturan['pengali_tingkat_1']); ?>×</dd></div><div><dt>Perhitungan bertingkat</dt><dd>Mulai 1 detik setelah toleransi = 1×; setiap tambahan 5 menit naik 1×.</dd></div></dl>
+                    <?php $intervalTambahan = max(1, (int) $aturan['batas_tingkat_2'] - (int) $aturan['batas_tingkat_1']); $kenaikanPengali = max(0.01, (float) $aturan['pengali_tingkat_2'] - (float) $aturan['pengali_tingkat_1']); ?>
+                    <div class="aturan-denda-info-header"><h3><?= $label; ?></h3><button class="btn btn-secondary edit-aturan-denda" type="button" data-tipe="<?= $tipe; ?>" data-label="<?= htmlspecialchars($label, ENT_QUOTES); ?>" data-toleransi="<?= (int) $aturan['toleransi_menit']; ?>" data-pengali="<?= htmlspecialchars((string) $aturan['pengali_tingkat_1'], ENT_QUOTES); ?>" data-interval="<?= $intervalTambahan; ?>" data-kenaikan="<?= htmlspecialchars((string) $kenaikanPengali, ENT_QUOTES); ?>" data-pembagi="<?= htmlspecialchars((string) $aturan['pembagi_jam_bulanan'], ENT_QUOTES); ?>">Edit</button></div>
+                    <dl class="aturan-denda-rincian"><div><dt>Toleransi</dt><dd><?= (int) $aturan['toleransi_menit']; ?> menit</dd></div><div><dt>Pembagi dasar</dt><dd><?= htmlspecialchars((string) $aturan['pembagi_jam_bulanan']); ?></dd></div><div><dt>Pengali awal</dt><dd><?= htmlspecialchars((string) $aturan['pengali_tingkat_1']); ?>×</dd></div><div><dt>Perhitungan bertingkat</dt><dd>Mulai 1 detik setelah toleransi = <?= htmlspecialchars((string) $aturan['pengali_tingkat_1']); ?>×; setiap tambahan <?= $intervalTambahan; ?> menit naik <?= htmlspecialchars((string) $kenaikanPengali); ?>×.</dd></div></dl>
                 </section>
             <?php endforeach; ?>
         </div>
@@ -386,8 +389,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="simpan_aturan_denda"><input type="hidden" name="tipe_denda" id="aturan-denda-tipe">
         <h2 id="aturan-denda-title">Edit Aturan Denda</h2>
         <label>Toleransi (menit)<input type="number" name="toleransi_menit" id="aturan-denda-toleransi" min="0" required></label>
-        <div class="aturan-denda-dua-kolom"><label>Pembagi dasar<input type="number" name="pembagi_jam_bulanan" id="aturan-denda-pembagi" min="0.01" step="0.01" required></label><label>Pengali 1×<input type="number" name="pengali_tingkat_1" id="aturan-denda-pengali" min="0.01" step="0.01" required></label></div>
-        <p class="field-note">Denda dimulai 1 detik setelah toleransi. Setiap tambahan 5 menit menaikkan pengali: 2×, 3×, dan seterusnya.</p>
+        <div class="aturan-denda-dua-kolom"><label>Pembagi dasar<input type="number" name="pembagi_jam_bulanan" id="aturan-denda-pembagi" min="0.01" step="0.01" required></label><label>Pengali awal<input type="number" name="pengali_tingkat_1" id="aturan-denda-pengali" min="0.01" step="0.01" required></label></div>
+        <div class="aturan-denda-dua-kolom"><label>Interval tambahan (menit)<input type="number" name="interval_tambahan_menit" id="aturan-denda-interval" min="1" step="1" required></label><label>Kenaikan pengali (×)<input type="number" name="kenaikan_pengali" id="aturan-denda-kenaikan" min="0.01" step="0.01" required></label></div>
+        <p class="field-note">Denda dimulai 1 detik setelah toleransi dengan pengali awal. Setiap interval tambahan menaikkan pengali sesuai nilai yang diatur.</p>
         <div class="shift-master-actions"><button class="btn btn-secondary" type="button" id="close-aturan-denda-dialog">Batal</button><button class="btn btn-success" type="submit">Simpan</button></div>
     </form>
 </dialog>
@@ -449,6 +453,8 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         document.getElementById('aturan-denda-toleransi').value = button.dataset.toleransi;
         document.getElementById('aturan-denda-pembagi').value = button.dataset.pembagi;
         document.getElementById('aturan-denda-pengali').value = button.dataset.pengali;
+        document.getElementById('aturan-denda-interval').value = button.dataset.interval;
+        document.getElementById('aturan-denda-kenaikan').value = button.dataset.kenaikan;
         dialog.showModal();
     }));
     document.getElementById('close-aturan-denda-dialog').addEventListener('click', () => dialog.close());

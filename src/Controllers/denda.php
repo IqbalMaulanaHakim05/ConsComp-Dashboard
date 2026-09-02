@@ -102,8 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $toleransi = (int) ($aturan['toleransi_menit'] ?? 0);
         $toleransiDetik = $toleransi * 60;
-        $tingkatDenda = $aturan && $selisihDetik > $toleransiDetik ? intdiv($selisihDetik - $toleransiDetik - 1, 300) + 1 : 0;
-        $pengali = $tingkatDenda > 0 ? (float) $aturan['pengali_tingkat_1'] * $tingkatDenda : 0.0;
+        $intervalTambahan = $aturan ? max(1, (int) $aturan['batas_tingkat_2'] - (int) $aturan['batas_tingkat_1']) : 1;
+        $kenaikanPengali = $aturan ? max(0.01, (float) $aturan['pengali_tingkat_2'] - (float) $aturan['pengali_tingkat_1']) : 0.01;
+        $tingkatDenda = $aturan && $selisihDetik > $toleransiDetik ? intdiv($selisihDetik - $toleransiDetik - 1, $intervalTambahan * 60) + 1 : 0;
+        $pengali = $tingkatDenda > 0 ? (float) $aturan['pengali_tingkat_1'] + (($tingkatDenda - 1) * $kenaikanPengali) : 0.0;
         $pembagi = (float) ($aturan['pembagi_jam_bulanan'] ?? 0); $gajiPokok = (float) ($karyawan['gaji_pokok'] ?? 0); $nominal = $pembagi > 0 ? round(($gajiPokok / $pembagi) * $pengali, 2) : 0;
         if (!$karyawan || !$aturan || !$jamValid || !$tanggalValid || $jamJadwal === '' || $deskripsi === '') $pesan = 'Karyawan, tipe denda, tanggal dan jam kejadian, jadwal kerja, dan alasan wajib valid.';
         elseif ($selisihDetik < 0) $pesan = 'Jam kejadian tidak sesuai untuk tipe denda yang dipilih.';
@@ -223,7 +225,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         if (!selected || !selected.shift_mulai || !selected.shift_selesai) { info.textContent = 'Pilih karyawan yang memiliki jadwal kerja.'; return; }
         if (!scheduled || !rule) { info.textContent = 'Pilih tipe denda untuk melanjutkan.'; return; }
         const label = type.value === 'terlambat' ? 'Jam masuk' : 'Jam pulang';
-        info.textContent = `${label} menjadi pembanding. Toleransi ${rule.toleransi_menit} menit; denda mulai 1 detik setelah batas toleransi, lalu pengali naik satu tingkat setiap tambahan 5 menit.`;
+        const intervalTambahan = Math.max(1, Number(rule.batas_tingkat_2) - Number(rule.batas_tingkat_1));
+        const kenaikanPengali = Math.max(0.01, Number(rule.pengali_tingkat_2) - Number(rule.pengali_tingkat_1));
+        info.textContent = `${label} menjadi pembanding. Toleransi ${rule.toleransi_menit} menit; denda mulai 1 detik setelah batas toleransi dengan ${rule.pengali_tingkat_1}×, lalu naik ${kenaikanPengali}× setiap tambahan ${intervalTambahan} menit.`;
     };
     employee.addEventListener('change', update); type.addEventListener('change', update);
     const formStateKey = 'conscomp-denda-form-state';
