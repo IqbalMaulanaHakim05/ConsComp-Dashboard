@@ -64,6 +64,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     <?php foreach ($pilihan["employment_status"] as $nilai): ?>
                         <option value="<?= htmlspecialchars($nilai); ?>" <?= $filter["employment_status"] === $nilai ? "selected" : ""; ?>><?= htmlspecialchars($nilai); ?></option>
                     <?php endforeach; ?>
+                    <?php if (!in_array('Nonaktif', $pilihan["employment_status"], true)): ?>
+                        <option value="Nonaktif" <?= $filter["employment_status"] === "Nonaktif" ? "selected" : ""; ?>>Nonaktif</option>
+                    <?php endif; ?>
                 </select>
             </label>
             <label>Jenis Kelamin
@@ -86,20 +89,21 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     </form>
 
     <div class="analysis-kpi-grid">
-        <article class="analysis-kpi-card"><span>Total Karyawan</span><strong><?= number_format($kpi["total"], 0, ",", "."); ?></strong><small>Data sesuai filter aktif</small></article>
+        <article class="analysis-kpi-card"><span>Karyawan Keseluruhan</span><strong><?= number_format($kpi["total"], 0, ",", "."); ?></strong><small>Data sesuai filter aktif</small></article>
+        <article class="analysis-kpi-card"><span>Karyawan Tetap</span><strong><?= number_format($kpi["harian"], 0, ",", "."); ?></strong><small>Data tipe kerja Harian</small></article>
+        <article class="analysis-kpi-card"><span>Karyawan Aktif</span><strong><?= number_format($kpi["aktif"], 0, ",", "."); ?></strong><small>Status Active atau Aktif</small></article>
+        <article class="analysis-kpi-card"><span>Karyawan Tidak Tetap</span><strong><?= number_format($kpi["tidak_harian"], 0, ",", "."); ?></strong><small>Tipe kerja selain Harian</small></article>
         <article class="analysis-kpi-card"><span>Laki-laki</span><strong><?= number_format($kpi["laki_laki"], 0, ",", "."); ?></strong><small>Total karyawan laki-laki</small></article>
         <article class="analysis-kpi-card"><span>Perempuan</span><strong><?= number_format($kpi["perempuan"], 0, ",", "."); ?></strong><small>Total karyawan perempuan</small></article>
-        <article class="analysis-kpi-card"><span>Karyawan Aktif</span><strong><?= number_format($kpi["aktif"], 0, ",", "."); ?></strong><small>Status Active atau Aktif</small></article>
         <article class="analysis-kpi-card"><span>Rata-rata Gaji</span><strong>Rp <?= number_format($kpi["rata_gaji"], 0, ",", "."); ?></strong><small>Rata-rata data gaji valid</small></article>
         <article class="analysis-kpi-card"><span>Rata-rata Performa</span><strong><?= $kpi["rata_performa"] === null ? "Belum dinilai" : number_format($kpi["rata_performa"], 1, ",", "."); ?></strong><small>Rata-rata skor performa yang sudah dinilai</small></article>
     </div>
 
     <div class="analysis-chart-grid">
-        <article class="analysis-chart-card"><h2>Status Kerja</h2><p>Komposisi status kerja karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartStatus"></canvas></div></article>
+        <article class="analysis-chart-card analysis-status-chart-card"><h2>Status dan Tipe Kerja</h2><p>Komposisi tipe kerja serta status kerja karyawan.</p><div class="analysis-status-chart-grid"><div class="analysis-status-chart"><h3>Tipe Kerja</h3><div class="analysis-chart-wrap"><canvas id="chartWorkType"></canvas></div></div><div class="analysis-status-chart"><h3>Status Kerja</h3><div class="analysis-chart-wrap"><canvas id="chartStatus"></canvas></div></div></div></article>
         <?php if (roleOperasional()): ?>
             <article class="analysis-chart-card analysis-chart-wide"><h2>Karyawan per Posisi</h2><p>Jumlah karyawan pada seluruh posisi di departemen Anda.</p><div class="analysis-chart-wrap analysis-chart-dynamic" style="height: <?= max(320, count($analisis["posisi"]["label"]) * 34); ?>px"><canvas id="chartPosition"></canvas></div></article>
         <?php endif; ?>
-        <article class="analysis-chart-card"><h2>Tren Penerimaan Karyawan</h2><p>Jumlah karyawan berdasarkan bulan masuk.</p><div class="analysis-chart-wrap"><canvas id="chartHiring"></canvas></div></article>
         <article class="analysis-chart-card analysis-chart-wide"><h2>Karyawan Masuk dan Keluar</h2><p>Perbandingan jumlah karyawan masuk dan keluar setiap bulan untuk seluruh tahun yang tersedia.</p><div class="analysis-chart-wrap"><canvas id="chartEmployeeMovement"></canvas></div></article>
         <?php if (roleOperasional()): ?>
             <article class="analysis-chart-card"><h2>Jenis Kelamin</h2><p>Komposisi jenis kelamin karyawan.</p><div class="analysis-chart-wrap"><canvas id="chartGender"></canvas></div></article>
@@ -146,8 +150,8 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 
     const datasets = <?= json_encode([
         "department" => $analisis["departemen"], "position" => $analisis["posisi"],
-        "status" => $analisis["status"], "gender" => $analisis["gender"],
-        "hiring" => $analisis["tren"], "salary" => $analisis["gaji"],
+        "status" => $analisis["status"], "tipeKerja" => $analisis["tipe_kerja"], "gender" => $analisis["gender"],
+        "salary" => $analisis["gaji"],
         "movement" => $analisis["masuk_keluar"],
         "performance" => $analisis["performa"],
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
@@ -211,15 +215,13 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     <?php else: ?>
     bar('chartDepartment', datasets.department, false, null, departmentColor);
     <?php endif; ?>
+    doughnut('chartWorkType', datasets.tipeKerja, datasets.tipeKerja.label.map((_, index) => [primary, secondary, male, female][index % 4]));
     doughnut('chartStatus', datasets.status, datasets.status.label.map((_, index) => [statusColor, secondary, female, male][index % 4]));
     doughnut('chartGender', datasets.gender, datasets.gender.label.map(label => label === 'Perempuan' ? female : male));
     <?php if (!roleOperasional()): ?>
     bar('chartSalary', datasets.salary, false, value => currencyId.format(value), salaryColor);
     bar('chartPerformance', datasets.performance, false, value => Number(value).toFixed(1), performanceColor);
     <?php endif; ?>
-
-    const hiring = document.getElementById('chartHiring');
-    if (hiring) charts.push(new Chart(hiring, { type: 'line', data: { labels: datasets.hiring.label, datasets: [{ data: datasets.hiring.nilai, borderColor: trendColor, backgroundColor: hexToRgba(trendColor, .14), fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: secondary }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: commonScales } }));
 
     const movement = document.getElementById('chartEmployeeMovement');
     if (movement) charts.push(new Chart(movement, { type: 'line', data: { labels: datasets.movement.label, datasets: [

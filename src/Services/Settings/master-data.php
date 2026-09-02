@@ -22,7 +22,7 @@ function siapkanMasterData(mysqli $conn): void
 
     // Pisahkan nilai lama Kontrak/Harian/PKWT/Magang menjadi tipe kerja dan
     // normalisasi status kerja agar hanya Aktif atau Nonaktif.
-    mysqli_query($conn, "UPDATE karyawan SET tipe_kerja = CASE LOWER(TRIM(employment_status)) WHEN 'harian' THEN 'Harian' WHEN 'kontrak' THEN 'Kontrak' WHEN 'pkwt' THEN 'PKWT' WHEN 'magang' THEN 'Magang' ELSE 'Kontrak' END WHERE tipe_kerja IS NULL OR TRIM(tipe_kerja) = ''");
+    mysqli_query($conn, "UPDATE karyawan SET tipe_kerja = CASE LOWER(TRIM(employment_status)) WHEN 'harian' THEN 'Harian' WHEN 'kontrak' THEN 'Harian' WHEN 'pkwt' THEN 'PKWT' WHEN 'magang' THEN 'Magang' ELSE 'Harian' END WHERE tipe_kerja IS NULL OR TRIM(tipe_kerja) = ''");
     mysqli_query($conn, "UPDATE karyawan SET employment_status = CASE WHEN LOWER(TRIM(employment_status)) IN ('nonaktif', 'inactive') THEN 'Nonaktif' ELSE 'Aktif' END");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_departemen (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");

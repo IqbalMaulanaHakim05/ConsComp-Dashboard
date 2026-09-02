@@ -130,6 +130,9 @@ function ambilAnalisisKaryawan(mysqli $conn): array
         "employment_status" => pilihanKolomAnalisis($conn, "employment_status"),
     ];
     foreach (["department", "position", "employment_status"] as $kolom) {
+        if ($kolom === "employment_status" && $filter[$kolom] === "Nonaktif") {
+            continue;
+        }
         if ($filter[$kolom] !== "" && !in_array($filter[$kolom], $pilihan[$kolom], true)) {
             $filter[$kolom] = "";
         }
@@ -168,6 +171,8 @@ function ambilAnalisisKaryawan(mysqli $conn): array
             SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END) AS laki_laki,
             SUM(CASE WHEN gender = 'F' THEN 1 ELSE 0 END) AS perempuan,
             SUM(CASE WHEN LOWER(TRIM(employment_status)) IN ('active', 'aktif') THEN 1 ELSE 0 END) AS aktif,
+            SUM(CASE WHEN LOWER(TRIM(COALESCE(tipe_kerja, ''))) = 'harian' THEN 1 ELSE 0 END) AS harian,
+            SUM(CASE WHEN LOWER(TRIM(COALESCE(tipe_kerja, ''))) <> 'harian' THEN 1 ELSE 0 END) AS tidak_harian,
             AVG(CAST(NULLIF(REPLACE(salary, ',', ''), '') AS DECIMAL(15,2))) AS rata_gaji,
             AVG(CASE
                 WHEN performance_score IS NOT NULL
@@ -222,6 +227,19 @@ function ambilAnalisisKaryawan(mysqli $conn): array
         "jumlah"
     );
 
+    $tipeKerja = pasanganGrafik(
+        queryAnalisis(
+            $conn,
+            "SELECT COALESCE(NULLIF(TRIM(tipe_kerja), ''), 'Belum diatur') AS label, COUNT(*) AS jumlah FROM karyawan",
+            $kondisi,
+            $tipe,
+            $parameter,
+            " GROUP BY COALESCE(NULLIF(TRIM(tipe_kerja), ''), 'Belum diatur') ORDER BY jumlah DESC, label ASC"
+        ),
+        "label",
+        "jumlah"
+    );
+
     $hasilGender = queryAnalisis(
         $conn,
         "SELECT gender, COUNT(*) AS jumlah FROM karyawan",
@@ -235,19 +253,6 @@ function ambilAnalisisKaryawan(mysqli $conn): array
         $gender["label"][] = $baris["gender"] === "F" ? "Perempuan" : "Laki-laki";
         $gender["nilai"][] = (int) $baris["jumlah"];
     }
-
-    $tren = pasanganGrafik(
-        queryAnalisis(
-            $conn,
-            "SELECT DATE_FORMAT(date_of_hire, '%Y-%m') AS label, COUNT(*) AS jumlah FROM karyawan",
-            array_merge($kondisi, ["date_of_hire IS NOT NULL"]),
-            $tipe,
-            $parameter,
-            " GROUP BY DATE_FORMAT(date_of_hire, '%Y-%m') ORDER BY label ASC"
-        ),
-        "label",
-        "jumlah"
-    );
 
     $pergerakanPerBulan = [];
     $hasilMasuk = queryAnalisis($conn, "SELECT DATE_FORMAT(date_of_hire, '%Y-%m') AS periode, COUNT(*) AS jumlah FROM karyawan", array_merge($kondisi, ["date_of_hire IS NOT NULL"]), $tipe, $parameter, " GROUP BY DATE_FORMAT(date_of_hire, '%Y-%m')");
@@ -325,14 +330,16 @@ function ambilAnalisisKaryawan(mysqli $conn): array
             "laki_laki" => (int) ($kpi["laki_laki"] ?? 0),
             "perempuan" => (int) ($kpi["perempuan"] ?? 0),
             "aktif" => (int) ($kpi["aktif"] ?? 0),
+            "harian" => (int) ($kpi["harian"] ?? 0),
+            "tidak_harian" => (int) ($kpi["tidak_harian"] ?? 0),
             "rata_gaji" => (float) ($kpi["rata_gaji"] ?? 0),
             "rata_performa" => isset($kpi["rata_performa"]) ? (float) $kpi["rata_performa"] : null,
         ],
         "departemen" => $departemen,
         "posisi" => $posisi,
         "status" => $status,
+        "tipe_kerja" => $tipeKerja,
         "gender" => $gender,
-        "tren" => $tren,
         "masuk_keluar" => $masukKeluar,
         "gaji" => $gaji,
         "performa" => $performa,

@@ -70,7 +70,7 @@ $versiCssHalaman = match ($halamanAktif) {
     "karyawan" => "20260821-karyawan-sort-btn2",
     "tambah" => "20260902-tambah-jadwal-terlihat3",
     "penilaian-performa" => "20260821-performance-font-size",
-    "dashboard" => "20260811-dashboard-columns5",
+    "dashboard", "analisis" => "20260902-analysis-work-status1",
     default => "20260811-layout8",
 };
 
