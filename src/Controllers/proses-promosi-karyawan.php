@@ -12,7 +12,7 @@ require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
 wajibRole('admin', 'superadmin');
 
 $karyawanId = (int) ($_POST['karyawan_id'] ?? 0);
-$kembali = '../profil-karyawan.php?id=' . $karyawanId . '&edit=1';
+$kembali = URL_DASAR . 'profil-karyawan.php?id=' . $karyawanId . '&edit=1';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     exit('Metode permintaan tidak diizinkan.');
@@ -55,7 +55,7 @@ try {
         )
     );
     header(
-        'Location: ../profil-karyawan.php?id=' . $karyawanId
+        'Location: ' . URL_DASAR . 'profil-karyawan.php?id=' . $karyawanId
         . '&pesan=' . rawurlencode('Promosi atau perpindahan posisi berhasil disimpan.')
         . '#promosi'
     );

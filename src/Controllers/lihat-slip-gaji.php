@@ -43,8 +43,8 @@ if (!karyawanDalamCakupan($conn, (int) $slip['karyawan_id'])) {
 }
 
 $namaFile = basename((string) $slip['nama_file']);
-$path = __DIR__ . '/../../../storage/uploads/slip/' . $namaFile;
-if ($namaFile === '' || !is_file($path)) {
+$path = pathFileSlipGaji($namaFile);
+if ($path === null || !is_file($path)) {
     http_response_code(404);
     exit('File slip gaji tidak ditemukan.');
 }

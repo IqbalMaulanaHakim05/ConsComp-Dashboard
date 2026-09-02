@@ -40,7 +40,8 @@ function siapkanTabelDenda(mysqli $conn): bool
         'jam_kejadian' => "TIME NULL AFTER jam_jadwal",
         'tanggal_kejadian' => "DATE NULL AFTER jam_kejadian",
         'selisih_menit' => "INT NULL AFTER jam_kejadian",
-        'toleransi_menit' => "INT NULL AFTER selisih_menit",
+        'selisih_detik' => "INT NULL AFTER selisih_menit",
+        'toleransi_menit' => "INT NULL AFTER selisih_detik",
         'pengali_jam' => "DECIMAL(6,2) NULL AFTER toleransi_menit",
         'gaji_pokok_snapshot' => "DECIMAL(15,2) NULL AFTER pengali_jam",
         'pembagi_jam_bulanan' => "DECIMAL(8,2) NULL AFTER gaji_pokok_snapshot",
@@ -76,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $karyawanId = (int) ($_POST['karyawan_id'] ?? 0); $tipeDenda = (string) ($_POST['tipe_denda'] ?? ''); $jamKejadian = trim((string) ($_POST['jam_kejadian'] ?? '')); $tanggalKejadian = trim((string) ($_POST['tanggal_kejadian'] ?? '')); $deskripsi = trim((string) ($_POST['deskripsi'] ?? ''));
         $cek = mysqli_prepare($conn, "SELECT k.department_id, TIME_FORMAT(k.shift_mulai, '%H:%i') AS shift_mulai, TIME_FORMAT(k.shift_selesai, '%H:%i') AS shift_selesai, COALESCE((SELECT pg.gaji_pokok FROM profil_gaji pg WHERE pg.karyawan_id = k.id AND pg.berlaku_mulai <= CURDATE() AND (pg.berlaku_sampai IS NULL OR pg.berlaku_sampai >= CURDATE()) ORDER BY pg.berlaku_mulai DESC, pg.id DESC LIMIT 1), k.salary, 0) AS gaji_pokok FROM karyawan k WHERE k.id = ? LIMIT 1"); mysqli_stmt_bind_param($cek, 'i', $karyawanId); mysqli_stmt_execute($cek); $karyawan = mysqli_fetch_assoc(mysqli_stmt_get_result($cek)); mysqli_stmt_close($cek);
         $aturan = $aturanDenda[$tipeDenda] ?? null;
-        $jamValid = preg_match('/^([01]\\d|2[0-3]):[0-5]\\d$/', $jamKejadian) === 1;
+        $jamValid = preg_match('/^([01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$/', $jamKejadian) === 1;
         $tanggal = DateTimeImmutable::createFromFormat('!Y-m-d', $tanggalKejadian);
         $tanggalValid = $tanggal !== false && $tanggal->format('Y-m-d') === $tanggalKejadian;
         $jamJadwal = $tipeDenda === 'terlambat' ? (string) ($karyawan['shift_mulai'] ?? '') : (string) ($karyawan['shift_selesai'] ?? '');
@@ -85,32 +86,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $jamPulang = (string) ($karyawan['shift_selesai'] ?? '');
         $lintasHari = $jamMasuk !== '' && $jamPulang !== '' && $menit($jamPulang) <= $menit($jamMasuk);
         $selisih = 0;
+        $selisihDetik = 0;
         if ($jamValid && $tanggalValid && $jamJadwal !== '' && $jamMasuk !== '' && $jamPulang !== '') {
             $aktual = new DateTimeImmutable($tanggalKejadian . ' ' . $jamKejadian);
             if ($tipeDenda === 'terlambat') {
                 $tanggalJadwal = $lintasHari && $menit($jamKejadian) < $menit($jamMasuk) ? $tanggal->modify('-1 day') : $tanggal;
                 $terjadwal = new DateTimeImmutable($tanggalJadwal->format('Y-m-d') . ' ' . $jamMasuk);
-                $selisih = (int) floor(($aktual->getTimestamp() - $terjadwal->getTimestamp()) / 60);
+                $selisihDetik = $aktual->getTimestamp() - $terjadwal->getTimestamp();
             } else {
                 $tanggalJadwal = $lintasHari && $menit($jamKejadian) >= $menit($jamMasuk) ? $tanggal->modify('+1 day') : $tanggal;
                 $terjadwal = new DateTimeImmutable($tanggalJadwal->format('Y-m-d') . ' ' . $jamPulang);
-                $selisih = (int) floor(($terjadwal->getTimestamp() - $aktual->getTimestamp()) / 60);
+                $selisihDetik = $terjadwal->getTimestamp() - $aktual->getTimestamp();
             }
+            $selisih = (int) floor($selisihDetik / 60);
         }
-        $pengali = $aturan && $selisih >= (int) $aturan['batas_tingkat_2'] ? (float) $aturan['pengali_tingkat_2'] : ($aturan && $selisih >= (int) $aturan['batas_tingkat_1'] ? (float) $aturan['pengali_tingkat_1'] : 0.0);
+        $toleransi = (int) ($aturan['toleransi_menit'] ?? 0);
+        $toleransiDetik = $toleransi * 60;
+        $tingkatDenda = $aturan && $selisihDetik > $toleransiDetik ? intdiv($selisihDetik - $toleransiDetik - 1, 300) + 1 : 0;
+        $pengali = $tingkatDenda > 0 ? (float) $aturan['pengali_tingkat_1'] * $tingkatDenda : 0.0;
         $pembagi = (float) ($aturan['pembagi_jam_bulanan'] ?? 0); $gajiPokok = (float) ($karyawan['gaji_pokok'] ?? 0); $nominal = $pembagi > 0 ? round(($gajiPokok / $pembagi) * $pengali, 2) : 0;
         if (!$karyawan || !$aturan || !$jamValid || !$tanggalValid || $jamJadwal === '' || $deskripsi === '') $pesan = 'Karyawan, tipe denda, tanggal dan jam kejadian, jadwal kerja, dan alasan wajib valid.';
-        elseif ($selisih < 0) $pesan = 'Jam kejadian tidak sesuai untuk tipe denda yang dipilih.';
-        elseif ($selisih <= (int) $aturan['toleransi_menit']) $pesan = 'Selisih waktu masih dalam toleransi dan tidak menghasilkan denda.';
+        elseif ($selisihDetik < 0) $pesan = 'Jam kejadian tidak sesuai untuk tipe denda yang dipilih.';
+        elseif ($selisihDetik <= $toleransiDetik) $pesan = 'Selisih waktu masih dalam toleransi dan tidak menghasilkan denda.';
         elseif ($gajiPokok <= 0 || $nominal <= 0) $pesan = 'Gaji pokok aktif karyawan belum tersedia untuk menghitung denda.';
         elseif (roleOperasional() && (int) $karyawan['department_id'] !== (int) $departmentId) $pesan = 'Karyawan berada di luar cakupan departemen Anda.';
         else {
             $status = $role === 'pic' ? 'draft' : 'menunggu_koordinator'; $pembuat = (int) $_SESSION['user']['id']; $dept = (int) $karyawan['department_id'];
-            $stmt = mysqli_prepare($conn, 'INSERT INTO denda_reports (karyawan_id, department_id, nominal, tipe_denda, jam_jadwal, jam_kejadian, tanggal_kejadian, selisih_menit, toleransi_menit, pengali_jam, gaji_pokok_snapshot, pembagi_jam_bulanan, deskripsi, status, dibuat_oleh_user_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, IF(? = \'menunggu_koordinator\', NOW(), NULL))');
-            $toleransi = (int) $aturan['toleransi_menit'];
+            $stmt = mysqli_prepare($conn, 'INSERT INTO denda_reports (karyawan_id, department_id, nominal, tipe_denda, jam_jadwal, jam_kejadian, tanggal_kejadian, selisih_menit, selisih_detik, toleransi_menit, pengali_jam, gaji_pokok_snapshot, pembagi_jam_bulanan, deskripsi, status, dibuat_oleh_user_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, IF(? = \'menunggu_koordinator\', NOW(), NULL))');
             $labelTipe = $tipeDenda === 'terlambat' ? 'Datang terlambat' : 'Pulang lebih awal';
-            $deskripsi = $labelTipe . ': ' . $selisih . ' menit (tanggal ' . $tanggalKejadian . ', jadwal ' . $jamJadwal . ', kejadian ' . $jamKejadian . ")\n" . $deskripsi;
-            mysqli_stmt_bind_param($stmt, 'iidssssiidddssis', $karyawanId, $dept, $nominal, $tipeDenda, $jamJadwal, $jamKejadian, $tanggalKejadian, $selisih, $toleransi, $pengali, $gajiPokok, $pembagi, $deskripsi, $status, $pembuat, $status);
+            $selisihTampil = intdiv($selisihDetik, 60) . ' menit ' . ($selisihDetik % 60) . ' detik';
+            $deskripsi = $labelTipe . ': ' . $selisihTampil . ' (tanggal ' . $tanggalKejadian . ', jadwal ' . $jamJadwal . ', kejadian ' . $jamKejadian . ")\n" . $deskripsi;
+            mysqli_stmt_bind_param($stmt, 'iidssssiiidddssis', $karyawanId, $dept, $nominal, $tipeDenda, $jamJadwal, $jamKejadian, $tanggalKejadian, $selisih, $selisihDetik, $toleransi, $pengali, $gajiPokok, $pembagi, $deskripsi, $status, $pembuat, $status);
             if (mysqli_stmt_execute($stmt)) { $id = (int) mysqli_insert_id($conn); if ($status !== 'draft') mysqli_query($conn, "INSERT IGNORE INTO denda_approvals (denda_id, tahap) VALUES ({$id}, 'koordinator'), ({$id}, 'manager')"); catatAktivitas($conn, "Membuat denda ID {$id}."); header('Location: denda.php'); exit; }
             $pesan = 'Denda gagal disimpan.'; mysqli_stmt_close($stmt);
         }
@@ -191,7 +197,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     nominal.closest('.form-group').before(fields);
     const eventDateTime = document.createElement('div');
     eventDateTime.className = 'form-group denda-event-datetime';
-    eventDateTime.innerHTML = '<div><label for="denda-tanggal-kejadian">Tanggal kejadian</label><input id="denda-tanggal-kejadian" name="tanggal_kejadian" type="date" value="<?= date('Y-m-d'); ?>" required></div><div><label for="denda-jam-kejadian">Jam kejadian</label><input id="denda-jam-kejadian" name="jam_kejadian" type="time" required disabled></div>';
+    eventDateTime.innerHTML = '<div><label for="denda-tanggal-kejadian">Tanggal kejadian</label><input id="denda-tanggal-kejadian" name="tanggal_kejadian" type="date" value="<?= date('Y-m-d'); ?>" required></div><div><label for="denda-jam-kejadian">Jam kejadian</label><input id="denda-jam-kejadian" name="jam_kejadian" type="time" step="1" required disabled></div>';
     fields.after(eventDateTime);
     const info = document.createElement('p');
     info.id = 'denda-jadwal-info';
@@ -217,7 +223,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         if (!selected || !selected.shift_mulai || !selected.shift_selesai) { info.textContent = 'Pilih karyawan yang memiliki jadwal kerja.'; return; }
         if (!scheduled || !rule) { info.textContent = 'Pilih tipe denda untuk melanjutkan.'; return; }
         const label = type.value === 'terlambat' ? 'Jam masuk' : 'Jam pulang';
-        info.textContent = `${label} menjadi pembanding. Toleransi ${rule.toleransi_menit} menit; ${rule.batas_tingkat_1}–${Number(rule.batas_tingkat_2) - 1} menit = ${rule.pengali_tingkat_1}×, mulai ${rule.batas_tingkat_2} menit = ${rule.pengali_tingkat_2}×.`;
+        info.textContent = `${label} menjadi pembanding. Toleransi ${rule.toleransi_menit} menit; denda mulai 1 detik setelah batas toleransi, lalu pengali naik satu tingkat setiap tambahan 5 menit.`;
     };
     employee.addEventListener('change', update); type.addEventListener('change', update);
     const formStateKey = 'conscomp-denda-form-state';

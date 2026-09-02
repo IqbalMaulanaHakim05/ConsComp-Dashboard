@@ -2,6 +2,17 @@
 
 declare(strict_types=1);
 
+function direktoriSlipGaji(): string
+{
+    return dirname(__DIR__, 3) . '/storage/uploads/slip';
+}
+
+function pathFileSlipGaji(string $namaFile): ?string
+{
+    $namaFile = basename(trim($namaFile));
+    return $namaFile === '' ? null : direktoriSlipGaji() . '/' . $namaFile;
+}
+
 function kolomSlipGajiAda(mysqli $conn, string $kolom): bool
 {
     $kolomAman = mysqli_real_escape_string($conn, $kolom);
@@ -333,7 +344,7 @@ function dataSlipGajiKaryawan(mysqli $conn, int $karyawanId, int $bulan, int $ta
 
 function buatPdfSlipGaji(array $data): string
 {
-    $autoload = dirname(__DIR__, 2) . '../../vendor/autoload.php';
+    $autoload = dirname(__DIR__, 3) . '/vendor/autoload.php';
     if (!is_file($autoload)) {
         throw new RuntimeException('Dependensi PDF belum terpasang.');
     }
@@ -551,7 +562,7 @@ function prosesSlipGajiKaryawan(
             $versi,
             substr($batchId, 0, 8)
         );
-        $folder = __DIR__ . '/../../../storage/uploads/slip';
+        $folder = direktoriSlipGaji();
         if (!is_dir($folder) && !mkdir($folder, 0775, true) && !is_dir($folder)) {
             throw new RuntimeException('Folder penyimpanan slip tidak dapat dibuat.');
         }
@@ -581,7 +592,10 @@ function prosesSlipGajiKaryawan(
         } catch (Throwable) {
         }
         if ($namaFile !== null) {
-            @unlink(__DIR__ . '/../../../storage/uploads/slip/' . basename($namaFile));
+            $pathSlip = pathFileSlipGaji($namaFile);
+            if ($pathSlip !== null) {
+                @unlink($pathSlip);
+            }
         }
 
         $pesan = mb_substr(trim($exception->getMessage()) ?: 'Slip gagal dibuat.', 0, 500);
@@ -712,8 +726,8 @@ function hapusSlipGaji(mysqli $conn, int $slipId, int $karyawanId): array
         mysqli_commit($conn);
 
         if (!empty($slip['nama_file'])) {
-            $path = __DIR__ . '/../../../storage/uploads/slip/' . basename((string) $slip['nama_file']);
-            if (is_file($path)) {
+            $path = pathFileSlipGaji((string) $slip['nama_file']);
+            if ($path !== null && is_file($path)) {
                 @unlink($path);
             }
         }

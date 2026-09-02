@@ -11,7 +11,7 @@ wajibRole('admin', 'superadmin');
 
 $karyawanId = (int) ($_POST['karyawan_id'] ?? 0);
 $historiId = (int) ($_POST['histori_id'] ?? 0);
-$kembali = '../profil-karyawan.php?id=' . $karyawanId . '&edit=1#promosi';
+$kembali = URL_DASAR . 'profil-karyawan.php?id=' . $karyawanId . '&edit=1';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -19,12 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 if (!csrfValid($_POST['csrf_token'] ?? null)) {
-    header('Location: ' . $kembali . '&error_promosi=' . rawurlencode('Token keamanan tidak valid.'));
+    header('Location: ' . $kembali . '&error_promosi=' . rawurlencode('Token keamanan tidak valid.') . '#promosi');
     exit;
 }
 
 if ($karyawanId <= 0 || $historiId <= 0) {
-    header('Location: ' . $kembali . '&error_promosi=' . rawurlencode('Data promosi yang akan dihapus tidak valid.'));
+    header('Location: ' . $kembali . '&error_promosi=' . rawurlencode('Data promosi yang akan dihapus tidak valid.') . '#promosi');
     exit;
 }
 
@@ -63,9 +63,9 @@ try {
         )
     );
 
-    header('Location: ' . $kembali . '&pesan=' . rawurlencode('Riwayat promosi berhasil dihapus.'));
+    header('Location: ' . $kembali . '&pesan=' . rawurlencode('Riwayat promosi berhasil dihapus.') . '#promosi');
     exit;
 } catch (Throwable $e) {
-    header('Location: ' . $kembali . '&error_promosi=' . rawurlencode($e->getMessage()));
+    header('Location: ' . $kembali . '&error_promosi=' . rawurlencode($e->getMessage()) . '#promosi');
     exit;
 }

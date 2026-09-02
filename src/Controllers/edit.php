@@ -144,7 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
                 "file_ijazah" => "ijazah",
                 default => "mcu",
             };
-            $pathFileBaru = __DIR__ . '/../../../storage/uploads/' . $folderFile . "/" . basename($namaFileBaru);
+            $pathFileBaru = dirname(__DIR__, 2) . '/storage/uploads/' . $folderFile . "/" . basename($namaFileBaru);
             if (is_file($pathFileBaru)) {
                 @unlink($pathFileBaru);
             }
@@ -252,7 +252,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
                 "file_ijazah" => "ijazah",
                 default => "mcu",
             };
-            $pathFileBaru = __DIR__ . '/../../../storage/uploads/' . $folderFile . "/" . basename($namaFileBaru);
+            $pathFileBaru = dirname(__DIR__, 2) . '/storage/uploads/' . $folderFile . "/" . basename($namaFileBaru);
             if (is_file($pathFileBaru)) {
                 @unlink($pathFileBaru);
             }
