@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         elseif (roleOperasional() && (int) $karyawan['department_id'] !== (int) $departmentId) $pesan = 'Karyawan berada di luar cakupan departemen Anda.';
         else {
             $status = $role === 'pic' ? 'draft' : 'menunggu_koordinator'; $pembuat = (int) $_SESSION['user']['id']; $dept = (int) $karyawan['department_id'];
-            $stmt = mysqli_prepare($conn, 'INSERT INTO denda_reports (karyawan_id, department_id, nominal, tipe_denda, jam_jadwal, jam_kejadian, tanggal_kejadian, selisih_menit, selisih_detik, toleransi_menit, pengali_jam, gaji_pokok_snapshot, pembagi_jam_bulanan, deskripsi, status, dibuat_oleh_user_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, IF(? = \'menunggu_koordinator\', NOW(), NULL))');
+            $stmt = mysqli_prepare($conn, 'INSERT INTO denda_reports (karyawan_id, department_id, nominal, tipe_denda, jam_jadwal, jam_kejadian, tanggal_kejadian, selisih_menit, selisih_detik, toleransi_menit, pengali_jam, gaji_pokok_snapshot, pembagi_jam_bulanan, deskripsi, status, dibuat_oleh_user_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, IF(? = \'menunggu_koordinator\', NOW(), NULL))');
             $labelTipe = $tipeDenda === 'terlambat' ? 'Datang terlambat' : 'Pulang lebih awal';
             $selisihTampil = intdiv($selisihDetik, 60) . ' menit ' . ($selisihDetik % 60) . ' detik';
             $deskripsi = $labelTipe . ': ' . $selisihTampil . ' (tanggal ' . $tanggalKejadian . ', jadwal ' . $jamJadwal . ', kejadian ' . $jamKejadian . ")\n" . $deskripsi;

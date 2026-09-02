@@ -452,7 +452,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     <th>Aksi</th>
                 </tr>
             </thead>
-            <tbody><?php while ($row = mysqli_fetch_assoc($laporan)): ?><tr>
+            <tbody><?php while ($row = mysqli_fetch_assoc($laporan)): ?><tr data-overtime-status="<?= htmlspecialchars((string) $row["status"]); ?>">
                         <td class="overtime-id"><?= (int) $row["id"]; ?></td>
                         <td><?= htmlspecialchars($row["emp_id"] . " - " . $row["employee_name"]); ?></td>
                         <td><?= htmlspecialchars(trim((string) ($row["position"] ?? "")) ?: "-"); ?></td>
@@ -535,7 +535,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 <?php if ($bolehApprovalPusat): ?>
     <script>
         document.querySelectorAll('.overtime-report-table tbody tr').forEach(row => {
-            const status = row.querySelector('.overtime-status')?.textContent.trim();
+            const status = row.dataset.overtimeStatus;
             if (!['menunggu_koordinator', 'menunggu_manager'].includes(status)) return;
             const action = row.querySelector('.overtime-actions');
             const id = row.querySelector('.overtime-id')?.textContent.trim();

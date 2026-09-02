@@ -25,6 +25,7 @@ $data = mysqli_query(
 $judulHalaman = 'Notifikasi Cuti Khusus';
 $subjudulHalaman = 'Pengajuan cuti khusus beserta status keputusan terbaru.';
 $halamanAktif = 'izin-cuti-khusus';
+$kelasHalaman = 'izin-cuti';
 require __DIR__ . '/../../resources/views/layouts/atas.php';
 ?>
 <section class="data-card notification-page-card">
