@@ -10,7 +10,8 @@ $pesan = "";
 $departmentId = departmentIdPengguna();
 $roleSaatIni = rolePengguna();
 $bolehInputLembur = in_array($roleSaatIni, ["pic", "admin", "superadmin"], true);
-$bolehApprovalPusat = in_array($roleSaatIni, ["admin", "superadmin"], true);
+$bolehAjukanLangsung = in_array($roleSaatIni, ["admin", "superadmin"], true);
+$bolehApprovalPusat = $roleSaatIni === "superadmin";
 $formLembur = [
     "department_id" => "",
     "position" => "",
@@ -52,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $bolehInputLembur && !isset($_POST[
             mysqli_stmt_bind_param($stmt, "iiissis", $karyawanId, $departmentLaporan, $picId, $mulaiDb, $selesaiDb, $menit, $deskripsi);
             if (mysqli_stmt_execute($stmt)) {
                 $laporanBaruId = (int) mysqli_insert_id($conn);
-                if ($bolehApprovalPusat) {
+                if ($bolehAjukanLangsung) {
                     mysqli_query($conn, "UPDATE overtime_reports SET status = 'menunggu_koordinator', submitted_at = CURRENT_TIMESTAMP WHERE id = " . $laporanBaruId);
                     mysqli_query($conn, "INSERT IGNORE INTO overtime_approvals (overtime_id, tahap) VALUES (" . $laporanBaruId . ", 'koordinator'), (" . $laporanBaruId . ", 'manager')");
                 }
@@ -305,7 +306,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 <?php if ($bolehInputLembur): ?>
     <section class="form-card">
         <div class="form-card-header">
-            <h2><?= $bolehApprovalPusat ? "Tambah Catatan Lembur" : "Buat Laporan Lembur"; ?></h2>
+            <h2><?= $bolehAjukanLangsung ? "Tambah Catatan Lembur" : "Buat Laporan Lembur"; ?></h2>
             <p>Pilih departemen terlebih dahulu, kemudian pilih posisi dan karyawan yang sesuai.</p>
         </div>
         <div class="form-body">
@@ -349,11 +350,11 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 </div>
 
                 <div class="form-group">
-                    <label for="lembur-deskripsi"><?= $bolehApprovalPusat ? "Catatan Lembur" : "Deskripsi"; ?></label>
-                    <textarea id="lembur-deskripsi" name="deskripsi" rows="3" <?= $bolehApprovalPusat ? "required" : ""; ?>><?= htmlspecialchars($formLembur["deskripsi"]); ?></textarea>
+                    <label for="lembur-deskripsi"><?= $bolehAjukanLangsung ? "Catatan Lembur" : "Deskripsi"; ?></label>
+                    <textarea id="lembur-deskripsi" name="deskripsi" rows="3" <?= $bolehAjukanLangsung ? "required" : ""; ?>><?= htmlspecialchars($formLembur["deskripsi"]); ?></textarea>
                 </div>
 
-                <button class="btn btn-success" type="submit"><?= $bolehApprovalPusat ? "Ajukan Lembur" : "Simpan Draft"; ?></button>
+                <button class="btn btn-success" type="submit"><?= $bolehAjukanLangsung ? "Ajukan Lembur" : "Simpan Draft"; ?></button>
             </form>
         </div>
     </section>

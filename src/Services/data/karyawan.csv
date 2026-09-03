@@ -1,7 +1,7 @@
 ﻿Employee_Name,EmpID,Position,Department,Salary,Sex,MaritalDesc,DateofHire,EmploymentStatus,PerformanceScore
-"Andi Pratama",EMP001,Admin,FINANCE,30000000.00,M,Single,2018-01-01,Aktif,80
-"Budi Pratama",EMP002,"Manager Keuangan",FINANCE,15250000.00,M,,2019-02-02,Aktif,79
-"Citra Pratama",EMP003,"Staff Keuangan",FINANCE,6500000.00,F,,2020-03-03,Aktif,86
+"Andi Kirk",EMP001,"Admin AYM","OPERATIONAL & COMMERCIAL",30000000.00,M,Married,2018-01-01,Aktif,51
+"Budi Pratama",EMP002,"Manager Keuangan",FINANCE,15250000.00,M,"Belum Menikah",2019-02-02,Aktif,79
+"Citra Pratama",EMP003,"Staff Keuangan",FINANCE,6500000.00,F,"Belum Menikah",2020-03-03,Aktif,86
 "Dedi Pratama",EMP004,"Staff Keuangan",FINANCE,6750000.00,M,Menikah,2021-04-04,Aktif,93
 "Fajar Pratama",EMP006,"Staff Keuangan",FINANCE,6250000.00,M,"Belum Menikah",2023-06-06,Aktif,80
 "Hendra Pratama",EMP008,Admin,FINANCE,6750000.00,F,"Belum Menikah",2025-08-08,Aktif,94
@@ -37,7 +37,7 @@
 "Naufal Santoso",EMP039,"Admin HSSE",PROJECT,8500000.00,F,"Belum Menikah",2020-03-12,Aktif,95
 "Oktavia Santoso",EMP040,Driver,PROJECT,6250000.00,M,Menikah,2021-04-13,Aktif,75
 "Putra Santoso",EMP041,Driver,PROJECT,5500000.00,M,"Belum Menikah",2022-05-14,Aktif,82
-"Qori Santoso",EMP042,Driver,PROJECT,5750000.00,M,"Belum Menikah",2023-06-15,Aktif,89
+"Qori Santoso",EMP042,Driver,PROJECT,5750000.00,M,"Belum Menikah",2023-06-15,Aktif,62
 "Rizky Santoso",EMP043,"Manager HRD",HRGA,15500000.00,F,Menikah,2024-07-16,Aktif,96
 "Sari Santoso",EMP044,"Admin HR GA",HRGA,6750000.00,M,"Belum Menikah",2025-08-17,Aktif,76
 "Taufik Santoso",EMP045,"Admin HR GA",HRGA,6000000.00,F,"Belum Menikah",2026-09-18,Aktif,83
@@ -48,7 +48,7 @@
 "Zaki Santoso",EMP050,"Staff IT",HRGA,7250000.00,F,"Belum Menikah",2022-02-23,Aktif,91
 "Andi Wijaya",EMP051,"Cleaning Office",HRGA,5300000.00,M,"Belum Menikah",2023-03-24,Aktif,98
 "Budi Wijaya",EMP052,"Cleaning Office",HRGA,5550000.00,M,Menikah,2024-04-25,Aktif,78
-"Citra Wijaya",EMP053,"Cleaning Office",HRGA,4800000.00,M,,2025-05-26,Aktif,85
+"Citra Wijaya",EMP053,"Cleaning Office",HRGA,4800000.00,M,"Belum Menikah",2025-05-26,Aktif,85
 "Dedi Wijaya",EMP054,"Cleaning Office",HRGA,5050000.00,M,"Belum Menikah",2026-06-27,Aktif,92
 "Eka Wijaya",EMP055,"Cleaning Office",HRGA,5300000.00,M,Menikah,2018-07-01,Aktif,72
 "Fajar Wijaya",EMP056,"Cleaning Office",HRGA,5550000.00,M,"Belum Menikah",2019-08-02,Aktif,79
@@ -216,5 +216,9 @@
 "Rizky Ramadhan",EMP218,"Supervisor Mekanik HEM","OPERATIONAL & COMMERCIAL",9750000.00,F,"Belum Menikah",2019-02-02,Aktif,79
 "Sari Ramadhan",EMP219,"Leader FABA","OPERATIONAL & COMMERCIAL",8500000.00,M,"Belum Menikah",2020-03-03,Aktif,86
 "Taufik Ramadhan",EMP220,"Leader FABA","OPERATIONAL & COMMERCIAL",8750000.00,M,Single,2021-04-04,Aktif,93
-kkjlj,EMP221,Admin,FINANCE,5000000.00,M,,2026-09-02,Aktif,
-e,EMP222,"Admin HR GA",HRGA,10.92,M,,2026-09-04,Aktif,100
+a,EMP221,Driver,HRGA,12.00,M,,2026-08-19,Aktif,12
+b,EMP222,Pengadaan,FINANCE,11.00,M,,2026-08-19,Nonaktif,1
+a,EMP223,"Direktur Utama",FINANCE,6.00,F,,2026-08-20,Aktif,
+qwd,EMP224,Admin,FINANCE,123.00,F,Single,2026-09-02,Aktif,
+"Adele Rafudia",EMP225,"Direktur Utama",FINANCE,10000000.00,F,Married,2026-09-02,Aktif,100
+Ambalaki,EMP226,"Direktur Utama",FINANCE,1234567.00,M,Married,2026-09-03,Aktif,66
