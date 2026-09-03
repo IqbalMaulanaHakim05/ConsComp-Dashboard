@@ -5,7 +5,9 @@ require __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
 require_once __DIR__ . '/../Services/Settings/master-data.php';
+require_once __DIR__ . '/../Services/Employee/jadwal-cuti.php';
 wajibRole("pic", "koordinator", "manager", "admin", "superadmin");
+siapkanJadwalDanCutiKaryawan($conn);
 $pesan = "";
 $departmentId = departmentIdPengguna();
 $roleSaatIni = rolePengguna();
@@ -36,13 +38,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $bolehInputLembur && !isset($_POST[
     else {
         $awal = DateTime::createFromFormat("Y-m-d\\TH:i", $mulai);
         $akhir = DateTime::createFromFormat("Y-m-d\\TH:i", $selesai);
-        $stmt = mysqli_prepare($conn, "SELECT department_id FROM karyawan WHERE id = ? LIMIT 1");
+        $stmt = mysqli_prepare($conn, "SELECT department_id, TIME_FORMAT(shift_mulai, '%H:%i') AS shift_mulai, TIME_FORMAT(shift_selesai, '%H:%i') AS shift_selesai, shift_hari FROM karyawan WHERE id = ? LIMIT 1");
         mysqli_stmt_bind_param($stmt, "i", $karyawanId);
         mysqli_stmt_execute($stmt);
         $karyawan = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
         mysqli_stmt_close($stmt);
         if (!$awal || !$akhir || $akhir <= $awal) $pesan = "Waktu selesai harus lebih besar dari waktu mulai.";
         elseif (!$karyawan || ($departmentId !== null && (int) $karyawan["department_id"] !== $departmentId)) $pesan = "Karyawan tidak berada dalam cakupan departemen Anda.";
+        elseif (($batasLembur = batasWaktuLemburKaryawan($karyawan, $awal)) === null) $pesan = "Karyawan belum memiliki jadwal kerja lengkap. Atur jam masuk, jam pulang, dan hari kerja terlebih dahulu.";
+        elseif (($batasLembur['sedang_bekerja'] ?? false)) $pesan = "Jam mulai lembur tidak dapat berada pada jam kerja karyawan, yaitu " . $batasLembur['mulai_shift_aktif']->format('d-m-Y H:i') . " sampai " . $batasLembur['akhir_shift']->format('d-m-Y H:i') . ".";
+        elseif (($batasLembur['hari_kerja'] ?? false) && ($awal >= $batasLembur['mulai_kerja_berikutnya'] || $akhir > $batasLembur['mulai_kerja_berikutnya'])) $pesan = "Waktu lembur pada hari kerja paling lambat berakhir pada jam masuk kerja berikutnya, yaitu " . $batasLembur['mulai_kerja_berikutnya']->format('d-m-Y H:i') . ".";
+        elseif (($batasSelesai = batasWaktuLemburKaryawan($karyawan, $akhir)) === null) $pesan = "Karyawan belum memiliki jadwal kerja lengkap. Atur jam masuk, jam pulang, dan hari kerja terlebih dahulu.";
+        elseif (($batasSelesai['sedang_bekerja'] ?? false) && $akhir->format('Y-m-d H:i') !== $batasSelesai['mulai_shift_aktif']->format('Y-m-d H:i')) $pesan = "Jam selesai lembur tidak dapat berada pada jam kerja karyawan.";
         else {
             $menit = (int) (($akhir->getTimestamp() - $awal->getTimestamp()) / 60);
             $stmt = mysqli_prepare($conn, "INSERT INTO overtime_reports (karyawan_id, department_id, dibuat_oleh_pic, mulai_at, selesai_at, total_menit, deskripsi) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -249,7 +256,10 @@ $departemenPilihanLembur = ambilDepartemenPilihan($conn, roleOperasional() ? (in
 $posisiPerDepartemenLembur = ambilPosisiPerDepartemen($conn, roleOperasional() ? (int) ($departmentId ?? 0) : null);
 
 if ($bolehInputLembur) {
-    $sqlKaryawanLembur = "SELECT id, emp_id, employee_name, position, department, department_id
+    $sqlKaryawanLembur = "SELECT id, emp_id, employee_name, position, department, department_id,
+                                  TIME_FORMAT(shift_mulai, '%H:%i') AS shift_mulai,
+                                  TIME_FORMAT(shift_selesai, '%H:%i') AS shift_selesai,
+                                  shift_hari
                            FROM karyawan
                            WHERE department_id IS NOT NULL
                              AND TRIM(COALESCE(position, '')) <> ''
@@ -277,6 +287,9 @@ if ($bolehInputLembur) {
             "posisi" => (string) ($item["position"] ?? ""),
             "departemen" => (string) ($item["department"] ?? ""),
             "department_id" => (int) $item["department_id"],
+            "shift_mulai" => (string) ($item["shift_mulai"] ?? ""),
+            "shift_selesai" => (string) ($item["shift_selesai"] ?? ""),
+            "shift_hari" => (string) ($item["shift_hari"] ?? ""),
         ];
     }
     mysqli_stmt_close($stmtKaryawanLembur);
@@ -333,21 +346,40 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                 </div>
 
                 <div class="form-group overtime-employee-group">
-                    <label for="lembur-karyawan">Karyawan</label>
-                    <select id="lembur-karyawan" name="karyawan_id" class="overtime-employee-choice" data-selected="<?= (int) $formLembur["karyawan_id"]; ?>" required disabled>
-                        <option value="">Pilih departemen dan posisi terlebih dahulu</option>
-                    </select>
+                    <div class="overtime-employee-layout">
+                        <div>
+                            <label for="lembur-karyawan">Karyawan</label>
+                            <select id="lembur-karyawan" name="karyawan_id" class="overtime-employee-choice" data-selected="<?= (int) $formLembur["karyawan_id"]; ?>" required disabled>
+                                <option value="">Pilih departemen dan posisi terlebih dahulu</option>
+                            </select>
+                        </div>
+                        <div class="overtime-schedule-time-fields" aria-label="Jadwal kerja karyawan terpilih">
+                            <div><label for="lembur-jam-masuk">Jam masuk</label><input id="lembur-jam-masuk" type="time" readonly value=""></div>
+                            <div><label for="lembur-jam-pulang">Jam pulang</label><input id="lembur-jam-pulang" type="time" readonly value=""></div>
+                        </div>
+                    </div>
+                    <p class="overtime-workdays-info"><strong>Hari kerja:</strong> <span id="lembur-hari-kerja">-</span></p>
                 </div>
 
                 <div class="form-group">
-                    <label for="lembur-mulai">Mulai</label>
-                    <input id="lembur-mulai" type="datetime-local" name="mulai_at" value="<?= htmlspecialchars($formLembur["mulai_at"]); ?>" required>
+                    <label>Mulai</label>
+                    <div class="overtime-date-time">
+                        <div><label for="lembur-tanggal-mulai">Tanggal</label><input id="lembur-tanggal-mulai" type="date" required></div>
+                        <div><label for="lembur-jam-mulai">Jam</label><input id="lembur-jam-mulai" type="time" step="60" required></div>
+                    </div>
+                    <input id="lembur-mulai" type="hidden" name="mulai_at" value="<?= htmlspecialchars($formLembur["mulai_at"]); ?>">
                 </div>
 
                 <div class="form-group">
-                    <label for="lembur-selesai">Selesai</label>
-                    <input id="lembur-selesai" type="datetime-local" name="selesai_at" value="<?= htmlspecialchars($formLembur["selesai_at"]); ?>" required>
+                    <label>Selesai</label>
+                    <div class="overtime-date-time">
+                        <div><label for="lembur-tanggal-selesai">Tanggal</label><input id="lembur-tanggal-selesai" type="date" required></div>
+                        <div><label for="lembur-jam-selesai">Jam</label><input id="lembur-jam-selesai" type="time" step="60" required></div>
+                    </div>
+                    <input id="lembur-selesai" type="hidden" name="selesai_at" value="<?= htmlspecialchars($formLembur["selesai_at"]); ?>">
                 </div>
+
+                <div class="overtime-schedule-info"><p id="lembur-jadwal-note" class="overtime-note">Pilih karyawan dan waktu mulai untuk melihat batas waktu lembur.</p></div>
 
                 <div class="form-group">
                     <label for="lembur-deskripsi"><?= $bolehAjukanLangsung ? "Catatan Lembur" : "Deskripsi"; ?></label>
@@ -365,12 +397,207 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             const department = document.getElementById("lembur-department");
             const position = document.getElementById("lembur-position");
             const employee = document.getElementById("lembur-karyawan");
+            const mulaiLembur = document.getElementById("lembur-mulai");
+            const tanggalMulaiLembur = document.getElementById("lembur-tanggal-mulai");
+            const jamMulaiLembur = document.getElementById("lembur-jam-mulai");
+            const selesaiLembur = document.getElementById("lembur-selesai");
+            const tanggalSelesaiLembur = document.getElementById("lembur-tanggal-selesai");
+            const jamSelesaiLembur = document.getElementById("lembur-jam-selesai");
+            const catatanJadwal = document.getElementById("lembur-jadwal-note");
+            const jamMasukKaryawan = document.getElementById("lembur-jam-masuk");
+            const jamPulangKaryawan = document.getElementById("lembur-jam-pulang");
+            const hariKerjaKaryawan = document.getElementById("lembur-hari-kerja");
 
             const createOption = (value, label) => {
                 const option = document.createElement("option");
                 option.value = String(value);
                 option.textContent = label;
                 return option;
+            };
+
+            const namaHari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            const pad = value => String(value).padStart(2, "0");
+            const waktuInput = value => `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}`;
+            const waktuTampil = value => `${pad(value.getDate())}-${pad(value.getMonth() + 1)}-${value.getFullYear()} ${pad(value.getHours())}:${pad(value.getMinutes())}`;
+            const tanggalTengahMalam = value => new Date(value.getFullYear(), value.getMonth(), value.getDate());
+            const karyawanTerpilih = () => employees.find(item => String(item.id) === employee.value);
+            const sinkronkanMulaiLembur = () => {
+                mulaiLembur.value = tanggalMulaiLembur.value && jamMulaiLembur.value
+                    ? `${tanggalMulaiLembur.value}T${jamMulaiLembur.value}`
+                    : "";
+            };
+            const isiMulaiLembur = value => {
+                tanggalMulaiLembur.value = `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
+                jamMulaiLembur.value = `${pad(value.getHours())}:${pad(value.getMinutes())}`;
+                sinkronkanMulaiLembur();
+            };
+            const sinkronkanSelesaiLembur = () => {
+                selesaiLembur.value = tanggalSelesaiLembur.value && jamSelesaiLembur.value
+                    ? `${tanggalSelesaiLembur.value}T${jamSelesaiLembur.value}`
+                    : "";
+            };
+            const isiSelesaiLembur = value => {
+                tanggalSelesaiLembur.value = `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
+                jamSelesaiLembur.value = `${pad(value.getHours())}:${pad(value.getMinutes())}`;
+                sinkronkanSelesaiLembur();
+            };
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(mulaiLembur.value)) {
+                const [tanggalAwal, jamAwal] = mulaiLembur.value.split("T");
+                tanggalMulaiLembur.value = tanggalAwal;
+                jamMulaiLembur.value = jamAwal;
+            }
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(selesaiLembur.value)) {
+                const [tanggalAkhir, jamAkhir] = selesaiLembur.value.split("T");
+                tanggalSelesaiLembur.value = tanggalAkhir;
+                jamSelesaiLembur.value = jamAkhir;
+            }
+            const tambahHari = (value, jumlah) => {
+                const hasil = new Date(value);
+                hasil.setDate(hasil.getDate() + jumlah);
+                return hasil;
+            };
+            const jamPadaTanggal = (tanggal, jam) => {
+                const cocok = /^(\d{2}):(\d{2})$/.exec(String(jam || ""));
+                if (!cocok) return null;
+                const hasil = new Date(tanggal);
+                hasil.setHours(Number(cocok[1]), Number(cocok[2]), 0, 0);
+                return hasil;
+            };
+            const hariKerja = item => item.shift_hari === "Senin-Jumat"
+                ? ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
+                : String(item.shift_hari || "").split(/,\s*/).filter(Boolean);
+            const perbaruiRingkasanJadwal = () => {
+                const karyawan = karyawanTerpilih();
+                jamMasukKaryawan.value = karyawan?.shift_mulai || "";
+                jamPulangKaryawan.value = karyawan?.shift_selesai || "";
+                hariKerjaKaryawan.textContent = karyawan ? hariKerja(karyawan).join(", ") : "-";
+            };
+            const aturJamMulaiOtomatis = () => {
+                const karyawan = karyawanTerpilih();
+                if (!karyawan || !tanggalMulaiLembur.value || !karyawan.shift_selesai) return;
+                const tanggal = new Date(`${tanggalMulaiLembur.value}T00:00`);
+                if (!Number.isNaN(tanggal.getTime()) && hariKerja(karyawan).includes(namaHari[tanggal.getDay()])) {
+                    jamMulaiLembur.value = karyawan.shift_selesai;
+                }
+                sinkronkanMulaiLembur();
+            };
+            const jadwalLembur = (item, mulai) => {
+                const hari = hariKerja(item);
+                if (!hari.length || !item.shift_mulai || !item.shift_selesai) return null;
+                const hariKerjaHariIni = hari.includes(namaHari[mulai.getDay()]);
+
+                for (const mundur of [0, 1]) {
+                    const tanggalKerja = tambahHari(tanggalTengahMalam(mulai), -mundur);
+                    if (!hari.includes(namaHari[tanggalKerja.getDay()])) continue;
+                    const mulaiShift = jamPadaTanggal(tanggalKerja, item.shift_mulai);
+                    let selesaiShift = jamPadaTanggal(tanggalKerja, item.shift_selesai);
+                    if (!mulaiShift || !selesaiShift) return null;
+                    if (selesaiShift <= mulaiShift) selesaiShift = tambahHari(selesaiShift, 1);
+                    if (mulai >= mulaiShift && mulai < selesaiShift) {
+                        return { hariKerja: hariKerjaHariIni, sedangBekerja: true, mulaiShift, selesaiShift };
+                    }
+                }
+                if (!hariKerjaHariIni) return { hariKerja: false, sedangBekerja: false };
+
+                let akhirShiftTerakhir = null;
+                const tanggalMulai = tanggalTengahMalam(mulai);
+                for (let mundur = 0; mundur <= 14; mundur++) {
+                    const tanggalKerja = tambahHari(tanggalMulai, -mundur);
+                    if (!hari.includes(namaHari[tanggalKerja.getDay()])) continue;
+                    const mulaiShift = jamPadaTanggal(tanggalKerja, item.shift_mulai);
+                    let selesaiShift = jamPadaTanggal(tanggalKerja, item.shift_selesai);
+                    if (!mulaiShift || !selesaiShift) return null;
+                    if (selesaiShift <= mulaiShift) selesaiShift = tambahHari(selesaiShift, 1);
+                    if (selesaiShift <= mulai) {
+                        akhirShiftTerakhir = selesaiShift;
+                        break;
+                    }
+                }
+                if (!akhirShiftTerakhir) return null;
+
+                const tanggalBerikutnya = tanggalTengahMalam(akhirShiftTerakhir);
+                for (let maju = 0; maju <= 14; maju++) {
+                    const tanggalKerja = tambahHari(tanggalBerikutnya, maju);
+                    if (!hari.includes(namaHari[tanggalKerja.getDay()])) continue;
+                    const mulaiKerjaBerikutnya = jamPadaTanggal(tanggalKerja, item.shift_mulai);
+                    if (mulaiKerjaBerikutnya && mulaiKerjaBerikutnya > akhirShiftTerakhir) {
+                        return { hariKerja: true, sedangBekerja: false, akhirShiftTerakhir, mulaiKerjaBerikutnya };
+                    }
+                }
+                return null;
+            };
+            const perbaruiBatasLembur = () => {
+                const karyawan = karyawanTerpilih();
+                const mulai = mulaiLembur.value ? new Date(mulaiLembur.value) : null;
+                const aktifkanSelesai = (aktif) => {
+                    tanggalSelesaiLembur.disabled = !aktif;
+                    jamSelesaiLembur.disabled = !aktif;
+                };
+                const kosongkanSelesai = () => {
+                    tanggalSelesaiLembur.value = "";
+                    jamSelesaiLembur.value = "";
+                    sinkronkanSelesaiLembur();
+                };
+
+                if (!karyawan) {
+                    aktifkanSelesai(false);
+                    catatanJadwal.textContent = "Pilih karyawan dan waktu mulai untuk melihat batas waktu lembur.";
+                    return;
+                }
+                if (!karyawan.shift_mulai || !karyawan.shift_selesai || !hariKerja(karyawan).length) {
+                    aktifkanSelesai(false);
+                    catatanJadwal.textContent = "Karyawan ini belum memiliki jadwal kerja lengkap.";
+                    return;
+                }
+                if (!mulai || Number.isNaN(mulai.getTime())) {
+                    aktifkanSelesai(false);
+                    catatanJadwal.textContent = "Pilih waktu mulai untuk menghitung batas waktu lembur.";
+                    return;
+                }
+
+                const batas = jadwalLembur(karyawan, mulai);
+                if (!batas) {
+                    aktifkanSelesai(false);
+                    catatanJadwal.textContent = "Jadwal kerja karyawan tidak dapat digunakan untuk membatasi lembur.";
+                    return;
+                }
+                if (batas.sedangBekerja) {
+                    isiMulaiLembur(batas.selesaiShift);
+                    return perbaruiBatasLembur();
+                }
+                const batasiSelesai = batasAkhir => {
+                    aktifkanSelesai(true);
+                    const tanggalMulai = waktuInput(mulai).slice(0, 10);
+                    const tanggalBatas = batasAkhir ? waktuInput(batasAkhir).slice(0, 10) : "";
+                    tanggalSelesaiLembur.min = tanggalMulai;
+                    if (tanggalBatas) tanggalSelesaiLembur.max = tanggalBatas;
+                    else tanggalSelesaiLembur.removeAttribute("max");
+                    jamSelesaiLembur.removeAttribute("min");
+                    jamSelesaiLembur.removeAttribute("max");
+                    if (tanggalSelesaiLembur.value === tanggalMulai) jamSelesaiLembur.min = waktuInput(mulai).slice(11);
+                    if (tanggalBatas && tanggalSelesaiLembur.value === tanggalBatas) jamSelesaiLembur.max = waktuInput(batasAkhir).slice(11);
+
+                    let selesai = selesaiLembur.value ? new Date(selesaiLembur.value) : null;
+                    if (!selesai || Number.isNaN(selesai.getTime())) return;
+                    if (selesai <= mulai || (batasAkhir && selesai > batasAkhir)) {
+                        kosongkanSelesai();
+                        return;
+                    }
+                    const aturanSelesai = jadwalLembur(karyawan, selesai);
+                    if (aturanSelesai?.sedangBekerja && selesai.getTime() !== aturanSelesai.mulaiShift.getTime()) {
+                        isiSelesaiLembur(aturanSelesai.mulaiShift);
+                        selesai = new Date(selesaiLembur.value);
+                    }
+                    if (selesai <= mulai || (batasAkhir && selesai > batasAkhir)) kosongkanSelesai();
+                };
+                if (!batas.hariKerja) {
+                    batasiSelesai(null);
+                    catatanJadwal.textContent = "Hari ini bukan hari kerja karyawan; waktu lembur dapat dimulai dan berakhir kapan saja.";
+                    return;
+                }
+
+                batasiSelesai(batas.mulaiKerjaBerikutnya);
+                catatanJadwal.textContent = `Waktu kerja tidak dapat dipilih. Waktu lembur berakhir paling lambat ${waktuTampil(batas.mulaiKerjaBerikutnya)}.`;
             };
 
             const updateEmployees = (restoreSelection = false) => {
@@ -381,6 +608,8 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     employee.append(createOption("", "Pilih departemen dan posisi terlebih dahulu"));
                     employee.disabled = true;
                     employee.dataset.selected = "";
+                    perbaruiRingkasanJadwal();
+                    perbaruiBatasLembur();
                     return;
                 }
 
@@ -397,6 +626,8 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     employee.value = String(selectedId);
                 }
                 employee.dataset.selected = "";
+                perbaruiRingkasanJadwal();
+                perbaruiBatasLembur();
             };
 
             const updatePositions = (restoreSelection = false) => {
@@ -428,7 +659,30 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 
             department.addEventListener("change", () => updatePositions(false));
             position.addEventListener("change", () => updateEmployees(false));
+            employee.addEventListener("change", () => {
+                perbaruiRingkasanJadwal();
+                aturJamMulaiOtomatis();
+                perbaruiBatasLembur();
+            });
+            tanggalMulaiLembur.addEventListener("change", () => {
+                aturJamMulaiOtomatis();
+                perbaruiBatasLembur();
+            });
+            jamMulaiLembur.addEventListener("change", () => {
+                sinkronkanMulaiLembur();
+                perbaruiBatasLembur();
+            });
+            tanggalSelesaiLembur.addEventListener("change", () => {
+                sinkronkanSelesaiLembur();
+                perbaruiBatasLembur();
+            });
+            jamSelesaiLembur.addEventListener("change", () => {
+                sinkronkanSelesaiLembur();
+                perbaruiBatasLembur();
+            });
             updatePositions(true);
+            perbaruiRingkasanJadwal();
+            perbaruiBatasLembur();
         })();
     </script>
 <?php endif; ?>
@@ -471,9 +725,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                                                                                                                                 }; ?><?= htmlspecialchars($statusLembur); ?></span></td>
                         <td><?= htmlspecialchars($row["nama_pembuat"] ?? "-"); ?></td>
                         <td><?= $row["jumlah_upah"] === null ? "-" : "Rp " . number_format((float) $row["jumlah_upah"], 0, ",", "."); ?></td>
-                        <td class="overtime-actions"><?php if (rolePengguna() === "pic" && $row["status"] === "draft"): ?><form method="POST"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="kirim"><input type="hidden" name="overtime_id" value="<?= (int) $row["id"]; ?>"><button class="btn btn-primary" type="submit">Kirim</button></form><?php elseif (rolePengguna() === "pic" && $row["status"] === "disetujui"): ?><form method="POST" class="compensation-form"><input method="POST" type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="kompensasi"><input type="hidden" name="overtime_id" value="<?= (int) $row["id"]; ?>"><input type="hidden" name="metode_perhitungan" value="per_jam"><input name="tarif_per_jam" class="overtime-rate" type="hidden"><input name="jumlah_upah" class="overtime-total" type="hidden">
-                                    <p class="overtime-compensation-summary"><span class="overtime-rate-label"></span><span aria-hidden="true"> | </span><span class="overtime-total-label"></span></p><button class="btn btn-success" type="submit">Simpan Upah</button>
-                                </form><?php elseif ((rolePengguna() === "koordinator" && $row["status"] === "menunggu_koordinator") || (punyaRole("manager") && $row["status"] === "menunggu_manager")): ?><form method="POST"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="keputusan"><input type="hidden" name="overtime_id" value="<?= (int) $row["id"]; ?>"><input name="catatan" placeholder="Catatan penolakan"><button class="btn btn-success" name="keputusan" value="approved">Setujui</button><button class="btn btn-danger" name="keputusan" value="rejected">Tolak</button></form><?php else: ?>-<?php endif; ?></td>
+                        <td class="overtime-actions"><?php if (rolePengguna() === "pic" && $row["status"] === "draft"): ?><form method="POST"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="kirim"><input type="hidden" name="overtime_id" value="<?= (int) $row["id"]; ?>"><button class="btn btn-primary" type="submit">Kirim</button></form><?php elseif (rolePengguna() === "pic" && $row["status"] === "disetujui"): ?><div class="overtime-compensation-actions"><form method="POST" class="compensation-form"><input method="POST" type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="kompensasi"><input type="hidden" name="overtime_id" value="<?= (int) $row["id"]; ?>"><input type="hidden" name="metode_perhitungan" value="per_jam"><input name="tarif_per_jam" class="overtime-rate" type="hidden"><input name="jumlah_upah" class="overtime-total" type="hidden">
+                                    <p class="overtime-compensation-summary"><span class="overtime-rate-label"></span><span aria-hidden="true"> | </span><span class="overtime-total-label"></span></p><div class="overtime-compensation-buttons"><button class="btn btn-success" type="submit">Simpan Upah</button></div>
+                                </form></div><?php elseif ((rolePengguna() === "koordinator" && $row["status"] === "menunggu_koordinator") || (punyaRole("manager") && $row["status"] === "menunggu_manager")): ?><form method="POST"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="keputusan"><input type="hidden" name="overtime_id" value="<?= (int) $row["id"]; ?>"><input name="catatan" placeholder="Catatan penolakan"><button class="btn btn-success" name="keputusan" value="approved">Setujui</button><button class="btn btn-danger" name="keputusan" value="rejected">Tolak</button></form><?php else: ?>-<?php endif; ?></td>
                     </tr><?php endwhile; ?></tbody>
         </table>
     </div>
@@ -511,16 +765,19 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
 <?php if (in_array(rolePengguna(), ["admin", "superadmin"], true)): ?>
     <script>
         document.querySelectorAll('.overtime-report-table tbody tr').forEach(row => {
-            if (row.querySelector('.overtime-status')?.textContent.trim() !== 'disetujui') return;
+            if (row.dataset.overtimeStatus !== 'disetujui') return;
             const action = row.querySelector('.overtime-actions');
             if (!action || action.querySelector('.compensation-form')) return;
             const id = row.querySelector('.overtime-id')?.textContent.trim();
             const form = document.createElement('form');
             form.method = 'POST';
             form.className = 'compensation-form';
-            form.innerHTML = '<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="kompensasi"><input type="hidden" name="overtime_id" value="' + id + '"><input type="hidden" name="metode_perhitungan" value="per_jam"><input name="tarif_per_jam" class="overtime-rate" type="hidden"><input name="jumlah_upah" class="overtime-total" type="hidden"><p class="overtime-compensation-summary"><span class="overtime-rate-label"></span><span aria-hidden="true"> | </span><span class="overtime-total-label"></span></p><button class="btn btn-success" type="submit">Simpan Upah</button>';
+            form.innerHTML = '<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(tokenCsrf()); ?>"><input type="hidden" name="aksi" value="kompensasi"><input type="hidden" name="overtime_id" value="' + id + '"><input type="hidden" name="metode_perhitungan" value="per_jam"><input name="tarif_per_jam" class="overtime-rate" type="hidden"><input name="jumlah_upah" class="overtime-total" type="hidden"><p class="overtime-compensation-summary"><span class="overtime-rate-label"></span><span aria-hidden="true"> | </span><span class="overtime-total-label"></span></p><div class="overtime-compensation-buttons"><button class="btn btn-success" type="submit">Simpan Upah</button></div>';
+            const layout = document.createElement('div');
+            layout.className = 'overtime-compensation-actions';
+            layout.appendChild(form);
             action.textContent = '';
-            action.appendChild(form);
+            action.appendChild(layout);
             isiRingkasanKompensasi(form);
         });
     </script>
@@ -562,7 +819,9 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             form.addEventListener('submit', event => {
                 if (!confirm('Hapus laporan lembur ID ' + id + '? Data approval dan upah lembur terkait juga akan dihapus.')) event.preventDefault();
             });
-            action.appendChild(form);
+            const compensationButtons = action.querySelector('.overtime-compensation-buttons');
+            if (compensationButtons) compensationButtons.prepend(form);
+            else action.appendChild(form);
         });
     </script>
 <?php endif; ?>
@@ -577,10 +836,6 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         gap: 8px;
         margin: 0 4px 4px 0;
         vertical-align: middle;
-    }
-
-    .data-card table td:last-child>form.compensation-form {
-        flex-wrap: wrap;
     }
 
     .data-card table td:last-child button {

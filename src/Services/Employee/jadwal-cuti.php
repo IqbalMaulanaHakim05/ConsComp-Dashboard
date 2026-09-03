@@ -33,6 +33,92 @@ function labelHariKerjaKaryawan(array $karyawan): string
     return formatHariKerjaJadwal($hari) . ' — ' . jumlahHariKerjaJadwal($hari) . ' hari kerja';
 }
 
+/**
+ * Menentukan aturan waktu lembur menurut hari kerja karyawan. Lembur tidak
+ * boleh dimulai saat karyawan sedang menjalani shift. Pada hari kerja, lembur
+ * di luar shift berakhir sebelum jam masuk berikutnya; hari non-kerja bebas.
+ *
+ * @return array{hari_kerja: bool, sedang_bekerja: bool, mulai_shift_aktif?: DateTimeImmutable, akhir_shift?: DateTimeImmutable, mulai_kerja_berikutnya?: DateTimeImmutable}|null
+ */
+function batasWaktuLemburKaryawan(array $karyawan, DateTimeInterface $mulaiLembur): ?array
+{
+    $jamMulai = substr(trim((string) ($karyawan['shift_mulai'] ?? '')), 0, 5);
+    $jamSelesai = substr(trim((string) ($karyawan['shift_selesai'] ?? '')), 0, 5);
+    $hariKerja = hariKerjaJadwalTerpilih((string) ($karyawan['shift_hari'] ?? ''));
+    if (
+        $hariKerja === []
+        || preg_match('/^([01]\\d|2[0-3]):[0-5]\\d$/', $jamMulai) !== 1
+        || preg_match('/^([01]\\d|2[0-3]):[0-5]\\d$/', $jamSelesai) !== 1
+    ) {
+        return null;
+    }
+
+    $hariIndonesia = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    $waktuLembur = DateTimeImmutable::createFromInterface($mulaiLembur);
+    $tanggalLembur = $waktuLembur->setTime(0, 0);
+    $hariKerjaHariIni = in_array($hariIndonesia[(int) $tanggalLembur->format('N') - 1], $hariKerja, true);
+
+    foreach ([0, 1] as $mundur) {
+        $tanggalKerja = $tanggalLembur->modify('-' . $mundur . ' days');
+        if (!in_array($hariIndonesia[(int) $tanggalKerja->format('N') - 1], $hariKerja, true)) continue;
+
+        $mulaiShift = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $tanggalKerja->format('Y-m-d') . ' ' . $jamMulai);
+        $selesaiShift = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $tanggalKerja->format('Y-m-d') . ' ' . $jamSelesai);
+        if (!$mulaiShift || !$selesaiShift) return null;
+        if ($selesaiShift <= $mulaiShift) $selesaiShift = $selesaiShift->modify('+1 day');
+
+        if ($waktuLembur >= $mulaiShift && $waktuLembur < $selesaiShift) {
+            return [
+                'hari_kerja' => $hariKerjaHariIni,
+                'sedang_bekerja' => true,
+                'mulai_shift_aktif' => $mulaiShift,
+                'akhir_shift' => $selesaiShift,
+            ];
+        }
+    }
+
+    if (!$hariKerjaHariIni) {
+        return ['hari_kerja' => false, 'sedang_bekerja' => false];
+    }
+
+    $akhirShiftTerakhir = null;
+
+    for ($mundur = 0; $mundur <= 14; $mundur++) {
+        $tanggalKerja = $tanggalLembur->modify('-' . $mundur . ' days');
+        if (!in_array($hariIndonesia[(int) $tanggalKerja->format('N') - 1], $hariKerja, true)) continue;
+
+        $mulaiShift = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $tanggalKerja->format('Y-m-d') . ' ' . $jamMulai);
+        $selesaiShift = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $tanggalKerja->format('Y-m-d') . ' ' . $jamSelesai);
+        if (!$mulaiShift || !$selesaiShift) return null;
+        if ($selesaiShift <= $mulaiShift) $selesaiShift = $selesaiShift->modify('+1 day');
+
+        if ($selesaiShift <= $waktuLembur) {
+            $akhirShiftTerakhir = $selesaiShift;
+            break;
+        }
+    }
+
+    if ($akhirShiftTerakhir === null) return null;
+
+    $tanggalBerikutnya = $akhirShiftTerakhir->setTime(0, 0);
+    for ($maju = 0; $maju <= 14; $maju++) {
+        $tanggalKerja = $tanggalBerikutnya->modify('+' . $maju . ' days');
+        if (!in_array($hariIndonesia[(int) $tanggalKerja->format('N') - 1], $hariKerja, true)) continue;
+
+        $mulaiKerjaBerikutnya = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $tanggalKerja->format('Y-m-d') . ' ' . $jamMulai);
+        if ($mulaiKerjaBerikutnya && $mulaiKerjaBerikutnya > $akhirShiftTerakhir) {
+            return [
+                'hari_kerja' => true,
+                'sedang_bekerja' => false,
+                'akhir_shift' => $akhirShiftTerakhir,
+                'mulai_kerja_berikutnya' => $mulaiKerjaBerikutnya,
+            ];
+        }
+    }
+
+    return null;
+}
+
 function sisaCutiKaryawan(mysqli $conn, int $karyawanId, ?int $tahun = null): float
 {
     $tahun ??= (int) date('Y');
