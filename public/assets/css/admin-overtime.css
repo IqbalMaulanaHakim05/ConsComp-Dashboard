@@ -17,6 +17,12 @@
 .lembur-page .form-body .form-group { margin: 0; }
 .lembur-page .form-body .overtime-employee-group,
 .lembur-page .form-body .form-group:has(textarea) { grid-column: 1 / -1; }
+.lembur-page .overtime-employee-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: end; }
+.lembur-page .overtime-schedule-time-fields,
+.lembur-page .overtime-date-time { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.lembur-page .overtime-workdays-info { margin: 12px 0 0; color: #475569; font-size: 14px; }
+.lembur-page .overtime-schedule-info { grid-column: 1 / -1; margin: -8px 0 0; }
+.lembur-page .overtime-schedule-time-fields input[readonly] { color: #475569; background: #f8fafc; cursor: default; }
 .lembur-page .form-body label { display: block; margin-bottom: 7px; font-weight: 700; }
 .lembur-page .form-body .denda-event-datetime { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .lembur-page .form-body .denda-event-datetime > div { min-width: 0; }
@@ -68,6 +74,9 @@
 :root[data-theme="dark"] .absensi-page .absensi-file-field input[type="file"] { color: #cbd5e1; background: #0f172a; border-color: #475569; }
 
 @media (max-width: 700px) {
+    .lembur-page .overtime-employee-layout,
+    .lembur-page .overtime-schedule-time-fields,
+    .lembur-page .overtime-date-time { grid-template-columns: 1fr; }
     .absensi-page .absensi-import-card .form-card-header,
     .absensi-page .absensi-import-card .form-body { padding-right: 20px; padding-left: 20px; }
     .absensi-page .absensi-import-form { grid-template-columns: 1fr; }
@@ -227,16 +236,13 @@
     :is(.lembur-page, .denda-page) .notification-list { padding: 0 22px 12px; }
 }
 
-/* Ringkasan kompensasi dan tombol dibuat satu baris di kolom Aksi.
-   Tabel tetap dapat digeser secara horizontal. */
-.lembur-page table td:last-child > form.compensation-form {
-    display: grid !important;
-    grid-template-columns: minmax(390px, 1fr) auto;
-    align-items: center;
-    flex-wrap: nowrap !important;
-    width: max-content;
-    min-width: 100%;
-    gap: 10px;
+/* Ringkasan berada di atas; tombol Hapus dan Simpan Upah berada satu baris di bawahnya. */
+.lembur-page .overtime-compensation-actions {
+    min-width: 390px;
+}
+
+.lembur-page .overtime-compensation-actions > .compensation-form {
+    display: block !important;
     margin: 0 !important;
 }
 
@@ -249,12 +255,16 @@
     white-space: nowrap;
 }
 
-.lembur-page table td:last-child > form.compensation-form .btn {
-    width: auto;
+.lembur-page .overtime-compensation-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
 }
 
-.lembur-page table td:last-child > form:not(.compensation-form) {
-    flex-wrap: nowrap !important;
+.lembur-page .overtime-compensation-buttons > .delete-overtime-form {
+    display: inline-flex;
+    margin: 0 !important;
 }
 
 :root[data-theme="dark"] .lembur-page .main-content > .form-card,
