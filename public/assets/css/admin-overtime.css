@@ -271,6 +271,18 @@
 :root[data-theme="dark"] .lembur-page .main-content > .data-card { border-color: #334155; }
 :root[data-theme="dark"] .lembur-page .form-card-header { background: linear-gradient(135deg, #1e293b, #172554); border-color: #334155; }
 :root[data-theme="dark"] .lembur-page .overtime-compensation-summary { color: #e2e8f0; }
+:root[data-theme="dark"] .lembur-page .overtime-schedule-time-fields input[type="time"] {
+    color: #e2e8f0;
+    background-color: #0f172a;
+    border-color: #475569;
+    color-scheme: dark;
+}
+:root[data-theme="dark"] .lembur-page .overtime-schedule-time-fields input[type="time"]:disabled,
+:root[data-theme="dark"] .lembur-page .overtime-schedule-time-fields input[type="time"][readonly] {
+    color: #cbd5e1;
+    background-color: #172033;
+    opacity: 1;
+}
 :root[data-theme="dark"] .lembur-page .form-body .denda-schedule-field input[readonly] {
     color: #cbd5e1;
     background: #0f172a;
