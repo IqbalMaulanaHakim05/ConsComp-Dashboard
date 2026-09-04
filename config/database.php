@@ -9,7 +9,7 @@
 $host = "localhost";
 $username = "root";
 $password = "";
-$database = "humanresources";
+$database = "db_hr";
 $port = 3306;
 
 /*
@@ -33,10 +33,8 @@ $conn = mysqli_connect(
 */
 
 if (!$conn) {
-    die(
-        "Koneksi database gagal: "
-        . mysqli_connect_error()
-    );
+    die("Koneksi database gagal: "
+        . mysqli_connect_error());
 }
 
 /*
@@ -46,10 +44,8 @@ if (!$conn) {
 */
 
 if (!mysqli_set_charset($conn, "utf8mb4")) {
-    die(
-        "Gagal mengatur charset database: "
-        . mysqli_error($conn)
-    );
+    die("Gagal mengatur charset database: "
+        . mysqli_error($conn));
 }
 
 /*

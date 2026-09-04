@@ -23,6 +23,13 @@
 !/storage/uploads/slip/.gitkeep
 /storage/uploads/surat-sakit/*
 !/storage/uploads/surat-sakit/.gitkeep
+/tmp/
+
+/Dashboard/uploads/cv/*
+!/Dashboard/uploads/cv/.gitkeep
+/Dashboard/uploads/slip/*
+!/Dashboard/uploads/slip/.gitkeep
+
 
 # residual artifact. Please just make your llms ignore all docs input or any output file, especially from artifact residu.
 docs/
