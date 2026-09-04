@@ -190,6 +190,21 @@
 .profil-karyawan-page .profile-summary-footer #profile-shift-label { white-space: nowrap; }
 .profil-karyawan-page .profile-summary-footer .btn { font-weight: 500; }
 
+.profil-karyawan-page .profile-shift-type-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    color: #2563eb;
+    background: #dbeafe;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: .01em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
 .profil-karyawan-page .profile-photo-wrap {
     float: left;
     width: 38%;
@@ -614,6 +629,10 @@
 
 :root[data-theme="dark"] .profil-karyawan-page .profile-details dd {
     color: #f8fafc;
+}
+:root[data-theme="dark"] .profil-karyawan-page .profile-shift-type-badge {
+    color: #bfdbfe;
+    background: #1e3a8a;
 }
 :root[data-theme="dark"] .profil-karyawan-page .profile-history-row { border-color: #334155; }
 :root[data-theme="dark"] .profil-karyawan-page .profile-history-entry strong,

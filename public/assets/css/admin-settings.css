@@ -16,7 +16,7 @@
 
 .master-data-page .master-data-grid {
     width: 100%;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     align-items: stretch;
     gap: 12px;
     margin-bottom: 0;
@@ -59,8 +59,23 @@
     border-top-color: #2035e8;
 }
 
+.master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-departemen,
+.master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-posisi {
+    grid-column: span 3 !important;
+}
+
 .master-data-page .master-data-grid .master-data-card-status {
     border-top-color: #6d39b6;
+}
+
+.master-data-page .master-data-grid .master-data-card-tipe_kerja {
+    grid-column: span 2 !important;
+    border-top-color: #0ea5e9;
+}
+
+.master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-status,
+.master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-agama {
+    grid-column: span 2 !important;
 }
 
 .master-data-page .master-data-grid .master-data-card-agama {
@@ -231,6 +246,14 @@
 @media (max-width: 900px) {
     .master-data-page .master-data-grid {
         grid-template-columns: 1fr;
+    }
+
+    .master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-departemen,
+    .master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-posisi,
+    .master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-status,
+    .master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-tipe_kerja,
+    .master-data-page .master-data-grid:not(.master-shift-grid) .master-data-card-agama {
+        grid-column: 1 !important;
     }
 }
 

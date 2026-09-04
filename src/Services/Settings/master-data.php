@@ -20,6 +20,10 @@ function siapkanMasterData(mysqli $conn): void
     if ($kolomTipeKerja) mysqli_free_result($kolomTipeKerja);
     if (!$punyaKolomTipeKerja) mysqli_query($conn, "ALTER TABLE karyawan ADD COLUMN tipe_kerja VARCHAR(20) NULL DEFAULT NULL AFTER employment_status");
 
+    $hasilMasterTipeKerja = mysqli_query($conn, "SHOW TABLES LIKE 'master_tipe_kerja'");
+    $masterTipeKerjaSudahAda = $hasilMasterTipeKerja && mysqli_num_rows($hasilMasterTipeKerja) > 0;
+    if ($hasilMasterTipeKerja) mysqli_free_result($hasilMasterTipeKerja);
+
     // Pisahkan nilai lama Kontrak/Harian/PKWT/Magang menjadi tipe kerja dan
     // normalisasi status kerja agar hanya Aktif atau Nonaktif.
     mysqli_query($conn, "UPDATE karyawan SET tipe_kerja = CASE LOWER(TRIM(employment_status)) WHEN 'harian' THEN 'Harian' WHEN 'kontrak' THEN 'Harian' WHEN 'pkwt' THEN 'PKWT' WHEN 'magang' THEN 'Magang' ELSE 'Harian' END WHERE tipe_kerja IS NULL OR TRIM(tipe_kerja) = ''");
@@ -28,6 +32,7 @@ function siapkanMasterData(mysqli $conn): void
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(120) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_posisi_departemen (posisi_id INT UNSIGNED NOT NULL, department_id INT UNSIGNED NOT NULL, PRIMARY KEY (posisi_id, department_id), FOREIGN KEY (posisi_id) REFERENCES master_posisi(id) ON DELETE CASCADE, FOREIGN KEY (department_id) REFERENCES master_departemen(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_status_kerja (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_tipe_kerja (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_agama (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(100) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS master_shift (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nama VARCHAR(80) NOT NULL UNIQUE, jam_mulai TIME NOT NULL, jam_selesai TIME NOT NULL, hari VARCHAR(60) NOT NULL DEFAULT 'Senin-Jumat') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     // Normalisasi istilah lama sekali secara idempoten. Jadwal lama tetap
@@ -62,7 +67,10 @@ function siapkanMasterData(mysqli $conn): void
     // Hapus label lama lebih dulu agar tidak melanggar UNIQUE saat normalisasi.
     mysqli_query($conn, "DELETE FROM master_status_kerja WHERE LOWER(nama) = 'active'");
     mysqli_query($conn, "UPDATE master_status_kerja SET nama = 'Aktif' WHERE LOWER(nama) = 'aktif' AND nama <> 'Aktif'");
-    foreach ([["master_departemen", "department"], ["master_posisi", "position"], ["master_status_kerja", "employment_status"], ["master_agama", "agama"]] as [$table, $column]) {
+    if (!$masterTipeKerjaSudahAda) {
+        mysqli_query($conn, "INSERT IGNORE INTO master_tipe_kerja (nama) VALUES ('Harian'), ('Kontrak'), ('PKWT'), ('Magang')");
+    }
+    foreach ([["master_departemen", "department"], ["master_posisi", "position"], ["master_status_kerja", "employment_status"], ["master_tipe_kerja", "tipe_kerja"], ["master_agama", "agama"]] as [$table, $column]) {
         $result = mysqli_query($conn, "SELECT DISTINCT `$column` AS nama FROM karyawan WHERE `$column` IS NOT NULL AND `$column` <> ''");
         while ($result && ($row = mysqli_fetch_assoc($result))) {
             $safe = mysqli_real_escape_string($conn, (string) $row["nama"]);
@@ -111,9 +119,9 @@ function pilihanStatusKerja(): array
     return ['Aktif', 'Nonaktif'];
 }
 
-function pilihanTipeKerja(): array
+function pilihanTipeKerja(mysqli $conn): array
 {
-    return ['Harian', 'Kontrak', 'PKWT', 'Magang'];
+    return ambilMasterData($conn, "tipe_kerja");
 }
 
 function daftarHariKerja(): array
@@ -162,7 +170,7 @@ function jumlahHariKerjaJadwal(string $hari): int
 function ambilMasterData(mysqli $conn, string $jenis): array
 {
     siapkanMasterData($conn);
-    $tables = ["department" => "master_departemen", "position" => "master_posisi", "employment_status" => "master_status_kerja", "agama" => "master_agama"];
+    $tables = ["department" => "master_departemen", "position" => "master_posisi", "employment_status" => "master_status_kerja", "tipe_kerja" => "master_tipe_kerja", "agama" => "master_agama"];
     $table = $tables[$jenis] ?? "master_departemen";
     $result = mysqli_query($conn, "SELECT nama FROM `$table` ORDER BY nama ASC");
     $items = [];

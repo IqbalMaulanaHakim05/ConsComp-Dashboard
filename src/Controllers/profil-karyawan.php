@@ -15,7 +15,7 @@ wajibRole("admin", "superadmin", "koordinator", "manager");
 siapkanMasterData($conn);
 siapkanJadwalDanCutiKaryawan($conn);
 $masterStatus = pilihanStatusKerja();
-$masterTipeKerja = pilihanTipeKerja();
+$masterTipeKerja = pilihanTipeKerja($conn);
 $masterAgama = ambilMasterData($conn, "agama");
 
 $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
@@ -64,6 +64,10 @@ function tanggalProfil(array $data, string $kolom): string
 $nama = trim((string) ($karyawan["employee_name"] ?? "Karyawan"));
 $sisaCuti = sisaCutiKaryawan($conn, (int) $karyawan['id']);
 $masterShift = ambilMasterShift($conn);
+$namaShift = trim((string) ($karyawan["shift_nama"] ?? ""));
+$jenisJadwal = strcasecmp($namaShift, "Non Shift") === 0
+    ? "NON SHIFT"
+    : ($namaShift === "" ? "BELUM DIATUR" : "SHIFT");
 
 $gender = trim((string) ($karyawan["gender"] ?? ""));
 if ($gender === "M" || strcasecmp($gender, "Male") === 0) {
@@ -257,7 +261,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
             <dl class="profile-details profile-summary-footer">
                 <div>
                     <dt>Jadwal Kerja</dt>
-                    <dd><span id="profile-shift-label"><?= htmlspecialchars(labelShiftKaryawan($karyawan)); ?></span><?php if ($modeEdit): ?><button class="btn btn-secondary" type="button" id="open-shift-dialog">Ubah</button><?php endif; ?></dd>
+                    <dd><span class="profile-shift-type-badge"><?= htmlspecialchars($jenisJadwal); ?></span><span id="profile-shift-label"><?= htmlspecialchars(labelShiftKaryawan($karyawan)); ?></span><?php if ($modeEdit): ?><button class="btn btn-secondary" type="button" id="open-shift-dialog">Ubah</button><?php endif; ?></dd>
                 </div>
                 <div class="profile-schedule-row">
                     <dt>Hari Kerja</dt>

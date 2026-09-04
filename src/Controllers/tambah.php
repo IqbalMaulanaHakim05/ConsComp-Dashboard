@@ -13,7 +13,7 @@ require_once __DIR__ . '/../Services/Employee/jadwal-cuti.php';
 wajibRole("admin", "superadmin");
 siapkanMasterData($conn);
 siapkanJadwalDanCutiKaryawan($conn);
-$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = pilihanStatusKerja(); $masterTipeKerja = pilihanTipeKerja(); $masterAgama = ambilMasterData($conn, "agama");
+$masterDepartemen = ambilMasterData($conn, "department"); $masterPosisi = ambilMasterData($conn, "position"); $masterStatus = pilihanStatusKerja(); $masterTipeKerja = pilihanTipeKerja($conn); $masterAgama = ambilMasterData($conn, "agama");
 $masterShift = ambilMasterShift($conn);
 $namaShiftDiizinkan = array_column($masterShift, 'nama');
 $posisiPerDepartemen = ambilPosisiPerNamaDepartemen($conn);
@@ -50,7 +50,7 @@ $form = [
     "gender" => "",
     "date_of_hire" => "",
     "employment_status" => "",
-    "tipe_kerja" => "Harian",
+    "tipe_kerja" => (string) ($masterTipeKerja[0] ?? ""),
     "performance_score" => "",
     "shift_nama" => (string) ($masterShift[0]['nama'] ?? 'Non Shift'),
     "shift_mulai" => "",
@@ -139,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         )
     ) {
         $pesan = "Jam Masuk, Jam Pulang, dan minimal satu Hari Kerja wajib diisi untuk Non Shift.";
-    } elseif (!in_array($employmentStatus, pilihanStatusKerja(), true) || !in_array($tipeKerja, pilihanTipeKerja(), true)) {
+    } elseif (!in_array($employmentStatus, pilihanStatusKerja(), true) || !in_array($tipeKerja, $masterTipeKerja, true)) {
         $pesan = "Status Kerja atau Tipe Kerja tidak valid.";
     } elseif ($pesanPerforma !== "") {
         $pesan = $pesanPerforma;

@@ -16,7 +16,7 @@ siapkanMasterData($conn);
 siapkanJadwalDanCutiKaryawan($conn);
 $namaShiftDiizinkan = array_merge(['Non Shift'], array_column(ambilMasterShift($conn), 'nama'));
 siapkanTanggalKeluarKaryawan($conn);
-$masterStatus = pilihanStatusKerja(); $masterTipeKerja = pilihanTipeKerja(); $masterAgama = ambilMasterData($conn, "agama");
+$masterStatus = pilihanStatusKerja(); $masterTipeKerja = pilihanTipeKerja($conn); $masterAgama = ambilMasterData($conn, "agama");
 
 $id = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
 
@@ -51,7 +51,7 @@ $form = [
     "salary" => (string) ($data["salary"] ?? ""),
     "gender" => trim((string) ($data["gender"] ?? "")),
     "employment_status" => (string) ($data["employment_status"] ?? ""),
-    "tipe_kerja" => (string) ($data["tipe_kerja"] ?? "Kontrak"),
+    "tipe_kerja" => (string) ($data["tipe_kerja"] ?? ($masterTipeKerja[0] ?? "")),
     "performance_score" => (string) ($data["performance_score"] ?? ""),
     "date_of_exit" => (string) ($data["date_of_exit"] ?? ""),
 ];
@@ -314,7 +314,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         || $tipeKerja === ""
     ) {
         $pesan = "Semua kolom wajib diisi.";
-    } elseif (!in_array($employmentStatus, pilihanStatusKerja(), true) || !in_array($tipeKerja, pilihanTipeKerja(), true)) {
+    } elseif (!in_array($employmentStatus, pilihanStatusKerja(), true) || !in_array($tipeKerja, $masterTipeKerja, true)) {
         $pesan = "Status Kerja atau Tipe Kerja tidak valid.";
     } elseif ($pesanPerforma !== "") {
         $pesan = $pesanPerforma;
