@@ -89,12 +89,11 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     </form>
 
     <div class="analysis-kpi-grid">
-        <article class="analysis-kpi-card"><span>Karyawan Keseluruhan</span><strong><?= number_format($kpi["total"], 0, ",", "."); ?></strong><small>Data sesuai filter aktif</small></article>
-        <article class="analysis-kpi-card"><span>Karyawan Tetap</span><strong><?= number_format($kpi["harian"], 0, ",", "."); ?></strong><small>Data tipe kerja Harian</small></article>
-        <article class="analysis-kpi-card"><span>Karyawan Aktif</span><strong><?= number_format($kpi["aktif"], 0, ",", "."); ?></strong><small>Status Active atau Aktif</small></article>
-        <article class="analysis-kpi-card"><span>Karyawan Tidak Tetap</span><strong><?= number_format($kpi["tidak_harian"], 0, ",", "."); ?></strong><small>Tipe kerja selain Harian</small></article>
-        <article class="analysis-kpi-card"><span>Laki-laki</span><strong><?= number_format($kpi["laki_laki"], 0, ",", "."); ?></strong><small>Total karyawan laki-laki</small></article>
-        <article class="analysis-kpi-card"><span>Perempuan</span><strong><?= number_format($kpi["perempuan"], 0, ",", "."); ?></strong><small>Total karyawan perempuan</small></article>
+        <article class="analysis-kpi-card"><span>Total karyawan keseluruhan</span><strong><?= number_format($kpi["total"], 0, ",", "."); ?></strong><small>Jumlah karyawan berstatus Aktif dan Nonaktif</small></article>
+        <article class="analysis-kpi-card"><span>Total karyawan aktif</span><strong><?= number_format($kpi["aktif"], 0, ",", "."); ?></strong><small>Seluruh tipe kerja berstatus Aktif</small></article>
+        <article class="analysis-kpi-card"><span>Total karyawan nonaktif</span><strong><?= number_format($kpi["nonaktif"], 0, ",", "."); ?></strong><small>Seluruh tipe kerja berstatus Nonaktif</small></article>
+        <article class="analysis-kpi-card"><span>Total Karyawan Laki-laki</span><strong><?= number_format($kpi["laki_laki"], 0, ",", "."); ?></strong><small>Karyawan laki-laki berstatus Aktif</small></article>
+        <article class="analysis-kpi-card"><span>Total Karyawan Perempuan</span><strong><?= number_format($kpi["perempuan"], 0, ",", "."); ?></strong><small>Karyawan perempuan berstatus Aktif</small></article>
         <article class="analysis-kpi-card"><span>Rata-rata Gaji</span><strong>Rp <?= number_format($kpi["rata_gaji"], 0, ",", "."); ?></strong><small>Rata-rata data gaji valid</small></article>
         <article class="analysis-kpi-card"><span>Rata-rata Performa</span><strong><?= $kpi["rata_performa"] === null ? "Belum dinilai" : number_format($kpi["rata_performa"], 1, ",", "."); ?></strong><small>Rata-rata skor performa yang sudah dinilai</small></article>
     </div>

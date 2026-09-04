@@ -14,18 +14,19 @@ require_once __DIR__ . '/performa-karyawan.php';
  */
 function ambilStatistik(mysqli $conn): array
 {
-    $cakupan = roleOperasional() ? " WHERE department_id = " . (int) (departmentIdPengguna() ?? 0) : "";
-    $totalKaryawan = 0;
+    $totalKaryawanAktif = 0;
     $totalDepartemen = 0;
     $rataRataPerforma = null;
 
     $queryKaryawan = mysqli_query(
         $conn,
-        "SELECT COUNT(*) AS total FROM karyawan" . $cakupan
+        "SELECT COUNT(*) AS total
+         FROM karyawan
+         WHERE LOWER(TRIM(employment_status)) IN ('active', 'aktif')" . (roleOperasional() ? " AND department_id = " . (int) (departmentIdPengguna() ?? 0) : "")
     );
 
     if ($queryKaryawan) {
-        $totalKaryawan = (int) (
+        $totalKaryawanAktif = (int) (
             mysqli_fetch_assoc($queryKaryawan)["total"] ?? 0
         );
     }
@@ -59,7 +60,7 @@ function ambilStatistik(mysqli $conn): array
     }
 
     return [
-        "totalKaryawan" => $totalKaryawan,
+        "totalKaryawanAktif" => $totalKaryawanAktif,
         "totalDepartemen" => $totalDepartemen,
         "rataRataPerforma" => $rataRataPerforma,
     ];

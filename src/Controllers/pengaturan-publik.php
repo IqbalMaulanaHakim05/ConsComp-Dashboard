@@ -196,7 +196,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
                     </div>
                 </div>
                 <div class="form-grid">
-                    <?php foreach (["total_karyawan" => "Total Karyawan", "total_departemen" => "Total Departemen", "rata_performa" => "Rata-rata Performa"] as $kodeKartu => $labelKartu): ?>
+                    <?php foreach (["total_karyawan" => "Total karyawan aktif", "total_departemen" => "Total Departemen", "rata_performa" => "Rata-rata Performa"] as $kodeKartu => $labelKartu): ?>
                         <label class="settings-check"><input type="checkbox" name="kartu_dashboard[]" value="<?= $kodeKartu; ?>" <?= in_array($kodeKartu, $kartuDashboardAktif, true) ? "checked" : ""; ?>> <?= $labelKartu; ?></label>
                     <?php endforeach; ?>
                 </div>

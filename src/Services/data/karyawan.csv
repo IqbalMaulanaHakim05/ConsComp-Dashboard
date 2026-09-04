@@ -1,7 +1,6 @@
 ﻿Employee_Name,EmpID,Position,Department,Salary,Sex,MaritalDesc,DateofHire,EmploymentStatus,PerformanceScore
 "Andi Kirk",EMP001,"Admin AYM","OPERATIONAL & COMMERCIAL",30000000.00,M,Married,2018-01-01,Aktif,51
 "Budi Pratama",EMP002,"Manager Keuangan",FINANCE,15250000.00,M,"Belum Menikah",2019-02-02,Aktif,79
-"Citra Pratama",EMP003,"Staff Keuangan",FINANCE,6500000.00,F,"Belum Menikah",2020-03-03,Aktif,86
 "Dedi Pratama",EMP004,"Staff Keuangan",FINANCE,6750000.00,M,Menikah,2021-04-04,Aktif,93
 "Fajar Pratama",EMP006,"Staff Keuangan",FINANCE,6250000.00,M,"Belum Menikah",2023-06-06,Aktif,80
 "Hendra Pratama",EMP008,Admin,FINANCE,6750000.00,F,"Belum Menikah",2025-08-08,Aktif,94
@@ -9,7 +8,6 @@
 "Kartika Pratama",EMP011,Pengadaan,FINANCE,6500000.00,M,"Belum Menikah",2019-11-11,Aktif,88
 "Lukman Pratama",EMP012,"Senior Advisor",FINANCE,15750000.00,M,"Belum Menikah",2020-12-12,Aktif,95
 "Maya Pratama",EMP013,Direktur,PROJECT,25000000.00,M,Menikah,2021-01-13,Aktif,75
-"Naufal Pratama",EMP014,"Site Manager PJBS",PROJECT,15250000.00,M,"Belum Menikah",2022-02-14,Aktif,82
 "Oktavia Pratama",EMP015,"Business Advisor",PROJECT,15500000.00,F,"Belum Menikah",2023-03-15,Aktif,89
 "Putra Pratama",EMP016,"Manager Contract Liaison",PROJECT,15750000.00,M,Menikah,2024-04-16,Aktif,96
 "Qori Pratama",EMP017,"Staff Project",PROJECT,6000000.00,M,"Belum Menikah",2025-05-17,Aktif,76
@@ -222,3 +220,4 @@ a,EMP223,"Direktur Utama",FINANCE,6.00,F,,2026-08-20,Aktif,
 qwd,EMP224,Admin,FINANCE,123.00,F,Single,2026-09-02,Aktif,
 "Adele Rafudia",EMP225,"Direktur Utama",FINANCE,10000000.00,F,Married,2026-09-02,Aktif,100
 Ambalaki,EMP226,"Direktur Utama",FINANCE,1234567.00,M,Married,2026-09-03,Aktif,66
+AJK,EMP227,BBB,FF,0.00,M,Single,2026-08-31,Aktif,
