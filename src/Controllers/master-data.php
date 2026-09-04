@@ -10,12 +10,14 @@ $map = [
     "departemen" => "master_departemen",
     "posisi" => "master_posisi",
     "status" => "master_status_kerja",
+    "tipe_kerja" => "master_tipe_kerja",
     "agama" => "master_agama",
 ];
 $tampilanMaster = [
     "departemen" => ["judul" => "Master Departemen", "placeholder" => "Tambah Departemen"],
     "posisi" => ["judul" => "Master Posisi", "placeholder" => "Tambah Posisi"],
     "status" => ["judul" => "Master Status", "placeholder" => "Tambah Status"],
+    "tipe_kerja" => ["judul" => "Master Tipe Kerja", "placeholder" => "Tambah Tipe Kerja"],
     "agama" => ["judul" => "Master Agama", "placeholder" => "Tambah Agama"],
 ];
 $pesan = trim((string) ($_GET["pesan"] ?? ""));
@@ -262,8 +264,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         mysqli_stmt_bind_param($stmtLepas, "i", $id);
                         mysqli_stmt_execute($stmtLepas);
                         mysqli_stmt_close($stmtLepas);
-                    } elseif ($jenis === "posisi" || $jenis === "status" || $jenis === "agama") {
-                        $kolom = $jenis === "posisi" ? "position" : ($jenis === "status" ? "employment_status" : "agama");
+                    } elseif ($jenis === "posisi" || $jenis === "status" || $jenis === "tipe_kerja" || $jenis === "agama") {
+                        $kolom = $jenis === "posisi" ? "position" : ($jenis === "status" ? "employment_status" : ($jenis === "tipe_kerja" ? "tipe_kerja" : "agama"));
                         $stmtNama = mysqli_prepare($conn, "SELECT nama FROM `$table` WHERE id = ? LIMIT 1");
                         mysqli_stmt_bind_param($stmtNama, "i", $id);
                         mysqli_stmt_execute($stmtNama);
@@ -276,7 +278,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             $hasilPakai = mysqli_fetch_row(mysqli_stmt_get_result($stmtPakai));
                             mysqli_stmt_close($stmtPakai);
                             if ((int) ($hasilPakai[0] ?? 0) > 0) {
-                                throw new RuntimeException(ucfirst($jenis) . " masih digunakan oleh data karyawan.");
+                                $labelJenis = ["posisi" => "Posisi", "status" => "Status", "tipe_kerja" => "Tipe kerja", "agama" => "Agama"][$jenis];
+                                throw new RuntimeException($labelJenis . " masih digunakan oleh data karyawan.");
                             }
                         }
                     }
@@ -304,7 +307,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 $judulHalaman = "Master Data";
-$subjudulHalaman = "Kelola departemen, posisi, status kerja, dan agama.";
+$subjudulHalaman = "Kelola departemen, posisi, status kerja, tipe kerja, dan agama.";
 $halamanAktif = "master-data";
 $departemenRelasi = [];
 $hasilDepartemen = mysqli_query($conn, "SELECT id, nama FROM master_departemen ORDER BY nama");

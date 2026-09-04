@@ -19,7 +19,7 @@ if (!is_array($kartuDashboardAktif)) $kartuDashboardAktif = ["total_karyawan", "
 
 // Statistik untuk kartu atas.
 $statistik = ambilStatistik($conn);
-$totalKaryawan = $statistik["totalKaryawan"];
+$totalKaryawanAktif = $statistik["totalKaryawanAktif"];
 $totalDepartemen = $statistik["totalDepartemen"];
 $rataRataPerforma = $statistik["rataRataPerforma"];
 
@@ -70,14 +70,14 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
     <section class="statistics" style="--dashboard-start: <?= htmlspecialchars($pengaturanDashboard["warna_dashboard_awal"] ?? "#1e3a8a"); ?>; --dashboard-end: <?= htmlspecialchars($pengaturanDashboard["warna_dashboard_akhir"] ?? "#2563eb"); ?>;">
 
         <?php if (in_array("total_karyawan", $kartuDashboardAktif, true)): ?><div class="stat-card">
-            <span>Total Karyawan</span>
+            <span>Total karyawan aktif</span>
 
             <h3>
-                <?= number_format($totalKaryawan); ?>
+                <?= number_format($totalKaryawanAktif); ?>
             </h3>
 
             <p>
-                Seluruh data dalam database
+                Seluruh tipe kerja berstatus Aktif
             </p>
         </div><?php endif; ?>
 

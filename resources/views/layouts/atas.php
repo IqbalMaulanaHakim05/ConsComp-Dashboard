@@ -66,7 +66,7 @@ $versiCssHalaman = match ($halamanAktif) {
     "lembur" => "20260903-overtime-schedule-layout5",
     "absensi" => "20260826-absensi-import-card1",
     "izin-karyawan", "izin-cuti", "izin-cuti-khusus", "izin-sakit" => "20260827-table-actions-narrow1",
-    "master-data" => "20260901-master-shift-list-gap1",
+    "master-data" => "20260904-master-tipe-kerja2",
     "karyawan" => "20260821-karyawan-sort-btn2",
     "tambah" => "20260902-tambah-jadwal-terlihat3",
     "penilaian-performa" => "20260821-performance-font-size",
@@ -95,7 +95,7 @@ if (
 if (basename((string) ($_SERVER["SCRIPT_NAME"] ?? "")) === "profil-karyawan.php") {
     $cssHalamanAktif = "admin-profile.css";
     $kelasHalaman = "profil-karyawan";
-    $versiCssHalaman = "20260901-profile-shift-time-display1";
+    $versiCssHalaman = "20260904-profile-shift-badge1";
 }
 ?>
 <!DOCTYPE html>

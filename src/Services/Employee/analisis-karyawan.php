@@ -167,12 +167,11 @@ function ambilAnalisisKaryawan(mysqli $conn): array
     $hasilKpi = queryAnalisis(
         $conn,
         "SELECT
-            COUNT(*) AS total,
-            SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END) AS laki_laki,
-            SUM(CASE WHEN gender = 'F' THEN 1 ELSE 0 END) AS perempuan,
+            SUM(CASE WHEN LOWER(TRIM(employment_status)) IN ('active', 'aktif', 'inactive', 'nonaktif') THEN 1 ELSE 0 END) AS total,
+            SUM(CASE WHEN gender = 'M' AND LOWER(TRIM(employment_status)) IN ('active', 'aktif') THEN 1 ELSE 0 END) AS laki_laki,
+            SUM(CASE WHEN gender = 'F' AND LOWER(TRIM(employment_status)) IN ('active', 'aktif') THEN 1 ELSE 0 END) AS perempuan,
             SUM(CASE WHEN LOWER(TRIM(employment_status)) IN ('active', 'aktif') THEN 1 ELSE 0 END) AS aktif,
-            SUM(CASE WHEN LOWER(TRIM(COALESCE(tipe_kerja, ''))) = 'harian' THEN 1 ELSE 0 END) AS harian,
-            SUM(CASE WHEN LOWER(TRIM(COALESCE(tipe_kerja, ''))) <> 'harian' THEN 1 ELSE 0 END) AS tidak_harian,
+            SUM(CASE WHEN LOWER(TRIM(employment_status)) IN ('inactive', 'nonaktif') THEN 1 ELSE 0 END) AS nonaktif,
             AVG(CAST(NULLIF(REPLACE(salary, ',', ''), '') AS DECIMAL(15,2))) AS rata_gaji,
             AVG(CASE
                 WHEN performance_score IS NOT NULL
@@ -330,8 +329,7 @@ function ambilAnalisisKaryawan(mysqli $conn): array
             "laki_laki" => (int) ($kpi["laki_laki"] ?? 0),
             "perempuan" => (int) ($kpi["perempuan"] ?? 0),
             "aktif" => (int) ($kpi["aktif"] ?? 0),
-            "harian" => (int) ($kpi["harian"] ?? 0),
-            "tidak_harian" => (int) ($kpi["tidak_harian"] ?? 0),
+            "nonaktif" => (int) ($kpi["nonaktif"] ?? 0),
             "rata_gaji" => (float) ($kpi["rata_gaji"] ?? 0),
             "rata_performa" => isset($kpi["rata_performa"]) ? (float) $kpi["rata_performa"] : null,
         ],
