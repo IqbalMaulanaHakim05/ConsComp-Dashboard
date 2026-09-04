@@ -2,7 +2,6 @@
 require __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
-require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
 require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
 require_once __DIR__ . '/../Utils/xlsx-builder.php';
 
@@ -430,7 +429,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $barisExcel = $ekstensi === 'xlsx' ? bacaXlsx($lokasi) : bacaXlsXml($lokasi);
         $dataValid = validasiDataExcel($barisExcel);
         gantiDataSql($conn, $dataValid);
-        sinkronkanSemuaDataset($conn);
         catatAktivitas($conn, "Mengimpor " . count($dataValid) . " data karyawan dari Excel.");
 
         header('Location: ' . URL_DASAR . 'karyawan.php?pesan=import-excel-berhasil&jumlah=' . count($dataValid));

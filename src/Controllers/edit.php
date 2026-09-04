@@ -4,7 +4,6 @@ require __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
 require_once __DIR__ . '/../Services/Employee/media-karyawan.php';
-require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
 require_once __DIR__ . '/../Services/Settings/master-data.php';
 require_once __DIR__ . '/../Services/Employee/tanggal-keluar-karyawan.php';
 require_once __DIR__ . '/../Services/Employee/nik-karyawan.php';
@@ -262,11 +261,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $adminHrga) {
         exit;
     }
 
-    try {
-        sinkronkanSemuaDataset($conn);
-    } catch (Throwable $error) {
-        error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
-    }
     catatAktivitas($conn, "Admin mengedit Biodata dan Informasi karyawan ID " . $id . ".");
     header("Location: " . URL_DASAR . "profil-karyawan.php?id=" . $id . "&pesan=edit-berhasil");
     exit;
@@ -434,12 +428,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         mysqli_stmt_bind_param($insertPekerjaan, "issssss", $id, $perusahaan, $posisiRiwayat, $departemenRiwayat, $mulaiRiwayat, $selesaiRiwayat, $deskripsiRiwayat); mysqli_stmt_execute($insertPekerjaan);
                     }
                     mysqli_stmt_close($insertPekerjaan);
-                    try {
-                        sinkronkanSemuaDataset($conn);
-                    } catch (Throwable $error) {
-                        error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
-                    }
-
                     catatAktivitas($conn, "Mengedit data karyawan " . $employeeName . " (" . $empId . ").");
                     mysqli_stmt_close($stmtUpdate);
                     if (($_POST["return_to_profile"] ?? "") === "1") {
@@ -475,8 +463,7 @@ require __DIR__ . '/../../resources/views/layouts/atas.php';
         <div class="form-card-header">
             <h2>Form Edit Data Karyawan</h2>
             <p>
-                Periksa kembali data yang akan diperbarui. Setelah disimpan,
-                perubahan SQL akan disinkronkan ke dataset lokal.
+                Periksa kembali data yang akan diperbarui sebelum disimpan.
             </p>
         </div>
 

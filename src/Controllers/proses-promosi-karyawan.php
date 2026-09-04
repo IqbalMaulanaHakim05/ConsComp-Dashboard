@@ -7,7 +7,6 @@ require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
 require_once __DIR__ . '/../Services/Settings/master-data.php';
 require_once __DIR__ . '/../Services/Employee/promosi-karyawan.php';
-require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
 
 wajibRole('admin', 'superadmin');
 
@@ -38,11 +37,6 @@ try {
         roleEfektif(rolePengguna())
     );
 
-    try {
-        sinkronkanSemuaDataset($conn);
-    } catch (Throwable $exception) {
-        error_log('Sinkronisasi setelah promosi gagal: ' . $exception->getMessage());
-    }
     catatAktivitas(
         $conn,
         sprintf(

@@ -4,7 +4,6 @@ require __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Services/Auth/auth.php';
 require_once __DIR__ . '/../Services/Audit/audit.php';
 require_once __DIR__ . '/../Services/Employee/media-karyawan.php';
-require_once __DIR__ . '/../Services/Settings/sinkronisasi.php';
 require_once __DIR__ . '/../Services/Settings/master-data.php';
 require_once __DIR__ . '/../Services/Employee/nik-karyawan.php';
 require_once __DIR__ . '/../Services/Employee/performa-karyawan.php';
@@ -277,11 +276,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     }
 
                     if ($pesan === "") {
-                        try {
-                            sinkronkanSemuaDataset($conn);
-                        } catch (Throwable $error) {
-                            error_log("Sinkronisasi CSV gagal: " . $error->getMessage());
-                        }
                         catatAktivitas($conn, "Menambahkan karyawan " . $employeeName . " (" . $empId . ").");
                         mysqli_stmt_close($stmt);
                         header('Location: karyawan.php?pesan=tambah-berhasil');
